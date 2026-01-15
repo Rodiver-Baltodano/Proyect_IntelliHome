@@ -1,0 +1,13 @@
+[
+  {
+    "id": "u1",
+    "username": "juan",
+    "correo": "juan@mail.com",
+    "telefono": "88887777",
+    "contrasena": "nueva1234",
+    "intentosFallidos": 0,
+    "estaBloqueado": false,
+    "codigoRecuperacion": null,
+    "codigoExpira": null
+  }
+]
