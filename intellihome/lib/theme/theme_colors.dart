@@ -10,9 +10,9 @@ enum ThemeType {
   medio,    // Tema medio (predeterminado)
 }
 
-/// Clase que define los colores predeterminados para el tema MEDIO
-/// Estos colores se usan cuando el usuario selecciona el tema "Medio"
-class MedioThemeColors {
+/// Clase que define los colores predeterminados para el tema CLARO
+/// Estos colores se usan cuando el usuario selecciona el tema "Claro"
+class ClaroThemeColors {
   // Color más oscuro - usado para fondos principales o elementos destacados
   // Azul oscuro profundo
   static const Color primary = Color(0xFF164863);
@@ -79,15 +79,15 @@ class AppThemeColors {
     required this.themeType,
   });
 
-  /// Factory constructor para crear el tema MEDIO
+  /// Factory constructor para crear el tema CLARO
   /// Este es el tema predeterminado de la aplicación
-  factory AppThemeColors.medio() {
+  factory AppThemeColors.claro() {
     return const AppThemeColors(
-      primary: MedioThemeColors.primary,
-      secondary: MedioThemeColors.secondary,
-      tertiary: MedioThemeColors.tertiary,
-      background: MedioThemeColors.background,
-      themeType: ThemeType.medio,
+      primary: ClaroThemeColors.primary,
+      secondary: ClaroThemeColors.secondary,
+      tertiary: ClaroThemeColors.tertiary,
+      background: ClaroThemeColors.background,
+      themeType: ThemeType.claro,
     );
   }
 
