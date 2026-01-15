@@ -10,4 +10,22 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get appTitle => 'IntelliHome';
+
+  @override
+  String get selectTheme => 'Select your theme';
+
+  @override
+  String get selectStyle => 'Choose your style';
+
+  @override
+  String get lightTheme => 'Light';
+
+  @override
+  String get mediumTheme => 'Medium';
+
+  @override
+  String get darkTheme => 'Dark';
+
+  @override
+  String get confirm => 'Confirm';
 }
