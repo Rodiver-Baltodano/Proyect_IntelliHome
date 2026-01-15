@@ -3,7 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../theme/theme_colors.dart';
 
 /// VARIABLES PARA UI (Líneas marcadas con // UI:)
-/// ────────────────────────────────────────────────────────────────────
+
 /// • currentTheme.primary      (L30) - Color primario (EDITABLE)
 /// • currentTheme.background   (L30) - Color de fondo (EDITABLE)
 /// • currentTheme.secondary    (L30) - Color secundario (SOLO LECTURA)
@@ -11,7 +11,6 @@ import '../theme/theme_colors.dart';
 /// • currentThemeType          (L33) - Tipo actual: claro/medio/oscuro
 /// 
 /// MÉTODOS PARA UI
-/// ────────────────────────────────────────────────────────────────────
 /// • changeTheme(tipo)              (L36) - Cambiar tema base
 /// • updateCustomColors(...)        (L51) - Cambiar color personalizable
 /// • getCustomizableColors()        (L74) - Obtener [primary, background]
@@ -19,7 +18,6 @@ import '../theme/theme_colors.dart';
 /// • getAllColors()                 (L82) - Obtener todos los colores
 /// • resetToDefaults()              (L86) - Restaurar valores predeterminados
 /// • isDefaultTheme()               (L90) - Verificar si fue personalizado
-/// ═══════════════════════════════════════════════════════════════════════
 
 enum StyleType {
   aventurero,
@@ -32,16 +30,23 @@ class ThemeProvider extends ChangeNotifier {
   StyleType _currentStyle = StyleType.minimalista;
 
   // UI: Acceso al tema completo (primary, secondary, tertiary, background)
+  // USO: AppThemeColors tema = provider.currentTheme;
+  // RETORNA: AppThemeColors (objeto con 4 colores)
   AppThemeColors get currentTheme => _currentTheme;
 
   // UI: Tipo de tema actual para checkboxes (ThemeType.claro/medio/oscuro)
+  // USO: ThemeType tipo = provider.currentThemeType;
+  // RETORNA: ThemeType (enum: claro, medio, oscuro)
   ThemeType get currentThemeType => _currentTheme.themeType;
 
   // UI: ThemeData para aplicar en MaterialApp.theme
+  // USO: ThemeData theme = provider.themeData;
+  // RETORNA: ThemeData (tema completo de Flutter)
   ThemeData get themeData => _currentTheme.toThemeData();
 
   // UI: Cambiar tema base desde checkboxes
-  // Uso: provider.changeTheme(ThemeType.medio)
+  // USO: provider.changeTheme(ThemeType.medio);
+  // RETORNA: void (no retorna, solo cambia estado)
   void changeTheme(ThemeType themeType) {
     switch (themeType) {
       case ThemeType.claro:
@@ -58,7 +63,8 @@ class ThemeProvider extends ChangeNotifier {
   }
 
   // UI: Personalizar colores con color picker
-  // Uso: provider.updateCustomColors(primary: color) 
+  // USO: provider.updateCustomColors(primary: Colors.blue);
+  // RETORNA: void (no retorna, actualiza colores)
   // NOTA: Solo primary y background son editables
   void updateCustomColors({
     Color? primary,
@@ -72,7 +78,8 @@ class ThemeProvider extends ChangeNotifier {
   }
 
   // UI: Actualizar ambos colores personalizables a la vez
-  // Uso: provider.updateBothCustomColors(Colors.blue, Colors.white)
+  // USO: provider.updateBothCustomColors(Colors.blue, Colors.white);
+  // RETORNA: void (no retorna, actualiza ambos colores)
   void updateBothCustomColors(Color primary, Color background) {
     _currentTheme = _currentTheme.copyWith(
       primary: primary,
@@ -82,26 +89,36 @@ class ThemeProvider extends ChangeNotifier {
   }
 
   // UI: Obtener colores EDITABLES [primary, background]
+  // USO: List<Color> editables = provider.getCustomizableColors();
+  // RETORNA: List<Color> con 2 elementos [primary, background]
   List<Color> getCustomizableColors() {
     return [_currentTheme.primary, _currentTheme.background];
   }
 
   // UI: Obtener colores FIJOS [secondary, tertiary] (solo lectura)
+  // USO: List<Color> fijos = provider.getFixedColors();
+  // RETORNA: List<Color> con 2 elementos [secondary, tertiary]
   List<Color> getFixedColors() {
     return [_currentTheme.secondary, _currentTheme.tertiary];
   }
 
   // UI: Obtener TODOS los colores [primary, secondary, tertiary, background]
+  // USO: List<Color> todos = provider.getAllColors();
+  // RETORNA: List<Color> con 4 elementos [primary, secondary, tertiary, background]
   List<Color> getAllColors() {
     return _currentTheme.getAllColors();
   }
 
   // UI: Resetear a colores predeterminados del tema actual
+  // USO: provider.resetToDefaults();
+  // RETORNA: void (no retorna, restaura valores default)
   void resetToDefaults() {
     changeTheme(_currentTheme.themeType);
   }
 
   // UI: Verificar si el tema fue personalizado (true = sin cambios)
+  // USO: bool esDefault = provider.isDefaultTheme();
+  // RETORNA: bool (true si no ha sido personalizado)
   bool isDefaultTheme() {
     final defaultTheme = _getDefaultTheme(_currentTheme.themeType);
     return _currentTheme.primary == defaultTheme.primary &&
@@ -141,13 +158,22 @@ class ThemeProvider extends ChangeNotifier {
     }
   }
 
+  // UI: Obtener estilo actual
+  // USO: StyleType estilo = provider.currentStyle;
+  // RETORNA: StyleType (enum: aventurero, minimalista, contemporaneo)
   StyleType get currentStyle => _currentStyle;
 
+  // UI: Cambiar estilo visual
+  // USO: provider.changeStyle(StyleType.minimalista);
+  // RETORNA: void (no retorna, solo cambia estilo)
   void changeStyle(StyleType styleType) {
     _currentStyle = styleType;
     notifyListeners();
   }
 
+  // UI: Guardar todos los cambios en SharedPreferences
+  // USO: await provider.confirmChanges();
+  // RETORNA: Future<void> (async, espera a que se guarde en disco)
   Future<void> confirmChanges() async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -163,6 +189,9 @@ class ThemeProvider extends ChangeNotifier {
     }
   }
 
+  // UI: Cargar preferencias guardadas al iniciar la app
+  // USO: await provider.loadThemeFromPreferences();
+  // RETORNA: Future<void> (async, carga desde SharedPreferences)
   Future<void> loadThemeFromPreferences() async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -207,8 +236,14 @@ class ThemeProvider extends ChangeNotifier {
 
   bool _isRegistrationComplete = false;
 
+  // UI: Verificar si el registro fue completado
+  // USO: bool completo = provider.isRegistrationComplete;
+  // RETORNA: bool (true si registro está completo)
   bool get isRegistrationComplete => _isRegistrationComplete;
 
+  // UI: Marcar el registro como completo y guardar
+  // USO: await provider.completeRegistration();
+  // RETORNA: Future<void> (async, guarda estado de registro)
   Future<void> completeRegistration() async {
     try {
       _isRegistrationComplete = true;

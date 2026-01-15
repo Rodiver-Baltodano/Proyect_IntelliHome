@@ -68,6 +68,9 @@ abstract class AppLocalizations {
 
   final String localeName;
 
+  // UI: Obtener instancia de localización desde el context
+  // USO: final l10n = AppLocalizations.of(context)!;
+  // RETORNA: AppLocalizations? (objeto con todos los strings traducidos)
   static AppLocalizations? of(BuildContext context) {
     return Localizations.of<AppLocalizations>(context, AppLocalizations);
   }
@@ -104,42 +107,56 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'IntelliHome'**
+  // USO: String titulo = l10n.appTitle;
+  // RETORNA: String ("IntelliHome" / "IntelliHome" / "IntelliHome")
   String get appTitle;
 
   /// No description provided for @selectTheme.
   ///
   /// In en, this message translates to:
   /// **'Select your theme'**
+  // USO: String texto = l10n.selectTheme;
+  // RETORNA: String ("Select your theme" / "Selecciona tu tema" / "Selecione seu tema")
   String get selectTheme;
 
   /// No description provided for @selectStyle.
   ///
   /// In en, this message translates to:
   /// **'Choose your style'**
+  // USO: String texto = l10n.selectStyle;
+  // RETORNA: String ("Choose your style" / "Elige tu estilo" / "Escolha seu estilo")
   String get selectStyle;
 
   /// No description provided for @lightTheme.
   ///
   /// In en, this message translates to:
   /// **'Light'**
+  // USO: String texto = l10n.lightTheme;
+  // RETORNA: String ("Light" / "Claro" / "Claro")
   String get lightTheme;
 
   /// No description provided for @mediumTheme.
   ///
   /// In en, this message translates to:
   /// **'Medium'**
+  // USO: String texto = l10n.mediumTheme;
+  // RETORNA: String ("Medium" / "Medio" / "Médio")
   String get mediumTheme;
 
   /// No description provided for @darkTheme.
   ///
   /// In en, this message translates to:
   /// **'Dark'**
+  // USO: String texto = l10n.darkTheme;
+  // RETORNA: String ("Dark" / "Oscuro" / "Escuro")
   String get darkTheme;
 
   /// No description provided for @confirm.
   ///
   /// In en, this message translates to:
   /// **'Confirm'**
+  // USO: String texto = l10n.confirm;
+  // RETORNA: String ("Confirm" / "Confirmar" / "Confirmar")
   String get confirm;
 }
 

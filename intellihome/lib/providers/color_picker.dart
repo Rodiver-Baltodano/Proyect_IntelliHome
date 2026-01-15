@@ -5,6 +5,8 @@ import 'theme_provider.dart';
 /// Helper para mostrar color picker con rueda de colores
 class ColorPickerHelper {
   /// Muestra diálogo con rueda de colores para seleccionar color primario
+  // USO: ColorPickerHelper.showPrimaryColorPicker(context, provider);
+  // RETORNA: void (no retorna, muestra diálogo y actualiza provider)
   static void showPrimaryColorPicker(
     BuildContext context,
     ThemeProvider provider,
@@ -20,6 +22,8 @@ class ColorPickerHelper {
   }
 
   /// Muestra diálogo con rueda de colores para seleccionar color de fondo
+  // USO: ColorPickerHelper.showBackgroundColorPicker(context, provider);
+  // RETORNA: void (no retorna, muestra diálogo y actualiza provider)
   static void showBackgroundColorPicker(
     BuildContext context,
     ThemeProvider provider,
