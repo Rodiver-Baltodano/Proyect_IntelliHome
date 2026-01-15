@@ -1,8 +1,8 @@
 // Clase con todos los validadores necesarios
 class Validador {
-  // Validar que sea alfanumérico (permite espacios, puntos, guiones)
+  // Validar que sea alfanumérico (solo letras y números, permite espacios)
   static bool esAlfanumerico(String valor) {
-    final regex = RegExp(r'^[a-zA-Z0-9\s\.\-áéíóúñüÁÉÍÓÚÑÜ]+$');
+    final regex = RegExp(r'^[a-zA-Z0-9\s]+$');
     return regex.hasMatch(valor);
   }
 
@@ -13,7 +13,7 @@ class Validador {
     return regex.hasMatch(email);
   }
 
-  // Validar teléfono (10-15 dígitos)
+  // Validar teléfono (10-15 dígitos, permite + y -)
   static bool esTelefonoValido(String telefono) {
     final regex = RegExp(r'^[0-9\+\-\s]{10,15}$');
     return regex.hasMatch(telefono);
@@ -25,15 +25,20 @@ class Validador {
     return regex.hasMatch(iban);
   }
 
-  // Validar username (alfanumérico, guiones y guiones bajos, 3-20 caracteres)
+  // Validar username (solo letras y números, 3-20 caracteres)
   static bool esUsernameValido(String username) {
-    final regex = RegExp(r'^[a-zA-Z0-9_-]{3,20}$');
+    final regex = RegExp(r'^[a-zA-Z0-9]{3,20}$');
     return regex.hasMatch(username);
   }
 
-  // Validar contraseña (mínimo 8 caracteres)
+  // Validar contraseña (mínimo 8 caracteres, solo letras y números)
   static bool esContrasenaValida(String contrasena) {
-    return contrasena.length >= 8;
+    if (contrasena.length < 8) {
+      return false;
+    }
+    // Solo letras y números
+    final regex = RegExp(r'^[a-zA-Z0-9]+$');
+    return regex.hasMatch(contrasena);
   }
 
   // Validar que nombre tenga al menos 2 palabras (nombre y apellido)

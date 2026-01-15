@@ -13,6 +13,10 @@ class RegistroManager {
       final archivo = File(archivoJSON);
       if (await archivo.exists()) {
         final contenido = await archivo.readAsString();
+        // Validar que el contenido no esté vacío
+        if (contenido.isEmpty) {
+          return [];
+        }
         final List<dynamic> datos = jsonDecode(contenido);
         return datos.map((u) => Usuario.fromJson(u)).toList();
       }
@@ -101,7 +105,7 @@ class RegistroManager {
       return RegistroResult(
         exito: false,
         mensaje:
-            'El username debe tener entre 3-20 caracteres (alfanuméricos, guiones y guiones bajos)',
+            'El username debe tener entre 3-20 caracteres (solo letras y números)',
       );
     }
 
@@ -182,7 +186,7 @@ class RegistroManager {
       if (!Validador.esAlfanumerico(datosTargeta)) {
         return RegistroResult(
           exito: false,
-          mensaje: 'Los datos de tarjeta deben ser alfanuméricos',
+          mensaje: 'Los datos de tarjeta deben ser solo letras y números',
         );
       }
     }
