@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../theme/theme_colors.dart';
 
 /// VARIABLES PARA UI (Líneas marcadas con // UI:)
@@ -20,14 +21,24 @@ import '../theme/theme_colors.dart';
 /// • isDefaultTheme()               (L90) - Verificar si fue personalizado
 /// ═══════════════════════════════════════════════════════════════════════
 
+enum StyleType {
+  aventurero,
+  minimalista,
+  contemporaneo,
+}
+
 class ThemeProvider extends ChangeNotifier {
   AppThemeColors _currentTheme = AppThemeColors.medio();
+  StyleType _currentStyle = StyleType.minimalista;
 
   // UI: Acceso al tema completo (primary, secondary, tertiary, background)
   AppThemeColors get currentTheme => _currentTheme;
 
   // UI: Tipo de tema actual para checkboxes (ThemeType.claro/medio/oscuro)
   ThemeType get currentThemeType => _currentTheme.themeType;
+
+  // UI: ThemeData para aplicar en MaterialApp.theme
+  ThemeData get themeData => _currentTheme.toThemeData();
 
   // UI: Cambiar tema base desde checkboxes
   // Uso: provider.changeTheme(ThemeType.medio)
@@ -127,6 +138,89 @@ class ThemeProvider extends ChangeNotifier {
         return AppThemeColors.oscuro();
       case ThemeType.medio:
         return AppThemeColors.medio();
+    }
+  }
+
+  StyleType get currentStyle => _currentStyle;
+
+  void changeStyle(StyleType styleType) {
+    _currentStyle = styleType;
+    notifyListeners();
+  }
+
+  Future<void> confirmChanges() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('theme_type', _currentTheme.themeType.name);
+      await prefs.setString('style_type', _currentStyle.name);
+      await prefs.setInt('primary_color', _currentTheme.primary.value);
+      await prefs.setInt('background_color', _currentTheme.background.value);
+
+      notifyListeners();
+    } catch (e, stackTrace) {
+      debugPrint('Error al guardar las preferencias de tema/estilo: $e');
+      debugPrint('$stackTrace');
+    }
+  }
+
+  Future<void> loadThemeFromPreferences() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      
+      // Cargar tema
+      final themeTypeName = prefs.getString('theme_type');
+      if (themeTypeName != null) {
+        final themeType = ThemeType.values.firstWhere(
+          (e) => e.name == themeTypeName,
+          orElse: () => ThemeType.medio,
+        );
+        changeTheme(themeType);
+      }
+      
+      // Cargar estilo
+      final styleTypeName = prefs.getString('style_type');
+      if (styleTypeName != null) {
+        _currentStyle = StyleType.values.firstWhere(
+          (e) => e.name == styleTypeName,
+          orElse: () => StyleType.minimalista,
+        );
+      }
+      
+      // Cargar colores
+      final primaryValue = prefs.getInt('primary_color');
+      final backgroundValue = prefs.getInt('background_color');
+      if (primaryValue != null && backgroundValue != null) {
+        _currentTheme = _currentTheme.copyWith(
+          primary: Color(primaryValue),
+          background: Color(backgroundValue),
+        );
+      }
+      
+      _isRegistrationComplete =
+          prefs.getBool('registration_complete') ?? false;
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Failed to load theme from SharedPreferences: $e');
+      // In case of error, keep defaults and do not crash.
+    }
+  }
+
+  bool _isRegistrationComplete = false;
+
+  bool get isRegistrationComplete => _isRegistrationComplete;
+
+  Future<void> completeRegistration() async {
+    try {
+      _isRegistrationComplete = true;
+      await confirmChanges();
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('registration_complete', true);
+      notifyListeners();
+    } catch (e, stackTrace) {
+      _isRegistrationComplete = false;
+      debugPrint('Error completing registration: $e');
+      debugPrint('$stackTrace');
+      rethrow;
     }
   }
 }
