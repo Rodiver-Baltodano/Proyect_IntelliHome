@@ -52,6 +52,90 @@ class ClaroThemeColors {
   }
 }
 
+/// Clase que define los colores predeterminados para el tema MEDIO
+/// Estos colores se usan cuando el usuario selecciona el tema "Medio"
+class MedioThemeColors {
+  // Color principal - usado para fondos principales o elementos destacados
+  // Púrpura claro vibrante
+  static const Color primary = Color(0xFFB983FF);
+  
+  // Color secundario - usado para elementos interactivos y acentos
+  // Azul medio
+  static const Color secondary = Color(0xFF94B3FD);
+  
+  // Color terciario - usado para elementos secundarios y fondos suaves
+  // Azul claro
+  static const Color tertiary = Color(0xFF94DAFF);
+  
+  // Color de fondo - usado para fondos generales y superficies
+  // Cyan muy claro
+  static const Color background = Color(0xFF99FEFF);
+
+  /// Método que retorna todos los colores como una lista
+  /// Útil para mostrarlos en un selector de paleta
+  static List<Color> getAllColors() {
+    return [
+      primary,
+      secondary,
+      tertiary,
+      background,
+    ];
+  }
+
+  /// Método que retorna los nombres descriptivos de cada color
+  /// Para mostrar en la UI junto a cada color
+  static List<String> getColorNames() {
+    return [
+      'Primario',
+      'Secundario',
+      'Terciario',
+      'Fondo',
+    ];
+  }
+}
+
+/// Clase que define los colores predeterminados para el tema OSCURO
+/// Estos colores se usan cuando el usuario selecciona el tema "Oscuro"
+class OscuroThemeColors {
+  // Color más oscuro - usado para fondos principales
+  // Azul muy oscuro, casi negro
+  static const Color primary = Color(0xFF070F2B);
+  
+  // Color secundario - usado para elementos interactivos y acentos
+  // Azul oscuro púrpura
+  static const Color secondary = Color(0xFF1B1A55);
+  
+  // Color terciario - usado para elementos secundarios
+  // Gris azulado medio
+  static const Color tertiary = Color(0xFF535C91);
+  
+  // Color de fondo - usado para fondos suaves y superficies elevadas
+  // Lavanda claro
+  static const Color background = Color(0xFF9290C3);
+
+  /// Método que retorna todos los colores como una lista
+  /// Útil para mostrarlos en un selector de paleta
+  static List<Color> getAllColors() {
+    return [
+      primary,
+      secondary,
+      tertiary,
+      background,
+    ];
+  }
+
+  /// Método que retorna los nombres descriptivos de cada color
+  /// Para mostrar en la UI junto a cada color
+  static List<String> getColorNames() {
+    return [
+      'Primario',
+      'Secundario',
+      'Terciario',
+      'Fondo',
+    ];
+  }
+}
+
 /// Clase base para manejar los colores del tema de la aplicación
 /// Esta clase se usará para cambiar dinámicamente entre temas
 class AppThemeColors {
@@ -80,7 +164,6 @@ class AppThemeColors {
   });
 
   /// Factory constructor para crear el tema CLARO
-  /// Este es el tema predeterminado de la aplicación
   factory AppThemeColors.claro() {
     return const AppThemeColors(
       primary: ClaroThemeColors.primary,
@@ -88,6 +171,29 @@ class AppThemeColors {
       tertiary: ClaroThemeColors.tertiary,
       background: ClaroThemeColors.background,
       themeType: ThemeType.claro,
+    );
+  }
+
+  /// Factory constructor para crear el tema MEDIO
+  /// Este es el tema predeterminado de la aplicación
+  factory AppThemeColors.medio() {
+    return const AppThemeColors(
+      primary: MedioThemeColors.primary,
+      secondary: MedioThemeColors.secondary,
+      tertiary: MedioThemeColors.tertiary,
+      background: MedioThemeColors.background,
+      themeType: ThemeType.medio,
+    );
+  }
+
+  /// Factory constructor para crear el tema OSCURO
+  factory AppThemeColors.oscuro() {
+    return const AppThemeColors(
+      primary: OscuroThemeColors.primary,
+      secondary: OscuroThemeColors.secondary,
+      tertiary: OscuroThemeColors.tertiary,
+      background: OscuroThemeColors.background,
+      themeType: ThemeType.oscuro,
     );
   }
 
