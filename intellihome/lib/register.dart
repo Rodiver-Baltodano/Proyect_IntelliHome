@@ -25,7 +25,9 @@ void main() async {
   );
   print('Resultado: ${resultado.exito ? '✓ ÉXITO' : '✗ ERROR'}');
   if (!resultado.exito) {
-    print('Mensaje: ${resultado.mensaje}');
+    resultado.errores.forEach((campo, mensaje) {
+      print('  ❌ $campo: $mensaje');
+    });
   }
   print('');
 
@@ -47,7 +49,9 @@ void main() async {
   );
   print('Resultado: ${resultado.exito ? '✓ ÉXITO' : '✗ ERROR'}');
   if (!resultado.exito) {
-    print('Mensaje: ${resultado.mensaje}');
+    resultado.errores.forEach((campo, mensaje) {
+      print('  ❌ $campo: $mensaje');
+    });
   }
   print('');
 
@@ -66,7 +70,11 @@ void main() async {
     contrasena: 'OtherPass789',
   );
   print('Resultado: ${resultado.exito ? '✓ ÉXITO' : '✗ ERROR'}');
-  print('Mensaje: ${resultado.mensaje}');
+  if (!resultado.exito) {
+    resultado.errores.forEach((campo, mensaje) {
+      print('  ❌ $campo: $mensaje');
+    });
+  }
   print('');
 
   // ============ PRUEBA 4: Email duplicado ============
@@ -84,7 +92,11 @@ void main() async {
     contrasena: 'NewPassword321',
   );
   print('Resultado: ${resultado.exito ? '✓ ÉXITO' : '✗ ERROR'}');
-  print('Mensaje: ${resultado.mensaje}');
+  if (!resultado.exito) {
+    resultado.errores.forEach((campo, mensaje) {
+      print('  ❌ $campo: $mensaje');
+    });
+  }
   print('');
 
   // ============ PRUEBA 5: Contraseña muy corta ============
@@ -102,7 +114,11 @@ void main() async {
     contrasena: 'Short1', // Menos de 8 caracteres
   );
   print('Resultado: ${resultado.exito ? '✓ ÉXITO' : '✗ ERROR'}');
-  print('Mensaje: ${resultado.mensaje}');
+  if (!resultado.exito) {
+    resultado.errores.forEach((campo, mensaje) {
+      print('  ❌ $campo: $mensaje');
+    });
+  }
   print('');
 
   // ============ PRUEBA 6: Email inválido ============
@@ -120,7 +136,11 @@ void main() async {
     contrasena: 'ValidPass123',
   );
   print('Resultado: ${resultado.exito ? '✓ ÉXITO' : '✗ ERROR'}');
-  print('Mensaje: ${resultado.mensaje}');
+  if (!resultado.exito) {
+    resultado.errores.forEach((campo, mensaje) {
+      print('  ❌ $campo: $mensaje');
+    });
+  }
   print('');
 
   // ============ PRUEBA 7: Teléfono inválido ============
@@ -138,7 +158,11 @@ void main() async {
     contrasena: 'AnotherPass456',
   );
   print('Resultado: ${resultado.exito ? '✓ ÉXITO' : '✗ ERROR'}');
-  print('Mensaje: ${resultado.mensaje}');
+  if (!resultado.exito) {
+    resultado.errores.forEach((campo, mensaje) {
+      print('  ❌ $campo: $mensaje');
+    });
+  }
   print('');
 
   // ============ PRUEBA 8: Sin aceptar términos ============
@@ -156,7 +180,11 @@ void main() async {
     contrasena: 'SafePassword789',
   );
   print('Resultado: ${resultado.exito ? '✓ ÉXITO' : '✗ ERROR'}');
-  print('Mensaje: ${resultado.mensaje}');
+  if (!resultado.exito) {
+    resultado.errores.forEach((campo, mensaje) {
+      print('  ❌ $campo: $mensaje');
+    });
+  }
   print('');
 
   // ============ PRUEBA 9: Username inválido ============
@@ -174,7 +202,11 @@ void main() async {
     contrasena: 'RobertoPass123',
   );
   print('Resultado: ${resultado.exito ? '✓ ÉXITO' : '✗ ERROR'}');
-  print('Mensaje: ${resultado.mensaje}');
+  if (!resultado.exito) {
+    resultado.errores.forEach((campo, mensaje) {
+      print('  ❌ $campo: $mensaje');
+    });
+  }
   print('');
 
   // ============ PRUEBA 10: IBAN inválido ============
@@ -192,7 +224,11 @@ void main() async {
     contrasena: 'SofiaPass456',
   );
   print('Resultado: ${resultado.exito ? '✓ ÉXITO' : '✗ ERROR'}');
-  print('Mensaje: ${resultado.mensaje}');
+  if (!resultado.exito) {
+    resultado.errores.forEach((campo, mensaje) {
+      print('  ❌ $campo: $mensaje');
+    });
+  }
   print('');
 
   // ============ MOSTRAR TODOS LOS USUARIOS REGISTRADOS ============

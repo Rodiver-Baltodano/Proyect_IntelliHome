@@ -1,12 +1,22 @@
 // Modelo de respuesta para operaciones de registro
 class RegistroResult {
   final bool exito;
-  final String? mensaje;
+  final Map<String, String> errores; // {campo: mensaje de error}
 
   RegistroResult({
     required this.exito,
-    this.mensaje,
+    this.errores = const {},
   });
+
+  // Constructor de conveniencia para éxito
+  factory RegistroResult.success() {
+    return RegistroResult(exito: true);
+  }
+
+  // Constructor de conveniencia para error
+  factory RegistroResult.error(Map<String, String> errores) {
+    return RegistroResult(exito: false, errores: errores);
+  }
 }
 
 // Modelo de usuario con todos los datos

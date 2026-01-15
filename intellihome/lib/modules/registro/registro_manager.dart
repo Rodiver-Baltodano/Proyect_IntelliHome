@@ -69,125 +69,74 @@ class RegistroManager {
     String? datosTargeta,
     String? huellaBiometrica,
   }) async {
+    final errores = <String, String>{};
+
     // ============ VALIDACIONES ============
 
     // Validar que acepte los términos
     if (!aceptaTerminos) {
-      return RegistroResult(
-        exito: false,
-        mensaje: 'Debe aceptar los términos y condiciones',
-      );
+      errores['aceptaTerminos'] = 'Debe aceptar los términos y condiciones';
     }
 
     // Validar nombre y apellidos
     if (nombreApellidos.trim().isEmpty) {
-      return RegistroResult(
-        exito: false,
-        mensaje: 'El nombre y apellidos no pueden estar vacíos',
-      );
-    }
-    if (!Validador.esNombreValido(nombreApellidos)) {
-      return RegistroResult(
-        exito: false,
-        mensaje:
-            'El nombre debe contener al menos nombre y apellido, y solo caracteres alfanuméricos',
-      );
+      errores['nombreApellidos'] = 'El nombre y apellidos no pueden estar vacíos';
+    } else if (!Validador.esNombreValido(nombreApellidos)) {
+      errores['nombreApellidos'] =
+          'El nombre debe contener al menos nombre y apellido, y solo caracteres alfanuméricos';
     }
 
     // Validar username
     if (username.trim().isEmpty) {
-      return RegistroResult(
-        exito: false,
-        mensaje: 'El username no puede estar vacío',
-      );
-    }
-    if (!Validador.esUsernameValido(username)) {
-      return RegistroResult(
-        exito: false,
-        mensaje:
-            'El username debe tener entre 3-20 caracteres (solo letras y números)',
-      );
+      errores['username'] = 'El username no puede estar vacío';
+    } else if (!Validador.esUsernameValido(username)) {
+      errores['username'] =
+          'El username debe tener entre 3-20 caracteres (solo letras y números)';
     }
 
     // Validar email
     if (email.trim().isEmpty) {
-      return RegistroResult(
-        exito: false,
-        mensaje: 'El email no puede estar vacío',
-      );
-    }
-    if (!Validador.esEmailValido(email)) {
-      return RegistroResult(
-        exito: false,
-        mensaje: 'El email no tiene un formato válido',
-      );
+      errores['email'] = 'El email no puede estar vacío';
+    } else if (!Validador.esEmailValido(email)) {
+      errores['email'] = 'El email no tiene un formato válido';
     }
 
     // Validar teléfono
     if (telefono.trim().isEmpty) {
-      return RegistroResult(
-        exito: false,
-        mensaje: 'El teléfono no puede estar vacío',
-      );
-    }
-    if (!Validador.esTelefonoValido(telefono)) {
-      return RegistroResult(
-        exito: false,
-        mensaje: 'El teléfono debe tener entre 10-15 dígitos',
-      );
+      errores['telefono'] = 'El teléfono no puede estar vacío';
+    } else if (!Validador.esTelefonoValido(telefono)) {
+      errores['telefono'] = 'El teléfono debe tener entre 10-15 dígitos';
     }
 
     // Validar nacionalidad
     if (nacionalidad.trim().isEmpty) {
-      return RegistroResult(
-        exito: false,
-        mensaje: 'La nacionalidad no puede estar vacía',
-      );
-    }
-    if (!Validador.esAlfanumerico(nacionalidad)) {
-      return RegistroResult(
-        exito: false,
-        mensaje: 'La nacionalidad solo debe contener caracteres alfanuméricos',
-      );
+      errores['nacionalidad'] = 'La nacionalidad no puede estar vacía';
+    } else if (!Validador.esAlfanumerico(nacionalidad)) {
+      errores['nacionalidad'] =
+          'La nacionalidad solo debe contener caracteres alfanuméricos';
     }
 
     // Validar IBAN
     if (numeroIBAN.trim().isEmpty) {
-      return RegistroResult(
-        exito: false,
-        mensaje: 'El número IBAN no puede estar vacío',
-      );
-    }
-    if (!Validador.esIBANValido(numeroIBAN)) {
-      return RegistroResult(
-        exito: false,
-        mensaje: 'El formato del IBAN no es válido',
-      );
+      errores['numeroIBAN'] = 'El número IBAN no puede estar vacío';
+    } else if (!Validador.esIBANValido(numeroIBAN)) {
+      errores['numeroIBAN'] = 'El formato del IBAN no es válido';
     }
 
     // Validar foto de perfil
     if (fotoPerfil.trim().isEmpty) {
-      return RegistroResult(
-        exito: false,
-        mensaje: 'La foto de perfil no puede estar vacía',
-      );
+      errores['fotoPerfil'] = 'La foto de perfil no puede estar vacía';
     }
 
     // Validar contraseña
     if (!Validador.esContrasenaValida(contrasena)) {
-      return RegistroResult(
-        exito: false,
-        mensaje: 'La contraseña debe tener mínimo 8 caracteres',
-      );
+      errores['contrasena'] = 'La contraseña debe tener mínimo 8 caracteres y solo letras y números';
     }
 
     // Validar datos opcionales si se proporcionan
     if (datosTargeta != null && datosTargeta.isNotEmpty) {
       if (!Validador.esAlfanumerico(datosTargeta)) {
-        return RegistroResult(
-          exito: false,
-          mensaje: 'Los datos de tarjeta deben ser solo letras y números',
-        );
+        errores['datosTargeta'] = 'Los datos de tarjeta deben ser solo letras y números';
       }
     }
 
@@ -197,26 +146,22 @@ class RegistroManager {
 
     // Verificar username duplicado
     if (await usernameYaExiste(username, usuariosExistentes)) {
-      return RegistroResult(
-        exito: false,
-        mensaje: 'El username "$username" ya está registrado',
-      );
+      errores['username'] = 'El username "$username" ya está registrado';
     }
 
     // Verificar email duplicado
     if (await emailYaExiste(email, usuariosExistentes)) {
-      return RegistroResult(
-        exito: false,
-        mensaje: 'El email "$email" ya está registrado',
-      );
+      errores['email'] = 'El email "$email" ya está registrado';
     }
 
     // Verificar teléfono duplicado
     if (await telefonoYaExiste(telefono, usuariosExistentes)) {
-      return RegistroResult(
-        exito: false,
-        mensaje: 'El teléfono "$telefono" ya está registrado',
-      );
+      errores['telefono'] = 'El teléfono "$telefono" ya está registrado';
+    }
+
+    // Si hay errores, retornar los errores
+    if (errores.isNotEmpty) {
+      return RegistroResult.error(errores);
     }
 
     // ============ CREAR Y GUARDAR USUARIO ============
@@ -240,16 +185,12 @@ class RegistroManager {
     final guardado = await guardarUsuarios(usuariosExistentes);
 
     if (!guardado) {
-      return RegistroResult(
-        exito: false,
-        mensaje: 'Error al guardar los datos del usuario',
-      );
+      return RegistroResult.error({
+        'general': 'Error al guardar los datos del usuario'
+      });
     }
 
-    return RegistroResult(
-      exito: true,
-      mensaje: null,
-    );
+    return RegistroResult.success();
   }
 
   // Función para obtener todos los usuarios (útil para la GUI)
