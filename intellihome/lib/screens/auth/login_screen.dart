@@ -308,15 +308,15 @@ class _LoginScreenState extends State<LoginScreen> {
           IconButton(
             icon: Image.asset(
               'lib/assets/icons/spain_flag.png',
-              width: 28,
-              height: 28,
+              width: 41,
+              height: 41,
             ),
             onPressed: () {
               print('Botón de idioma presionado');
             },
             tooltip: 'Idioma',
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 11),
         ],
       ),
       body: Padding(
@@ -349,7 +349,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
             ),
-            const SizedBox(height: 40),
+            const SizedBox(height: 20),
 
             // Título
             Text(
@@ -360,7 +360,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 40),
+            const SizedBox(height: 20),
 
             // Campo de usuario
             _buildTextField(
@@ -369,7 +369,7 @@ class _LoginScreenState extends State<LoginScreen> {
               error: _errorUsername,
               icon: Icons.person,
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 15),
 
             // Campo de contraseña
             _buildPasswordField(
@@ -380,7 +380,7 @@ class _LoginScreenState extends State<LoginScreen> {
               onToggleVisibility: () => setState(() => _mostrarPassword = !_mostrarPassword),
               icon: Icons.lock,
             ),
-            const SizedBox(height: 30),
+            const SizedBox(height: 15),
 
             // Botones de login y registrarse
             Row(
@@ -408,8 +408,11 @@ class _LoginScreenState extends State<LoginScreen> {
                 const SizedBox(width: 12),
                 Expanded(
                   child: OutlinedButton(
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: AppColors.tertiaryColor,
+                    style: 
+                    
+                    OutlinedButton.styleFrom(
+                      backgroundColor: AppColors.primaryColor,  
+                      foregroundColor: Colors.white,
                       side: BorderSide(color: AppColors.tertiaryColor, width: 2),
                       padding: const EdgeInsets.symmetric(vertical: 14),
                     ),
@@ -433,9 +436,9 @@ class _LoginScreenState extends State<LoginScreen> {
                 );
               },
               child: Text(
-                '¿Olvidé mi contraseña?',
+                '¿Olvidó su contraseña?',
                 style: TextStyle(
-                  color: AppColors.accentColor,
+                  color: AppColors.primaryColor,
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
                 ),
