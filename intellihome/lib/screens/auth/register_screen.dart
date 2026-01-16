@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' as p;
+import 'dart:io';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({Key? key}) : super(key: key);
@@ -17,6 +21,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   String _nacionalidadSeleccionada = 'Costa Rica';
   bool _aceptaTerminos = false;
+  File? _imagenPerfil;
+  String? _rutaFoto;
   
   final List<String> _nacionalidades = [
     'Costa Rica',
@@ -56,6 +62,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
     print('Nacionalidad: $_nacionalidadSeleccionada');
     print('IBAN: ${_ibanController.text}');
     print('Acepta Términos: $_aceptaTerminos');
+    if (_rutaFoto != null) {
+      print('Foto guardada en: $_rutaFoto');
+    } else {
+      print('Foto: No seleccionada');
+    }
     print('==========================');
 
     ScaffoldMessenger.of(context).showSnackBar(
@@ -68,6 +79,56 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   void _handleTerminosAndCondiciones() {
     print('Hipervinculo de Términos y Condiciones presionado');
+  }
+
+  Future<void> _seleccionarFoto() async {
+    final ImagePicker picker = ImagePicker();
+    final XFile? imagen = await picker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 85,
+    );
+
+    if (imagen != null) {
+      await _guardarFoto(File(imagen.path));
+    }
+  }
+
+  Future<void> _guardarFoto(File archivoFoto) async {
+    try {
+      // Obtener directorio de la app
+      final appDir = await getApplicationDocumentsDirectory();
+      
+      // Crear carpeta 'profiles' si no existe
+      final carpetaProfiles = Directory(p.join(appDir.path, 'profiles'));
+      if (!await carpetaProfiles.exists()) {
+        await carpetaProfiles.create(recursive: true);
+      }
+
+      // Generar nombre único para la foto
+      final timestamp = DateTime.now().millisecondsSinceEpoch;
+      final nombreFoto = 'perfil_$timestamp.jpg';
+      
+      // Guardar foto en la carpeta profiles
+      final rutaDestino = p.join(carpetaProfiles.path, nombreFoto);
+      final fotoGuardada = await archivoFoto.copy(rutaDestino);
+
+      setState(() {
+        _imagenPerfil = fotoGuardada;
+        _rutaFoto = rutaDestino;
+      });
+
+      print('Foto guardada en: $rutaDestino');
+    } catch (e) {
+      print('Error al guardar foto: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error al guardar foto: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   @override
@@ -86,42 +147,52 @@ class _RegisterScreenState extends State<RegisterScreen> {
             children: [
               // Foto de perfil circular con +
               Center(
-                child: Stack(
-                  children: [
-                    Container(
-                      width: 120,
-                      height: 120,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.grey[300],
-                        border: Border.all(
-                          color: Colors.blue,
-                          width: 2,
-                        ),
-                      ),
-                      child: Icon(
-                        Icons.person,
-                        size: 60,
-                        color: Colors.grey[600],
-                      ),
-                    ),
-                    Positioned(
-                      bottom: 0,
-                      right: 0,
-                      child: Container(
-                        decoration: const BoxDecoration(
+                child: GestureDetector(
+                  onTap: _seleccionarFoto,
+                  child: Stack(
+                    children: [
+                      Container(
+                        width: 120,
+                        height: 120,
+                        decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: Colors.blue,
+                          color: Colors.grey[300],
+                          border: Border.all(
+                            color: Colors.blue,
+                            width: 2,
+                          ),
                         ),
-                        padding: const EdgeInsets.all(8),
-                        child: const Icon(
-                          Icons.add,
-                          color: Colors.white,
-                          size: 24,
+                        child: _imagenPerfil != null
+                            ? ClipOval(
+                                child: Image.file(
+                                  _imagenPerfil!,
+                                  fit: BoxFit.cover,
+                                ),
+                              )
+                            : Icon(
+                                Icons.person,
+                                size: 60,
+                                color: Colors.grey[600],
+                              ),
+                      ),
+                      Positioned(
+                        bottom: 0,
+                        right: 0,
+                        child: Container(
+                          decoration: const BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.blue,
+                          ),
+                          padding: const EdgeInsets.all(8),
+                          child: const Icon(
+                            Icons.add,
+                            color: Colors.white,
+                            size: 24,
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
               const SizedBox(height: 20),
