@@ -7,6 +7,7 @@ import 'package:intellihome/config/app_colors.dart';
 import 'package:intellihome/modules/autenticacion/services/registro_service.dart';
 import 'package:intellihome/modules/autenticacion/repositories/usuario_repository.dart';
 import 'terms_screen.dart';
+import 'package:intellihome/l10n/app_localizations.dart'; 
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -119,7 +120,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('Las contraseñas no coinciden'),
+            content: Text(AppLocalizations.of(context).passwordsDontMatch),
             backgroundColor: AppColors.errorColor,
           ),
         );
@@ -134,7 +135,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('Debes aceptar los términos y condiciones'),
+            content: Text(AppLocalizations.of(context).mustAcceptTermsError),
             backgroundColor: AppColors.errorColor,
           ),
         );
@@ -168,7 +169,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           final username = resultado.usuario?.username ?? 'Usuario';
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Se ha registrado con éxito $username'),
+              content: Text(AppLocalizations.of(context).registrationSuccess + ' $username'),
               backgroundColor: AppColors.successColor,
               duration: const Duration(seconds: 2),
             ),
@@ -458,10 +459,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('IntelliHome'),
-        centerTitle: true,
-      ),
+      appBar: 
+        AppBar(
+          title: Text(AppLocalizations.of(context).appTitle),
+          centerTitle: true,
+),
       body: Padding(
         padding: const EdgeInsets.all(24.0),
         child: SingleChildScrollView(
@@ -523,11 +525,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
               // Leyenda de registro
               Text(
-                'Registrarse a IntelliHome',
+                AppLocalizations.of(context).registerTitle,
                 style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.primaryColor,
-                    ),
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.primaryColor,
+                ),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 30),
@@ -535,16 +537,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
               // Campo de nombre
               _buildTextField(
                 controller: _nombreController,
-                label: 'Nombre',
+                label: AppLocalizations.of(context).name,
                 fieldKey: 'nombreApellidos',
                 icon: Icons.person,
               ),
               const SizedBox(height: 16),
 
               // Campo de correo
-              _buildTextField(
+             _buildTextField(
                 controller: _correoController,
-                label: 'Correo Electrónico',
+                label: AppLocalizations.of(context).email,
                 fieldKey: 'correo',
                 keyboardType: TextInputType.emailAddress,
                 icon: Icons.email,
@@ -554,7 +556,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               // Campo de usuario
               _buildTextField(
                 controller: _usernameController,
-                label: 'Usuario',
+                label: AppLocalizations.of(context).username,
                 fieldKey: 'username',
                 icon: Icons.account_circle,
               ),
@@ -563,7 +565,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               // Fecha de nacimiento
               _buildTextField(
                 controller: _fechaNacimientoController,
-                label: 'Fecha de Nacimiento (DD/MM/AAAA)',
+                label: AppLocalizations.of(context).birthDate,
                 fieldKey: 'fechaNacimiento',
                 icon: Icons.cake,
                 readOnly: true,
@@ -574,7 +576,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               // Campo de contraseña
               _buildPasswordField(
                 controller: _contrasenaController,
-                label: 'Contraseña',
+                label: AppLocalizations.of(context).password,
                 fieldKey: 'contrasena',
                 obscureText: !_mostrarContrasena,
                 onToggleVisibility: () => setState(() => _mostrarContrasena = !_mostrarContrasena),
@@ -585,7 +587,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               // Campo de confirmar contraseña
               _buildPasswordField(
                 controller: _confirmarContrasenaController,
-                label: 'Confirmar Contraseña',
+                label: AppLocalizations.of(context).confirmPassword,
                 fieldKey: 'confirmarContrasena',
                 obscureText: !_mostrarConfirmarContrasena,
                 onToggleVisibility: () => setState(() => _mostrarConfirmarContrasena = !_mostrarConfirmarContrasena),
@@ -596,7 +598,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               // Campo de teléfono
               _buildTextField(
                 controller: _telefonoController,
-                label: 'Número de Teléfono',
+                label: AppLocalizations.of(context).phoneNumber,
                 fieldKey: 'telefono',
                 keyboardType: TextInputType.phone,
                 icon: Icons.phone,
@@ -614,6 +616,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   child: DropdownButton<String>(
                     isExpanded: true,
                     value: _nacionalidadSeleccionada,
+                    hint: Text(AppLocalizations.of(context).nationality),
                     items: _nacionalidades
                         .map((String nacionalidad) {
                           return DropdownMenuItem<String>(
@@ -637,7 +640,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               // Campo de IBAN
               _buildTextField(
                 controller: _ibanController,
-                label: 'Número IBAN',
+                label: AppLocalizations.of(context).ibanNumber,
                 fieldKey: 'numeroIBAN',
                 icon: Icons.credit_card,
               ),
@@ -650,7 +653,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: ExpansionTile(
-                  title: const Text('Agregar tarjeta de crédito/débito (opcional)'),
+                  title: Text(AppLocalizations.of(context).addCreditCard),
                   trailing: Icon(_mostrarTarjeta ? Icons.expand_less : Icons.expand_more),
                   initiallyExpanded: _mostrarTarjeta,
                   onExpansionChanged: (expanded) {
@@ -662,7 +665,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   children: [
                     _buildTextField(
                       controller: _cardNumberController,
-                      label: 'Número de tarjeta',
+                      label: AppLocalizations.of(context).cardNumber,
                       fieldKey: 'numeroTarjeta',
                       keyboardType: TextInputType.number,
                       icon: Icons.credit_card,
@@ -673,7 +676,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         Expanded(
                           child: _buildTextField(
                             controller: _cardExpiryController,
-                            label: 'Expiración (MM/AA)',
+                            label: AppLocalizations.of(context).expirationDate,
                             fieldKey: 'fechaExpiracion',
                             keyboardType: TextInputType.datetime,
                             icon: Icons.date_range,
@@ -683,7 +686,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         Expanded(
                           child: _buildTextField(
                             controller: _cardCvvController,
-                            label: 'CVV',
+                            label: AppLocalizations.of(context).cvv,
                             fieldKey: 'cvv',
                             keyboardType: TextInputType.number,
                             icon: Icons.lock_outline,
@@ -693,7 +696,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Los datos de tarjeta son opcionales. No se guarda el CVV, solo los últimos 4 dígitos y la expiración.',
+                      AppLocalizations.of(context).cardOptionalNote,
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.textSecondaryColor),
                     ),
                     const SizedBox(height: 8),
@@ -725,17 +728,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           strokeWidth: 2,
                         ),
                       )
-                    : const Text('Registrar Cuenta'),
+                    : Text(AppLocalizations.of(context).registerAccount),
               ),
               const SizedBox(height: 20),
 
               // Texto de términos y condiciones
               Center(
                 child: Text(
-                  'Como último paso, le invitamos a leer nuestros',
+                  AppLocalizations.of(context).termsMessage,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: AppColors.textSecondaryColor,
-                      ),
+                    color: AppColors.textSecondaryColor,
+                  ),
                   textAlign: TextAlign.center,
                 ),
               ),
@@ -750,15 +753,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     onChanged: null, // Deshabilitado, solo se activa desde el modal
                   ),
                   Expanded(
-                    child: GestureDetector(
+                    child: 
+                    GestureDetector(
                       onTap: _handleTerminosAndCondiciones,
                       child: Text(
-                        'Términos y condiciones',
+                        AppLocalizations.of(context).termsAndConditions,
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: AppColors.primaryColor,
-                              decoration: TextDecoration.underline,
-                              fontWeight: FontWeight.bold,
-                            ),
+                          color: AppColors.primaryColor,
+                          decoration: TextDecoration.underline,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ),
@@ -769,7 +773,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 Padding(
                   padding: const EdgeInsets.only(left: 48),
                   child: Text(
-                    'Debes leer y aceptar los términos',
+                    AppLocalizations.of(context).mustAcceptTerms,
                     style: TextStyle(
                       color: AppColors.errorColor,
                       fontSize: 12,
@@ -789,7 +793,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 onPressed: () {
                   Navigator.pop(context);
                 },
-                child: const Text('Volver a Iniciar Sesión'),
+                child: Text(AppLocalizations.of(context).backToLogin),
               ),
             ],
           ),

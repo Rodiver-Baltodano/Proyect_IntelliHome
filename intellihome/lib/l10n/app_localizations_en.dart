@@ -139,6 +139,40 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get requestingCode => 'Requesting code...';
   
+  // Recovery Screen - New
+  @override
+  String get enterUserOrEmail => 'Enter username or email';
+  
+  @override
+  String get codeSentToPhone => 'Code sent to your phone';
+  
+  @override
+  String get codeRequired => 'Code is required';
+  
+  @override
+  String get codeVerifiedEnterPassword => 'Code verified. Enter your new password';
+  
+  @override
+  String get passwordsMismatch => 'Passwords do not match';
+  
+  @override
+  String get passwordMinLength => 'Password must be at least 8 characters';
+  
+  @override
+  String get userNotIdentified => 'User not identified';
+  
+  @override
+  String get passwordUpdatedBackToLogin => 'Password updated. Returning to login';
+  
+  @override
+  String get enterCodeSentToEmail => 'Enter the code sent to your email';
+  
+  @override
+  String get enterUserForRecoveryCode => 'Enter your username or email to receive a recovery code';
+  
+  @override
+  String get recoverAccount => 'Recover Account';
+  
   // Help Screen
   @override
   String get aboutApp => 'About IntelliHome';

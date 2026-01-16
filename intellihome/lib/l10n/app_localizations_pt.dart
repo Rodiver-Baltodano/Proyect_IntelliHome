@@ -139,6 +139,40 @@ class AppLocalizationsPt extends AppLocalizations {
   @override
   String get requestingCode => 'Solicitando código...';
   
+  // Recovery Screen - Novos
+  @override
+  String get enterUserOrEmail => 'Digite usuário ou email';
+  
+  @override
+  String get codeSentToPhone => 'Código enviado para seu telefone';
+  
+  @override
+  String get codeRequired => 'O código é obrigatório';
+  
+  @override
+  String get codeVerifiedEnterPassword => 'Código verificado. Digite sua nova senha';
+  
+  @override
+  String get passwordsMismatch => 'As senhas não coincidem';
+  
+  @override
+  String get passwordMinLength => 'A senha deve ter pelo menos 8 caracteres';
+  
+  @override
+  String get userNotIdentified => 'Usuário não identificado';
+  
+  @override
+  String get passwordUpdatedBackToLogin => 'Senha atualizada. Retornando ao login';
+  
+  @override
+  String get enterCodeSentToEmail => 'Digite o código enviado para seu email';
+  
+  @override
+  String get enterUserForRecoveryCode => 'Digite seu usuário ou email para receber um código de recuperação';
+  
+  @override
+  String get recoverAccount => 'Recuperar Conta';
+  
   // Help Screen
   @override
   String get aboutApp => 'Sobre IntelliHome';

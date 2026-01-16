@@ -10,6 +10,7 @@ import 'package:provider/provider.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
 import 'help_screen.dart';
+
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
@@ -57,6 +58,8 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _handleLogin() async {
+    final loc = AppLocalizations.of(context);
+    
     setState(() {
       _cargando = true;
       _errorUsername = null;
@@ -85,13 +88,12 @@ class _LoginScreenState extends State<LoginScreen> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: const Text('¡Inicio de sesión exitoso!'),
+              content: Text(loc.loginSuccess),
               backgroundColor: AppColors.successColor,
               duration: const Duration(seconds: 2),
             ),
           );
-
-          // Navegar a Home con el username
+// Navegar a Home con el username
           Future.delayed(const Duration(milliseconds: 500), () {
             if (mounted) {
               Navigator.pushReplacementNamed(
@@ -103,7 +105,7 @@ class _LoginScreenState extends State<LoginScreen> {
           });
         }
       } else {
-        // Error
+         // Error
         if (mounted) {
           // Determinar cuál campo mostrar error
           if (resultado.mensaje.contains('usuario') || resultado.mensaje.contains('no existe')) {
@@ -136,12 +138,12 @@ class _LoginScreenState extends State<LoginScreen> {
     } catch (e) {
       if (mounted) {
         setState(() {
-          _errorPassword = 'Error: $e';
+          _errorPassword = '${loc.error}: $e';
         });
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error: $e'),
+            content: Text('${loc.error}: $e'),
             backgroundColor: AppColors.errorColor,
           ),
         );
@@ -154,8 +156,7 @@ class _LoginScreenState extends State<LoginScreen> {
       }
     }
   }
-
-  /// Construye un TextField con validación visual y toggle para contraseñas
+ /// Construye un TextField con validación visual y toggle para contraseñas
   Widget _buildPasswordField({
     required TextEditingController controller,
     required String label,
@@ -221,8 +222,7 @@ class _LoginScreenState extends State<LoginScreen> {
       ],
     );
   }
-
-  /// Construye un TextField con validación visual
+/// Construye un TextField con validación visual
   Widget _buildTextField({
     required TextEditingController controller,
     required String label,
@@ -282,9 +282,13 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Obtener las traducciones
+    final loc = AppLocalizations.of(context);
+    final languageProvider = Provider.of<LanguageProvider>(context);
+    
     return Scaffold(
       appBar: AppBar(
-        title: const Text('IntelliHome'),
+        title: Text(loc.appTitle),
         centerTitle: true,
         // Botón de ayuda a la izquierda
         leading: IconButton(
@@ -302,20 +306,30 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
             );
           },
-          tooltip: 'Ayuda',
+          tooltip: loc.help,
         ),
         actions: [
-          // Botón de idioma (bandera de España) a la derecha
+          // Botón de idioma (bandera) con cambio cíclico
           IconButton(
             icon: Image.asset(
-              'lib/assets/icons/spain_flag.png',
+              'lib/assets/icons/${languageProvider.currentFlag}',
               width: 41,
               height: 41,
             ),
-            onPressed: () {
-              print('Botón de idioma presionado');
+            onPressed: () async {
+              await languageProvider.toggleLanguage();
+              
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('${loc.language}: ${languageProvider.currentLanguageName}'),
+                    duration: const Duration(seconds: 1),
+                    backgroundColor: AppColors.primaryColor,
+                  ),
+                );
+              }
             },
-            tooltip: 'Idioma',
+            tooltip: loc.language,
           ),
           const SizedBox(width: 11),
         ],
@@ -354,7 +368,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
             // Título
             Text(
-              'Iniciar Sesión',
+              loc.loginTitle,
               style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                     color: AppColors.primaryColor,
@@ -366,7 +380,7 @@ class _LoginScreenState extends State<LoginScreen> {
             // Campo de usuario
             _buildTextField(
               controller: _usernameController,
-              label: 'Usuario',
+              label: loc.username,
               error: _errorUsername,
               icon: Icons.person,
             ),
@@ -375,7 +389,7 @@ class _LoginScreenState extends State<LoginScreen> {
             // Campo de contraseña
             _buildPasswordField(
               controller: _passwordController,
-              label: 'Contraseña',
+              label: loc.password,
               error: _errorPassword,
               obscureText: !_mostrarPassword,
               onToggleVisibility: () => setState(() => _mostrarPassword = !_mostrarPassword),
@@ -403,15 +417,13 @@ class _LoginScreenState extends State<LoginScreen> {
                               strokeWidth: 2,
                             ),
                           )
-                        : const Text('Iniciar Sesión'),
+                        : Text(loc.loginButton),
                   ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: OutlinedButton(
-                    style: 
-                    
-                    OutlinedButton.styleFrom(
+                    style: OutlinedButton.styleFrom(
                       backgroundColor: AppColors.primaryColor,  
                       foregroundColor: Colors.white,
                       side: BorderSide(color: AppColors.tertiaryColor, width: 2),
@@ -420,7 +432,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     onPressed: () {
                       Navigator.pushNamed(context, '/register');
                     },
-                    child: const Text('Registrarse'),
+                    child: Text(loc.registerButton),
                   ),
                 ),
               ],
@@ -437,7 +449,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 );
               },
               child: Text(
-                '¿Olvidó su contraseña?',
+                loc.forgotPassword,
                 style: TextStyle(
                   color: AppColors.primaryColor,
                   fontSize: 14,

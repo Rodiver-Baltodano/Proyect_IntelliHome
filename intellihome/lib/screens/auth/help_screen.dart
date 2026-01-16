@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:intellihome/config/app_colors.dart';
+import 'package:intellihome/l10n/app_localizations.dart';
 
 class HelpScreen extends StatelessWidget {
   const HelpScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context);
+    
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Ayuda'),
+        title: Text(loc.help),
         centerTitle: true,
         backgroundColor: AppColors.primaryColor,
         foregroundColor: Colors.white,
@@ -20,7 +23,7 @@ class HelpScreen extends StatelessWidget {
           children: [
             // Sección: Acerca de la App
             Text(
-              'Acerca de IntelliHome',
+              loc.aboutApp,
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                     fontWeight: FontWeight.bold,
                     color: AppColors.primaryColor,
@@ -40,7 +43,7 @@ class HelpScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'IntelliHome es una aplicación de gestión de hogar inteligente que te permite controlar y monitorear todos tus dispositivos conectados desde un solo lugar.',
+                    loc.aboutApp,
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           color: AppColors.textPrimaryColor,
                           height: 1.5,
@@ -48,7 +51,7 @@ class HelpScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    'Versión: 1.0.0',
+                    loc.version,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: AppColors.textSecondaryColor,
                           fontWeight: FontWeight.bold,
@@ -61,7 +64,7 @@ class HelpScreen extends StatelessWidget {
 
             // Sección: Equipo Desarrollador
             Text(
-              'Equipo Desarrollador',
+              loc.developerTeam,
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                     fontWeight: FontWeight.bold,
                     color: AppColors.primaryColor,
@@ -71,7 +74,7 @@ class HelpScreen extends StatelessWidget {
             _buildDeveloperCard(
               context,
               nombre: 'Rodiver Baltodano',
-              rol: 'Desarrollador',
+              rol: loc.developer,
               email: 'r.baltodano.1@estudiantec.cr',
               icon: Icons.person,
             ),
@@ -79,7 +82,7 @@ class HelpScreen extends StatelessWidget {
             _buildDeveloperCard(
               context,
               nombre: 'Christian Esquivel',
-              rol: 'Desarrollador',
+              rol: loc.developer,
               email: 'c.esquivel.1@estudiantec.cr',
               icon: Icons.design_services,
             ),
@@ -87,7 +90,7 @@ class HelpScreen extends StatelessWidget {
             _buildDeveloperCard(
               context,
               nombre: 'Jose Solano',
-              rol: 'Desarrollador',
+              rol: loc.developer,
               email: 'josesol_mo@estudiantec.cr',
               icon: Icons.design_services,
             ),
@@ -95,7 +98,7 @@ class HelpScreen extends StatelessWidget {
             _buildDeveloperCard(
               context,
               nombre: 'Isaac García',
-              rol: 'Desarrollador',
+              rol: loc.developer,
               email: 'i.garcia.3@estudiantec.cr',
               icon: Icons.code,
             ),
@@ -103,7 +106,7 @@ class HelpScreen extends StatelessWidget {
 
             // Sección: Contacto
             Text(
-              'Contacto y Soporte',
+              loc.contactSupport,
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                     fontWeight: FontWeight.bold,
                     color: AppColors.primaryColor,
@@ -125,21 +128,21 @@ class HelpScreen extends StatelessWidget {
                   _buildContactItem(
                     context,
                     icon: Icons.email,
-                    title: 'Correo electrónico',
+                    title: loc.emailLabel,
                     info: 'soporte@intellihome.com',
                   ),
                   const Divider(height: 24),
                   _buildContactItem(
                     context,
                     icon: Icons.phone,
-                    title: 'Teléfono',
+                    title: loc.phoneLabel,
                     info: '+506 0000-0000',
                   ),
                   const Divider(height: 24),
                   _buildContactItem(
                     context,
                     icon: Icons.language,
-                    title: 'Sitio web',
+                    title: loc.websiteLabel,
                     info: 'www.intellihome.com',
                   ),
                 ],
@@ -149,7 +152,7 @@ class HelpScreen extends StatelessWidget {
 
             // Sección: Características
             Text(
-              'Características Principales',
+              loc.mainFeatures,
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                     fontWeight: FontWeight.bold,
                     color: AppColors.primaryColor,
@@ -168,15 +171,15 @@ class HelpScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildFeatureItem(context, '• Control de dispositivos IoT'),
-                  _buildFeatureItem(context, '• Monitoreo en tiempo real'),
-                  _buildFeatureItem(context, '• Automatización de tareas'),
-                  _buildFeatureItem(context, '• Gestión de energía'),
-                  _buildFeatureItem(context, '• Seguridad y privacidad'),
-                  _buildFeatureItem(context, '• Interfaz intuitiva'),
-                   _buildFeatureItem(context,'• Gestión apartamentaria'),
-                  _buildFeatureItem(context, '• Servicios de busqueda'),
-                  _buildFeatureItem(context, '• Experiencia personalizada'),
+                  _buildFeatureItem(context, '• ${loc.feature1}'),
+                  _buildFeatureItem(context, '• ${loc.feature2}'),
+                  _buildFeatureItem(context, '• ${loc.feature3}'),
+                  _buildFeatureItem(context, '• ${loc.feature4}'),
+                  _buildFeatureItem(context, '• ${loc.feature5}'),
+                  _buildFeatureItem(context, '• ${loc.feature6}'),
+                  _buildFeatureItem(context, '• ${loc.feature7}'),
+                  _buildFeatureItem(context, '• ${loc.feature8}'),
+                  _buildFeatureItem(context, '• ${loc.feature9}'),
                 ],
               ),
             ),
@@ -192,7 +195,7 @@ class HelpScreen extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(vertical: 14),
                 ),
                 onPressed: () => Navigator.pop(context),
-                child: const Text('Cerrar'),
+                child: Text(loc.close),
               ),
             ),
           ],

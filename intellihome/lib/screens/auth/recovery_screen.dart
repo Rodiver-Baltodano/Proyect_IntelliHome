@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intellihome/config/app_colors.dart';
+import 'package:intellihome/l10n/app_localizations.dart';
 import 'package:intellihome/modules/autenticacion/services/autenticacion_service.dart';
 import 'package:intellihome/modules/autenticacion/repositories/usuario_repository.dart';
 import 'package:path_provider/path_provider.dart';
@@ -41,11 +42,9 @@ class _RecoveryScreenState extends State<RecoveryScreen> {
     super.didChangeDependencies();
     if (!_inicializado) {
       _inicializarServicios();
-      // Si viene username del login, solicitar código automáticamente
       if (widget.username != null && widget.username!.isNotEmpty) {
         _usuarioController.text = widget.username!;
         _usuarioIngresado = true;
-        // Solicitar código automáticamente
         Future.delayed(const Duration(milliseconds: 500), () {
           if (mounted) {
             _handleSolicitarCodigo();
@@ -77,11 +76,12 @@ class _RecoveryScreenState extends State<RecoveryScreen> {
   }
 
   void _handleSolicitarCodigo() async {
+    final loc = AppLocalizations.of(context);
     final usuario = _usuarioController.text.trim();
 
     if (usuario.isEmpty) {
       setState(() {
-        _errorUsuario = 'Por favor ingresa tu teléfono, email o usuario.';
+        _errorUsuario = loc.enterUserOrEmail;
       });
       return;
     }
@@ -104,7 +104,7 @@ class _RecoveryScreenState extends State<RecoveryScreen> {
 
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: const Text('¡Código enviado a tu teléfono!'),
+              content: Text(loc.codeSentToPhone),
               backgroundColor: AppColors.successColor,
               duration: const Duration(seconds: 2),
             ),
@@ -128,12 +128,12 @@ class _RecoveryScreenState extends State<RecoveryScreen> {
     } catch (e) {
       if (mounted) {
         setState(() {
-          _errorUsuario = 'Error: $e';
+          _errorUsuario = '${loc.error}: $e';
         });
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error: $e'),
+            content: Text('${loc.error}: $e'),
             backgroundColor: AppColors.errorColor,
           ),
         );
@@ -148,29 +148,27 @@ class _RecoveryScreenState extends State<RecoveryScreen> {
   }
 
   void _handleVerificarCodigo() async {
+    final loc = AppLocalizations.of(context);
     setState(() {
       _cargando = true;
       _errorCodigo = null;
     });
 
     try {
-      // Aquí asumimos que el usuario ingresó su username o correo
-      // Para este ejemplo, solo verificamos el código
       final codigo = _codigoController.text.trim();
 
       if (codigo.isEmpty) {
         setState(() {
-          _errorCodigo = 'El código es requerido';
+          _errorCodigo = loc.codeRequired;
         });
         return;
       }
 
-      // Obtener el usuario que ya fue ingresado
       String? identificador = _usuarioController.text.trim();
       
       if (identificador.isEmpty) {
         setState(() {
-          _errorCodigo = 'Por favor ingresa tu usuario o correo';
+          _errorCodigo = loc.enterUserOrEmail;
         });
         return;
       }
@@ -189,7 +187,7 @@ class _RecoveryScreenState extends State<RecoveryScreen> {
 
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: const Text('¡Código verificado! Ahora ingresa tu nueva contraseña.'),
+              content: Text(loc.codeVerifiedEnterPassword),
               backgroundColor: AppColors.successColor,
               duration: const Duration(seconds: 2),
             ),
@@ -213,12 +211,12 @@ class _RecoveryScreenState extends State<RecoveryScreen> {
     } catch (e) {
       if (mounted) {
         setState(() {
-          _errorCodigo = 'Error: $e';
+          _errorCodigo = '${loc.error}: $e';
         });
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error: $e'),
+            content: Text('${loc.error}: $e'),
             backgroundColor: AppColors.errorColor,
           ),
         );
@@ -233,6 +231,7 @@ class _RecoveryScreenState extends State<RecoveryScreen> {
   }
 
   void _handleCambiarContrasena() async {
+    final loc = AppLocalizations.of(context);
     setState(() {
       _cargando = true;
       _errorContrasena = null;
@@ -243,24 +242,23 @@ class _RecoveryScreenState extends State<RecoveryScreen> {
       final contrasena = _contrasenaController.text.trim();
       final confirmar = _confirmarContrasenaController.text.trim();
 
-      // Validar que las contraseñas coincidan
       if (contrasena != confirmar) {
         setState(() {
-          _errorConfirmar = 'Las contraseñas no coinciden';
+          _errorConfirmar = loc.passwordsMismatch;
         });
         return;
       }
 
       if (contrasena.isEmpty || contrasena.length < 8) {
         setState(() {
-          _errorContrasena = 'La contraseña debe tener mínimo 8 caracteres';
+          _errorContrasena = loc.passwordMinLength;
         });
         return;
       }
 
       if (_usuarioRecuperando == null) {
         setState(() {
-          _errorContrasena = 'Error: usuario no identificado';
+          _errorContrasena = loc.userNotIdentified;
         });
         return;
       }
@@ -275,7 +273,7 @@ class _RecoveryScreenState extends State<RecoveryScreen> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: const Text('¡Contraseña actualizada! Regresa a login.'),
+              content: Text(loc.passwordUpdatedBackToLogin),
               backgroundColor: AppColors.successColor,
               duration: const Duration(seconds: 2),
             ),
@@ -305,12 +303,12 @@ class _RecoveryScreenState extends State<RecoveryScreen> {
     } catch (e) {
       if (mounted) {
         setState(() {
-          _errorContrasena = 'Error: $e';
+          _errorContrasena = '${loc.error}: $e';
         });
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error: $e'),
+            content: Text('${loc.error}: $e'),
             backgroundColor: AppColors.errorColor,
           ),
         );
@@ -449,9 +447,11 @@ class _RecoveryScreenState extends State<RecoveryScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context);
+    
     return Scaffold(
       appBar: AppBar(
-        title: const Text('IntelliHome'),
+        title: Text(loc.appTitle),
         centerTitle: true,
         elevation: 0,
       ),
@@ -490,7 +490,7 @@ class _RecoveryScreenState extends State<RecoveryScreen> {
 
               // Título
               Text(
-                'Recupere su Cuenta',
+                loc.recoverAccount,
                 style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                       fontWeight: FontWeight.bold,
                       color: AppColors.primaryColor,
@@ -502,8 +502,8 @@ class _RecoveryScreenState extends State<RecoveryScreen> {
               // Descripción
               Text(
                 _usuarioIngresado
-                    ? 'Por favor ingrese el código que le hemos enviado a su correo'
-                    : 'Ingrese su usuario o correo para recibir un código de recuperación',
+                    ? loc.enterCodeSentToEmail
+                    : loc.enterUserForRecoveryCode,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: AppColors.textSecondaryColor,
                     ),
@@ -511,11 +511,11 @@ class _RecoveryScreenState extends State<RecoveryScreen> {
               ),
               const SizedBox(height: 30),
 
-              // Paso 1: Ingresar usuario/correo (solo si no viene del login)
+              // Paso 1: Ingresar usuario/correo
               if (!_usuarioIngresado) ...[
                 _buildTextField(
                   controller: _usuarioController,
-                  label: 'Usuario o Correo',
+                  label: loc.usernameOrEmail,
                   error: _errorUsuario,
                   icon: Icons.person,
                 ),
@@ -536,10 +536,9 @@ class _RecoveryScreenState extends State<RecoveryScreen> {
                             strokeWidth: 2,
                           ),
                         )
-                      : const Text('Solicitar Código'),
+                      : Text(loc.requestCode),
                 ),
               ] else if (_cargando && !_mostrarCamposContrasena) ...[
-                // Indicador de que se está solicitando código
                 Center(
                   child: Column(
                     children: [
@@ -550,7 +549,7 @@ class _RecoveryScreenState extends State<RecoveryScreen> {
                       ),
                       const SizedBox(height: 20),
                       Text(
-                        'Solicitando código...',
+                        loc.requestingCode,
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                               color: AppColors.primaryColor,
                             ),
@@ -565,7 +564,7 @@ class _RecoveryScreenState extends State<RecoveryScreen> {
               if (_usuarioIngresado && !_mostrarCamposContrasena && !_cargando) ...[
                 _buildTextField(
                   controller: _codigoController,
-                  label: 'Código de Recuperación',
+                  label: loc.recoveryCode,
                   error: _errorCodigo,
                   icon: Icons.vpn_key,
                 ),
@@ -586,16 +585,16 @@ class _RecoveryScreenState extends State<RecoveryScreen> {
                             strokeWidth: 2,
                           ),
                         )
-                      : const Text('Verificar Código'),
+                      : Text(loc.verifyCode),
                 ),
               ],
 
-              // Campos de nueva contraseña (aparecen después de verificar código)
+              // Campos de nueva contraseña
               if (_mostrarCamposContrasena) ...[
                 const SizedBox(height: 16),
                 _buildPasswordField(
                   controller: _contrasenaController,
-                  label: 'Nueva Contraseña',
+                  label: loc.newPassword,
                   error: _errorContrasena,
                   obscureText: !_mostrarContrasena,
                   onToggleVisibility: () => setState(() => _mostrarContrasena = !_mostrarContrasena),
@@ -604,7 +603,7 @@ class _RecoveryScreenState extends State<RecoveryScreen> {
                 const SizedBox(height: 16),
                 _buildPasswordField(
                   controller: _confirmarContrasenaController,
-                  label: 'Confirmar Contraseña',
+                  label: loc.confirmPassword,
                   error: _errorConfirmar,
                   obscureText: !_mostrarConfirmarContrasena,
                   onToggleVisibility: () => setState(() => _mostrarConfirmarContrasena = !_mostrarConfirmarContrasena),
@@ -627,7 +626,7 @@ class _RecoveryScreenState extends State<RecoveryScreen> {
                             strokeWidth: 2,
                           ),
                         )
-                      : const Text('Cambiar mi Contraseña'),
+                      : Text(loc.changePassword),
                 ),
               ],
 
@@ -643,7 +642,7 @@ class _RecoveryScreenState extends State<RecoveryScreen> {
                 onPressed: () {
                   Navigator.pop(context);
                 },
-                child: const Text('Volver a Login'),
+                child: Text(loc.backToLogin),
               ),
             ],
           ),

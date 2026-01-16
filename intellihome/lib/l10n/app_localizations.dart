@@ -71,6 +71,19 @@ abstract class AppLocalizations {
   String get passwordUpdated;
   String get requestingCode;
   
+  // Recovery Screen - Nuevos
+  String get enterUserOrEmail;
+  String get codeSentToPhone;
+  String get codeRequired;
+  String get codeVerifiedEnterPassword;
+  String get passwordsMismatch;
+  String get passwordMinLength;
+  String get userNotIdentified;
+  String get passwordUpdatedBackToLogin;
+  String get enterCodeSentToEmail;
+  String get enterUserForRecoveryCode;
+  String get recoverAccount;
+  
   // Help Screen
   String get aboutApp;
   String get aboutDescription;
