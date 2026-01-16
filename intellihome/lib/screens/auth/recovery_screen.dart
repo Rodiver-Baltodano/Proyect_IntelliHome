@@ -502,7 +502,7 @@ class _RecoveryScreenState extends State<RecoveryScreen> {
               // Descripción
               Text(
                 _usuarioIngresado
-                    ? 'Por favor ingrese el código que le hemos enviado a su teléfono'
+                    ? 'Por favor ingrese el código que le hemos enviado a su correo'
                     : 'Ingrese su usuario o correo para recibir un código de recuperación',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: AppColors.textSecondaryColor,

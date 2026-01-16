@@ -4,6 +4,7 @@ import 'package:intellihome/modules/autenticacion/models/resultado_autenticacion
 import 'package:intellihome/modules/autenticacion/models/usuario.dart';
 import 'package:intellihome/modules/autenticacion/repositories/usuario_repository.dart';
 import 'package:intellihome/modules/autenticacion/validators/validators.dart';
+import 'package:intellihome/modules/autenticacion/services/email_service.dart';
 
 /// Servicio principal de autenticación.
 /// - Login con username/correo/teléfono
@@ -160,19 +161,25 @@ class AutenticacionServicio {
     usuario.intentosFallidosCodigo = 0;
     print('📝 [RECUPERACIÓN] Intentos de código reseteados a 0 para nueva sesión de recuperación.');
 
-    // Nota: No importa si estaba bloqueado: este flujo permite desbloquear.
+    // Actualizar usuario en repositorio
     await usuarioRepositorio.actualizarUsuario(usuario);
 
-    // Aquí es donde en el futuro se integra SMS real:
-    // smsServicio.enviar(usuario.telefono, "Tu código es: $codigo");
+    // Enviar código por email
+    final emailEnviado = await EmailService.enviarCodigoRecuperacion(
+      email: usuario.correo,
+      codigo: codigo,
+      nombreUsuario: usuario.username,
+    );
 
-    final mensajeBase =
-        'Código de recuperación generado y enviado al teléfono registrado.';
-    final mensaje = mostrarCodigoParaPruebas
-        ? '$mensajeBase (PRUEBAS: código=$codigo)'
-        : mensajeBase;
+    final mensajeBase = emailEnviado
+        ? 'Código de recuperación enviado a tu email.'
+        : 'Código generado. (No se pudo enviar email - verifica la configuración de .env)';
 
-    return ResultadoAutenticacion.exitoso(mensaje: mensaje, idUsuario: usuario.id, username: usuario.username);
+    return ResultadoAutenticacion.exitoso(
+      mensaje: mensajeBase,
+      idUsuario: usuario.id,
+      username: usuario.username,
+    );
   }
 
   /// Verifica el código ingresado por el usuario.

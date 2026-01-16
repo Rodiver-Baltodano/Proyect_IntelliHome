@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:intellihome/screens/auth/login_screen.dart';
 import 'package:intellihome/screens/auth/register_screen.dart';
 import 'package:intellihome/screens/auth/recovery_screen.dart';
@@ -13,6 +14,8 @@ import 'dart:io';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // Cargar variables de entorno
+  await dotenv.load(fileName: ".env");
   // Limpiar registros de usuario cada vez que se compila la app
   await _limpiarDatosUsuarios();
   runApp(const MainApp());
