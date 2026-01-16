@@ -755,7 +755,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       child: Text(
                         'Términos y condiciones',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: AppColors.accentColor,
+                              color: AppColors.primaryColor,
                               decoration: TextDecoration.underline,
                               fontWeight: FontWeight.bold,
                             ),

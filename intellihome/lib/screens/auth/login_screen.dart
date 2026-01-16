@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intellihome/config/app_colors.dart';
+import 'package:intellihome/l10n/app_localizations.dart';
+import 'package:intellihome/providers/language_provider.dart';
 import 'package:intellihome/modules/autenticacion/services/autenticacion_service.dart';
 import 'package:intellihome/modules/autenticacion/repositories/usuario_repository.dart';
 import 'package:intellihome/providers/theme_provider.dart';
@@ -8,7 +10,6 @@ import 'package:provider/provider.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
 import 'help_screen.dart';
-
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
