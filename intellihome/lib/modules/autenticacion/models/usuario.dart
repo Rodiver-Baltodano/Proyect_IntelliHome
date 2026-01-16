@@ -11,6 +11,9 @@ class Usuario {
   /// Intentos fallidos de inicio de sesión
   int intentosFallidos;
 
+  /// Intentos fallidos de verificación de código de recuperación
+  int intentosFallidosCodigo;
+
   /// Indica si el usuario está bloqueado
   bool estaBloqueado;
 
@@ -44,6 +47,7 @@ class Usuario {
     this.datosTargeta,
     this.huellaBiometrica,
     this.intentosFallidos = 0,
+    this.intentosFallidosCodigo = 0,
     this.estaBloqueado = false,
     this.codigoRecuperacion,
     this.codigoExpira,
@@ -66,6 +70,7 @@ class Usuario {
       datosTargeta: json['datosTargeta'],
       huellaBiometrica: json['huellaBiometrica'],
       intentosFallidos: json['intentosFallidos'] ?? 0,
+      intentosFallidosCodigo: json['intentosFallidosCodigo'] ?? 0,
       estaBloqueado: json['estaBloqueado'] ?? false,
       codigoRecuperacion: json['codigoRecuperacion'],
       codigoExpira: json['codigoExpira'] != null
@@ -91,6 +96,7 @@ class Usuario {
       'datosTargeta': datosTargeta,
       'huellaBiometrica': huellaBiometrica,
       'intentosFallidos': intentosFallidos,
+      'intentosFallidosCodigo': intentosFallidosCodigo,
       'estaBloqueado': estaBloqueado,
       'codigoRecuperacion': codigoRecuperacion,
       'codigoExpira': codigoExpira?.toIso8601String(),
@@ -101,7 +107,16 @@ class Usuario {
   /// Reinicia los intentos fallidos (cuando el login es exitoso)
   void reiniciarIntentos() {
     intentosFallidos = 0;
+    intentosFallidosCodigo = 0;
     estaBloqueado = false;
+  }
+
+  /// Incrementa intentos fallidos de código y bloquea si llega al máximo
+  void incrementarIntentosFallidosCodigo({int maxIntentos = 5}) {
+    intentosFallidosCodigo++;
+    if (intentosFallidosCodigo >= maxIntentos) {
+      estaBloqueado = true;
+    }
   }
 
   /// Incrementa intentos fallidos y bloquea si llega al máximo
@@ -122,6 +137,7 @@ class Usuario {
   void limpiarCodigoRecuperacion() {
     codigoRecuperacion = null;
     codigoExpira = null;
+    intentosFallidosCodigo = 0;
   }
 
   /// Verifica si el código de recuperación es válido

@@ -160,6 +160,7 @@ class AutenticacionServicio {
 
   /// Verifica el código ingresado por el usuario.
   /// Si es válido, permite continuar al cambio de contraseña.
+  /// Si hay 5 intentos fallidos, bloquea la cuenta y pide contactar soporte.
   Future<ResultadoAutenticacion> verificarCodigoRecuperacion({
     required String identificador,
     required String codigo,
@@ -180,10 +181,30 @@ class AutenticacionServicio {
       );
     }
 
+    // Verificar si está bloqueado
+    if (usuario.estaBloqueado) {
+      return ResultadoAutenticacion.usuarioBloqueado(
+        mensaje: 'Cuenta bloqueada. Por favor contacte a soporte para desbloquearla.',
+      );
+    }
+
     final esValido = usuario.codigoRecuperacionEsValido(cod);
     if (!esValido) {
+      // Incrementar intentos fallidos de código
+      usuario.incrementarIntentosFallidosCodigo(maxIntentos: maxIntentos);
+      await usuarioRepositorio.actualizarUsuario(usuario);
+
+      // Si se bloqueó la cuenta
+      if (usuario.estaBloqueado) {
+        return ResultadoAutenticacion.usuarioBloqueado(
+          mensaje: 'Demasiados intentos fallidos. Cuenta bloqueada. Por favor contacte a soporte.',
+        );
+      }
+
+      final restantes = maxIntentos - usuario.intentosFallidosCodigo;
       return ResultadoAutenticacion.credencialesInvalidas(
-        mensaje: 'Código inválido o expirado. Solicite uno nuevo.',
+        mensaje: 'Código inválido o expirado. Intentos restantes: $restantes. Solicite uno nuevo.',
+        intentosRestantes: restantes,
       );
     }
 
