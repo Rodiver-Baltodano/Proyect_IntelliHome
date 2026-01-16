@@ -88,6 +88,19 @@ class UsuarioRepositorioJson {
     await guardarUsuarios(usuarios);
   }
 
+  /// Guarda un nuevo usuario (lo agrega a la lista existente).
+  Future<void> guardarUsuario(Usuario nuevoUsuario) async {
+    final usuarios = await cargarUsuarios();
+
+    // Verificar que no exista con el mismo id
+    if (usuarios.any((u) => u.id == nuevoUsuario.id)) {
+      throw StateError('Ya existe un usuario con id=${nuevoUsuario.id}');
+    }
+
+    usuarios.add(nuevoUsuario);
+    await guardarUsuarios(usuarios);
+  }
+
   /// Normaliza teléfono dejando solo dígitos.
   String _normalizarTelefono(String telefono) {
     return telefono.replaceAll(RegExp(r'\D'), '');

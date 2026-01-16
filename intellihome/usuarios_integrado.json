@@ -1,0 +1,21 @@
+[
+  {
+    "id": "39965995-0b7e-4d86-9250-0581d4cf0560",
+    "username": "juanperez123",
+    "nombreApellidos": "Juan Pérez",
+    "correo": "juan@example.com",
+    "telefono": "87654321",
+    "contrasena": "newpassword999",
+    "nacionalidad": "Costa Rica",
+    "numeroIBAN": "CR2400123456789012345678",
+    "fotoPerfil": "https://example.com/juan.jpg",
+    "aceptaTerminos": true,
+    "datosTargeta": "4111111111111111",
+    "huellaBiometrica": "HUELLA_001",
+    "intentosFallidos": 0,
+    "estaBloqueado": false,
+    "codigoRecuperacion": null,
+    "codigoExpira": null,
+    "fechaRegistro": "2026-01-15T17:58:46.194505"
+  }
+]

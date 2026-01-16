@@ -1,9 +1,9 @@
 import 'dart:math';
 
-import 'package:intellihome/moduloAutenticacion/modelos/resultado_autenticacion.dart';
-import 'package:intellihome/moduloAutenticacion/modelos/usuario.dart';
-import 'package:intellihome/moduloAutenticacion/repositorios/usuario_repositorio_json.dart';
-import 'package:intellihome/moduloAutenticacion/utilidades/validaciones_autenticacion.dart';
+import '../modelos/resultado_autenticacion.dart';
+import '../modelos/usuario.dart';
+import '../repositorios/usuario_repositorio_json.dart';
+import '../validadores/validadores.dart';
 
 /// Servicio principal de autenticación.
 /// - Login con username/correo/teléfono
@@ -102,7 +102,7 @@ class AutenticacionServicio {
 
   bool _identificadorEsValido(String identificador) {
     // Se permite iniciar con username, correo o teléfono
-    return ValidacionesAutenticacion.esCorreoValido(identificador) ||
+    return ValidacionesAutenticacion.esEmailValido(identificador) ||
         ValidacionesAutenticacion.esTelefonoValido(identificador) ||
         ValidacionesAutenticacion.esUsernameValido(identificador);
   }

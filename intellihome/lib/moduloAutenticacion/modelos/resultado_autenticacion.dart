@@ -23,6 +23,9 @@ class ResultadoAutenticacion {
   final bool usuarioNoExiste;
   final bool usuarioBloqueado;
 
+  /// Errores específicos por campo (para validaciones)
+  final Map<String, String> errores;
+
   /// Intentos restantes antes de bloquear (si aplica).
   /// Ej: si ya falló 3 veces, y el máximo es 5 -> restantes = 2.
   final int? intentosRestantes;
@@ -45,6 +48,7 @@ class ResultadoAutenticacion {
     required this.usuarioNoExiste,
     required this.usuarioBloqueado,
     required this.mensaje,
+    this.errores = const {},
     this.intentosRestantes,
     this.idUsuario,
     this.username,
