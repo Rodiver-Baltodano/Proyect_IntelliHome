@@ -7,6 +7,7 @@ import 'package:intellihome/session/session_manager.dart';
 import 'package:provider/provider.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
+import 'help_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -284,6 +285,39 @@ class _LoginScreenState extends State<LoginScreen> {
       appBar: AppBar(
         title: const Text('IntelliHome'),
         centerTitle: true,
+        // Botón de ayuda a la izquierda
+        leading: IconButton(
+          icon: Image.asset(
+            'lib/assets/icons/question_mark.png',
+            width: 24,
+            height: 24,
+            color: Colors.white,
+          ),
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => const HelpScreen(),
+              ),
+            );
+          },
+          tooltip: 'Ayuda',
+        ),
+        actions: [
+          // Botón de idioma (bandera de España) a la derecha
+          IconButton(
+            icon: Image.asset(
+              'lib/assets/icons/spain_flag.png',
+              width: 28,
+              height: 28,
+            ),
+            onPressed: () {
+              print('Botón de idioma presionado');
+            },
+            tooltip: 'Idioma',
+          ),
+          const SizedBox(width: 8),
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(24.0),
