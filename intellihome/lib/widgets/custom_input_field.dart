@@ -12,7 +12,7 @@ class CustomInputField extends StatelessWidget {
   final Icon? prefixIcon;
 
   const CustomInputField({
-    Key? key,
+    super.key,
     required this.label,
     this.hint,
     required this.controller,
@@ -21,7 +21,7 @@ class CustomInputField extends StatelessWidget {
     this.validator,
     this.maxLines = 1,
     this.prefixIcon,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

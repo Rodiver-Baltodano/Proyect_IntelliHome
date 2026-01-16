@@ -9,9 +9,9 @@ class HomeScreen extends StatelessWidget {
   final String username;
 
   const HomeScreen({
-    Key? key,
+    super.key,
     required this.username,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

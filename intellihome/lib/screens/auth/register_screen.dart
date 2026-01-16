@@ -8,7 +8,7 @@ import 'package:intellihome/modules/autenticacion/services/registro_service.dart
 import 'package:intellihome/modules/autenticacion/repositories/usuario_repository.dart';
 
 class RegisterScreen extends StatefulWidget {
-  const RegisterScreen({Key? key}) : super(key: key);
+  const RegisterScreen({super.key});
 
   @override
   State<RegisterScreen> createState() => _RegisterScreenState();

@@ -9,9 +9,9 @@ class RecoveryScreen extends StatefulWidget {
   final String? username;
 
   const RecoveryScreen({
-    Key? key,
+    super.key,
     this.username,
-  }) : super(key: key);
+  });
 
   @override
   State<RecoveryScreen> createState() => _RecoveryScreenState();
