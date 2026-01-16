@@ -6,6 +6,7 @@ import 'dart:io';
 import 'package:intellihome/config/app_colors.dart';
 import 'package:intellihome/modules/autenticacion/services/registro_service.dart';
 import 'package:intellihome/modules/autenticacion/repositories/usuario_repository.dart';
+import 'terms_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -29,6 +30,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   String _nacionalidadSeleccionada = 'Costa Rica';
   bool _aceptaTerminos = false;
+  bool _terminosAceptadosEnModal = false;
   bool _mostrarContrasena = false;
   bool _mostrarConfirmarContrasena = false;
   bool _mostrarTarjeta = false;
@@ -118,6 +120,21 @@ class _RegisterScreenState extends State<RegisterScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: const Text('Las contraseñas no coinciden'),
+            backgroundColor: AppColors.errorColor,
+          ),
+        );
+      }
+      return;
+    }
+    // Validar términos y condiciones
+    if (!_aceptaTerminos || !_terminosAceptadosEnModal) {
+      setState(() {
+        _cargando = false;
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Debes aceptar los términos y condiciones'),
             backgroundColor: AppColors.errorColor,
           ),
         );
@@ -220,8 +237,20 @@ class _RegisterScreenState extends State<RegisterScreen> {
     }
   }
 
-  void _handleTerminosAndCondiciones() {
-    print('Hipervinculo de Términos y Condiciones presionado');
+  Future<void> _handleTerminosAndCondiciones() async {
+    final resultado = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const TermsUI(),
+      ),
+    );
+
+    if (resultado == true) {
+      setState(() {
+        _terminosAceptadosEnModal = true;
+        _aceptaTerminos = true;
+      });
+    }
   }
 
   /// Construye un TextField con validación visual y toggle de visibilidad para contraseñas
@@ -678,11 +707,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
               // Botón de registrar
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primaryColor,
+                  backgroundColor: (_aceptaTerminos && _terminosAceptadosEnModal)
+                      ? AppColors.primaryColor
+                      : Colors.grey,
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 14),
                 ),
-                onPressed: _cargando ? null : _handleRegister,
+                onPressed: (_cargando || !_aceptaTerminos || !_terminosAceptadosEnModal)
+                    ? null
+                    : _handleRegister,
                 child: _cargando
                     ? const SizedBox(
                         height: 20,
@@ -712,13 +745,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
               Row(
                 children: [
                   Checkbox(
-                    value: _aceptaTerminos,
+                    value: _aceptaTerminos && _terminosAceptadosEnModal,
                     activeColor: AppColors.primaryColor,
-                    onChanged: (value) {
-                      setState(() {
-                        _aceptaTerminos = value ?? false;
-                      });
-                    },
+                    onChanged: null, // Deshabilitado, solo se activa desde el modal
                   ),
                   Expanded(
                     child: GestureDetector(
@@ -728,12 +757,26 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
                               color: AppColors.accentColor,
                               decoration: TextDecoration.underline,
+                              fontWeight: FontWeight.bold,
                             ),
                       ),
                     ),
                   ),
                 ],
               ),
+              if (!_terminosAceptadosEnModal) ...[
+                const SizedBox(height: 4),
+                Padding(
+                  padding: const EdgeInsets.only(left: 48),
+                  child: Text(
+                    'Debes leer y aceptar los términos',
+                    style: TextStyle(
+                      color: AppColors.errorColor,
+                      fontSize: 12,
+                    ),
+                  ),
+                ),
+              ],
               const SizedBox(height: 20),
 
               // Botón volver a login
