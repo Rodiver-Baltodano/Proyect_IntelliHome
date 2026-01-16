@@ -3,7 +3,10 @@ import 'package:intellihome/screens/auth/login_screen.dart';
 import 'package:intellihome/screens/auth/register_screen.dart';
 import 'package:intellihome/screens/auth/recovery_screen.dart';
 import 'package:intellihome/screens/home/home_screen.dart';
-import 'package:intellihome/config/app_colors.dart';
+import 'package:intellihome/screens/personalizacion/personalization_screen.dart';
+import 'package:intellihome/providers/theme_provider.dart';
+import 'package:intellihome/modules/autenticacion/repositories/usuario_repository.dart';
+import 'package:provider/provider.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
 import 'dart:io';
@@ -35,29 +38,64 @@ Future<void> _limpiarDatosUsuarios() async {
   }
 }
 
-class MainApp extends StatelessWidget {
+class MainApp extends StatefulWidget {
   const MainApp({super.key});
 
   @override
+  State<MainApp> createState() => _MainAppState();
+}
+
+class _MainAppState extends State<MainApp> {
+  UsuarioRepositorioJson? _repositorio;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      try {
+        final appDir = await getApplicationDocumentsDirectory();
+        final rutaJson = p.join(appDir.path, 'usuarios_integrado.json');
+        _repositorio = UsuarioRepositorioJson(rutaArchivo: rutaJson);
+        if (mounted) {
+          context.read<ThemeProvider>().setRepositorio(_repositorio!);
+        }
+      } catch (e) {
+        // Solo loggear; el provider seguirá con defaults si falla
+        print('Error configurando repositorio en ThemeProvider: $e');
+      }
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'IntelliHome',
-      theme: AppColors.getThemeData(),
-      home: const LoginScreen(),
-      routes: {
-        '/login': (context) => const LoginScreen(),
-        '/register': (context) => const RegisterScreen(),
-        '/recovery': (context) {
-          // Extraer username de los argumentos
-          final username = ModalRoute.of(context)?.settings.arguments as String?;
-          return RecoveryScreen(username: username);
+    return ChangeNotifierProvider(
+      create: (_) => ThemeProvider(),
+      child: Builder(
+        builder: (context) {
+          final theme = context.watch<ThemeProvider>().themeData;
+          return MaterialApp(
+            title: 'IntelliHome',
+            theme: theme,
+            home: const LoginScreen(),
+            routes: {
+              '/login': (context) => const LoginScreen(),
+              '/register': (context) => const RegisterScreen(),
+              '/recovery': (context) {
+                final username = ModalRoute.of(context)?.settings.arguments as String?;
+                return RecoveryScreen(username: username);
+              },
+              '/personalizacion': (context) {
+                final username = ModalRoute.of(context)?.settings.arguments as String?;
+                return PersonalizationScreen(username: username ?? 'Usuario');
+              },
+              '/home': (context) {
+                final username = ModalRoute.of(context)?.settings.arguments as String?;
+                return HomeScreen(username: username ?? 'Usuario');
+              },
+            },
+          );
         },
-        '/home': (context) {
-          // Extraer username de los argumentos
-          final username = ModalRoute.of(context)?.settings.arguments as String?;
-          return HomeScreen(username: username ?? 'Usuario');
-        },
-      },
+      ),
     );
   }
 }

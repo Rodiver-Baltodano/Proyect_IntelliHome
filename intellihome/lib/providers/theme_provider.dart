@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intellihome/modules/autenticacion/models/usuario.dart';
+import 'package:intellihome/modules/autenticacion/repositories/usuario_repository.dart';
 import 'package:intellihome/theme/theme_colors.dart';
+import 'package:intellihome/config/app_colors.dart';
 
 enum StyleType {
   aventurero,
@@ -16,6 +18,7 @@ class ThemeProvider extends ChangeNotifier {
   Usuario? _usuarioActual;
   AppThemeColors _currentTheme = AppThemeColors.medio();
   StyleType _currentStyle = StyleType.aventurero;
+  UsuarioRepositorioJson? _repositorio;
 
   // ========== GETTERS ==========
 
@@ -38,11 +41,37 @@ class ThemeProvider extends ChangeNotifier {
 
   /// Inicializa el provider con un usuario logueado
   /// Carga su tema, estilo y colores personalizados guardados
-  void inicializarConUsuario(Usuario usuario) {
+  void inicializarConUsuario(Usuario usuario, {UsuarioRepositorioJson? repositorio}) {
     _usuarioActual = usuario;
+    _repositorio = repositorio ?? _repositorio;
     _cargarTemaDelUsuario(usuario);
     _cargarColoresPersonalizados(usuario);
+    // Solo sincronizar cuando hay usuario logueado
+    if (_usuarioActual != null) {
+      _syncAppColors();
+    }
     notifyListeners();
+  }
+
+  /// Permite inyectar un repositorio para persistir cambios en JSON
+  void setRepositorio(UsuarioRepositorioJson repositorio) {
+    _repositorio = repositorio;
+  }
+
+  Future<void> _persistirUsuario() async {
+    if (_usuarioActual != null && _repositorio != null) {
+      await _repositorio!.actualizarUsuario(_usuarioActual!);
+    }
+  }
+
+  void _syncAppColors() {
+    // Solo sincronizar si hay usuario logueado
+    if (_usuarioActual == null) return;
+    
+    AppColors.updatePrimaryColor(_currentTheme.primary);
+    AppColors.updateSecondaryColor(_currentTheme.secondary);
+    AppColors.updateTertiaryColor(_currentTheme.tertiary);
+    AppColors.updateAccentColor(_currentTheme.tertiary);
   }
 
   /// Carga el tema y estilo del usuario desde sus datos
@@ -114,6 +143,8 @@ class ThemeProvider extends ChangeNotifier {
     // Limpiar colores personalizados al cambiar tema
     _usuarioActual!.colorPrimarioARGB = null;
     _usuarioActual!.colorBackgroundARGB = null;
+    await _persistirUsuario();
+    _syncAppColors();
     notifyListeners();
   }
 
@@ -126,6 +157,7 @@ class ThemeProvider extends ChangeNotifier {
 
     _currentStyle = styleType;
     _usuarioActual!.estilo = styleType.name;
+    await _persistirUsuario();
     notifyListeners();
   }
 
@@ -139,6 +171,8 @@ class ThemeProvider extends ChangeNotifier {
 
     _currentTheme.primary = color;
     _usuarioActual!.colorPrimarioARGB = color.value;
+    _persistirUsuario();
+    _syncAppColors();
     notifyListeners();
   }
 
@@ -152,6 +186,8 @@ class ThemeProvider extends ChangeNotifier {
 
     _currentTheme.background = color;
     _usuarioActual!.colorBackgroundARGB = color.value;
+    _persistirUsuario();
+    _syncAppColors();
     notifyListeners();
   }
 
@@ -183,6 +219,8 @@ class ThemeProvider extends ChangeNotifier {
     _usuarioActual!.estilo = 'aventurero';
     _usuarioActual!.colorPrimarioARGB = null;
     _usuarioActual!.colorBackgroundARGB = null;
+    await _persistirUsuario();
+    _syncAppColors();
     notifyListeners();
   }
 
@@ -191,6 +229,8 @@ class ThemeProvider extends ChangeNotifier {
     _usuarioActual = null;
     _currentTheme = AppThemeColors.medio();
     _currentStyle = StyleType.aventurero;
+    // Resetear AppColors a defaults al desloguearse
+    AppColors.resetColors();
     notifyListeners();
   }
 }

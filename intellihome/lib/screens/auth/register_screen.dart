@@ -105,14 +105,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
       if (resultado.exito) {
         // Éxito
         if (mounted) {
+          final username = resultado.usuario?.username ?? 'Usuario';
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('¡Bienvenido ${resultado.usuario?.username}!'),
+              content: Text('Se ha registrado con éxito $username'),
               backgroundColor: AppColors.successColor,
               duration: const Duration(seconds: 2),
             ),
           );
-          
+
           // Limpiar formulario
           _nombreController.clear();
           _correoController.clear();
@@ -126,10 +127,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
             _aceptaTerminos = false;
           });
 
-          // Navegar a login después de 2 segundos
+          // Navegar a Personalización después de 2 segundos
           Future.delayed(const Duration(seconds: 2), () {
             if (mounted) {
-              Navigator.pushReplacementNamed(context, '/login');
+              Navigator.pushReplacementNamed(context, '/personalizacion', arguments: username);
             }
           });
         }

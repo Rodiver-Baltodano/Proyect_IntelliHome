@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:intellihome/config/app_colors.dart';
 import 'package:intellihome/modules/autenticacion/services/autenticacion_service.dart';
 import 'package:intellihome/modules/autenticacion/repositories/usuario_repository.dart';
+import 'package:intellihome/providers/theme_provider.dart';
+import 'package:intellihome/session/session_manager.dart';
+import 'package:provider/provider.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
 
@@ -17,6 +20,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _passwordController = TextEditingController();
 
   late AutenticacionServicio _autenticacionServicio;
+  UsuarioRepositorioJson? _repositorio;
   bool _inicializado = false;
   bool _cargando = false;
   String? _errorUsername;
@@ -33,8 +37,8 @@ class _LoginScreenState extends State<LoginScreen> {
     try {
       final appDir = await getApplicationDocumentsDirectory();
       final rutaJson = p.join(appDir.path, 'usuarios_integrado.json');
-      final repositorio = UsuarioRepositorioJson(rutaArchivo: rutaJson);
-      _autenticacionServicio = AutenticacionServicio(usuarioRepositorio: repositorio);
+      _repositorio = UsuarioRepositorioJson(rutaArchivo: rutaJson);
+      _autenticacionServicio = AutenticacionServicio(usuarioRepositorio: _repositorio!);
     } catch (e) {
       print('Error inicializando servicios: $e');
     }
@@ -63,7 +67,18 @@ class _LoginScreenState extends State<LoginScreen> {
       );
 
       if (resultado.exito) {
-        // Éxito: navegar a Home
+        // Éxito: configurar SessionManager y ThemeProvider
+        SessionManager.setCurrentUserId(resultado.idUsuario ?? '');
+        
+        final usuario = await _repositorio?.buscarPorId(resultado.idUsuario ?? '');
+        if (usuario != null && mounted) {
+          // Inicializar el ThemeProvider con el usuario logueado
+          context.read<ThemeProvider>().inicializarConUsuario(
+            usuario,
+            repositorio: _repositorio,
+          );
+        }
+
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(

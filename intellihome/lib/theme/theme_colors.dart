@@ -15,19 +15,19 @@ enum ThemeType {
 class ClaroThemeColors {
   // Color más oscuro - usado para fondos principales o elementos destacados
   // Azul oscuro profundo
-  static const Color primary = Color(0xFF164863);
+    static const Color primary = Color(0xFF1F5A74);
   
   // Color secundario - usado para elementos interactivos y acentos
   // Azul medio
-  static const Color secondary = Color(0xFF427D9D);
+    static const Color secondary = Color(0xFF4F8AA3);
   
   // Color terciario - usado para elementos secundarios y fondos suaves
   // Azul claro
-  static const Color tertiary = Color(0xFF9BBEC8);
+    static const Color tertiary = Color(0xFF9EBFCC);
   
   // Color de fondo - usado para fondos generales y superficies
   // Azul muy claro, casi blanco
-  static const Color background = Color(0xFFDDF2FD);
+    static const Color background = Color(0xFFE2F3FA);
 
   /// Método que retorna todos los colores como una lista
   /// Útil para mostrarlos en un selector de paleta
@@ -99,19 +99,19 @@ class MedioThemeColors {
 class OscuroThemeColors {
   // Color más oscuro - usado para fondos principales
   // Azul muy oscuro, casi negro
-  static const Color primary = Color(0xFF070F2B);
+    static const Color primary = Color(0xFF0B132B);
   
   // Color secundario - usado para elementos interactivos y acentos
   // Azul oscuro púrpura
-  static const Color secondary = Color(0xFF1B1A55);
+    static const Color secondary = Color(0xFF1C2541);
   
   // Color terciario - usado para elementos secundarios
   // Gris azulado medio
-  static const Color tertiary = Color(0xFF535C91);
+    static const Color tertiary = Color(0xFF3A3F6B);
   
   // Color de fondo - usado para fondos suaves y superficies elevadas
   // Lavanda claro
-  static const Color background = Color(0xFF9290C3);
+    static const Color background = Color(0xFF8D8FC3);
 
   /// Método que retorna todos los colores como una lista
   /// Útil para mostrarlos en un selector de paleta

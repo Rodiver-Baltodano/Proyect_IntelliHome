@@ -72,6 +72,16 @@ class UsuarioRepositorioJson {
     return _buscarEnLista(usuarios, identificador);
   }
 
+  /// Busca por id exacto
+  Future<Usuario?> buscarPorId(String id) async {
+    final usuarios = await cargarUsuarios();
+    try {
+      return usuarios.firstWhere((u) => u.id == id);
+    } catch (_) {
+      return null;
+    }
+  }
+
   /// Igual que buscarPorIdentificador, pero usando una lista ya cargada (más eficiente).
   Usuario? buscarEnLista(List<Usuario> usuarios, String identificador) {
     return _buscarEnLista(usuarios, identificador);
