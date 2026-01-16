@@ -16,6 +16,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _ibanController = TextEditingController();
 
   String _nacionalidadSeleccionada = 'Costa Rica';
+  bool _aceptaTerminos = false;
   
   final List<String> _nacionalidades = [
     'Costa Rica',
@@ -54,6 +55,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     print('Teléfono: ${_telefonoController.text}');
     print('Nacionalidad: $_nacionalidadSeleccionada');
     print('IBAN: ${_ibanController.text}');
+    print('Acepta Términos: $_aceptaTerminos');
     print('==========================');
 
     ScaffoldMessenger.of(context).showSnackBar(
@@ -62,6 +64,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
         backgroundColor: Colors.green,
       ),
     );
+  }
+
+  void _handleTerminosAndCondiciones() {
+    print('Hipervinculo de Términos y Condiciones presionado');
   }
 
   @override
@@ -78,9 +84,51 @@ class _RegisterScreenState extends State<RegisterScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Título
+              // Foto de perfil circular con +
+              Center(
+                child: Stack(
+                  children: [
+                    Container(
+                      width: 120,
+                      height: 120,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.grey[300],
+                        border: Border.all(
+                          color: Colors.blue,
+                          width: 2,
+                        ),
+                      ),
+                      child: Icon(
+                        Icons.person,
+                        size: 60,
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                    Positioned(
+                      bottom: 0,
+                      right: 0,
+                      child: Container(
+                        decoration: const BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.blue,
+                        ),
+                        padding: const EdgeInsets.all(8),
+                        child: const Icon(
+                          Icons.add,
+                          color: Colors.white,
+                          size: 24,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              // Leyenda de registro
               Text(
-                'Crear Cuenta',
+                'Registrarse a IntelliHome',
                 style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
@@ -193,7 +241,44 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 onPressed: _handleRegister,
                 child: const Text('Registrar Cuenta'),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 20),
+
+              // Texto de términos y condiciones
+              Center(
+                child: Text(
+                  'Como último paso, le invitamos a leer nuestros',
+                  style: Theme.of(context).textTheme.bodySmall,
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              const SizedBox(height: 12),
+
+              // Checkbox y hipervinculo de términos
+              Row(
+                children: [
+                  Checkbox(
+                    value: _aceptaTerminos,
+                    onChanged: (value) {
+                      setState(() {
+                        _aceptaTerminos = value ?? false;
+                      });
+                    },
+                  ),
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: _handleTerminosAndCondiciones,
+                      child: Text(
+                        'Términos y condiciones',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: Colors.blue,
+                              decoration: TextDecoration.underline,
+                            ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
 
               // Botón volver a login
               OutlinedButton(
