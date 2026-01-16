@@ -1,6 +1,6 @@
 [
   {
-    "id": "6e612f7f-bbde-43ab-8aa3-a13a66193706",
+    "id": "6583fc3b-bec9-41f2-821e-32e4ec373a0f",
     "username": "juanperez123",
     "nombreApellidos": "Juan Pérez",
     "correo": "juan@example.com",
@@ -17,6 +17,6 @@
     "estaBloqueado": false,
     "codigoRecuperacion": null,
     "codigoExpira": null,
-    "fechaRegistro": "2026-01-15T20:02:42.511209"
+    "fechaRegistro": "2026-01-15T22:30:57.484110"
   }
 ]
