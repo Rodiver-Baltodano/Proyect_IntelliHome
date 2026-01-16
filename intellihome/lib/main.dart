@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intellihome/screens/auth/login_screen.dart';
 import 'package:intellihome/screens/auth/register_screen.dart';
+import 'package:intellihome/config/app_colors.dart';
 
 void main() {
   runApp(const MainApp());
@@ -13,10 +14,7 @@ class MainApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'IntelliHome',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
-        useMaterial3: true,
-      ),
+      theme: AppColors.getThemeData(),
       home: const LoginScreen(),
       routes: {
         '/login': (context) => const LoginScreen(),

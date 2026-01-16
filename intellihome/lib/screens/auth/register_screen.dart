@@ -3,6 +3,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
 import 'dart:io';
+import 'package:intellihome/config/app_colors.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({Key? key}) : super(key: key);
@@ -158,8 +159,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           shape: BoxShape.circle,
                           color: Colors.grey[300],
                           border: Border.all(
-                            color: Colors.blue,
-                            width: 2,
+                            color: AppColors.primaryColor,
+                            width: 3,
                           ),
                         ),
                         child: _imagenPerfil != null
@@ -179,9 +180,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         bottom: 0,
                         right: 0,
                         child: Container(
-                          decoration: const BoxDecoration(
+                          decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: Colors.blue,
+                            color: AppColors.accentColor,
                           ),
                           padding: const EdgeInsets.all(8),
                           child: const Icon(
@@ -202,6 +203,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 'Registrarse a IntelliHome',
                 style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                       fontWeight: FontWeight.bold,
+                      color: AppColors.primaryColor,
                     ),
                 textAlign: TextAlign.center,
               ),
@@ -210,10 +212,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
               // Campo de nombre
               TextField(
                 controller: _nombreController,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Nombre',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.person),
+                  labelStyle: TextStyle(color: AppColors.secondaryColor),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: AppColors.primaryColor, width: 2),
+                  ),
+                  prefixIcon: Icon(Icons.person, color: AppColors.secondaryColor),
                 ),
               ),
               const SizedBox(height: 16),
@@ -221,10 +228,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
               // Campo de correo
               TextField(
                 controller: _correoController,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Correo Electrónico',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.email),
+                  labelStyle: TextStyle(color: AppColors.secondaryColor),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: AppColors.primaryColor, width: 2),
+                  ),
+                  prefixIcon: Icon(Icons.email, color: AppColors.secondaryColor),
                 ),
                 keyboardType: TextInputType.emailAddress,
               ),
@@ -233,10 +245,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
               // Campo de usuario
               TextField(
                 controller: _usernameController,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Usuario',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.account_circle),
+                  labelStyle: TextStyle(color: AppColors.secondaryColor),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: AppColors.primaryColor, width: 2),
+                  ),
+                  prefixIcon: Icon(Icons.account_circle, color: AppColors.secondaryColor),
                 ),
               ),
               const SizedBox(height: 16),
@@ -245,10 +262,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
               TextField(
                 controller: _contrasenaController,
                 obscureText: true,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Contraseña',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.lock),
+                  labelStyle: TextStyle(color: AppColors.secondaryColor),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: AppColors.primaryColor, width: 2),
+                  ),
+                  prefixIcon: Icon(Icons.lock, color: AppColors.secondaryColor),
                 ),
               ),
               const SizedBox(height: 16),
@@ -256,10 +278,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
               // Campo de teléfono
               TextField(
                 controller: _telefonoController,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Número de Teléfono',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.phone),
+                  labelStyle: TextStyle(color: AppColors.secondaryColor),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: AppColors.primaryColor, width: 2),
+                  ),
+                  prefixIcon: Icon(Icons.phone, color: AppColors.secondaryColor),
                 ),
                 keyboardType: TextInputType.phone,
               ),
@@ -269,8 +296,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12),
                 decoration: BoxDecoration(
-                  border: Border.all(color: Colors.grey),
-                  borderRadius: BorderRadius.circular(4),
+                  border: Border.all(color: AppColors.secondaryColor),
+                  borderRadius: BorderRadius.circular(8),
                 ),
                 child: DropdownButtonHideUnderline(
                   child: DropdownButton<String>(
@@ -299,16 +326,26 @@ class _RegisterScreenState extends State<RegisterScreen> {
               // Campo de IBAN
               TextField(
                 controller: _ibanController,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Número IBAN',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.credit_card),
+                  labelStyle: TextStyle(color: AppColors.secondaryColor),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: AppColors.primaryColor, width: 2),
+                  ),
+                  prefixIcon: Icon(Icons.credit_card, color: AppColors.secondaryColor),
                 ),
               ),
               const SizedBox(height: 30),
 
               // Botón de registrar
               ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primaryColor,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                ),
                 onPressed: _handleRegister,
                 child: const Text('Registrar Cuenta'),
               ),
@@ -318,7 +355,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
               Center(
                 child: Text(
                   'Como último paso, le invitamos a leer nuestros',
-                  style: Theme.of(context).textTheme.bodySmall,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: AppColors.textSecondaryColor,
+                      ),
                   textAlign: TextAlign.center,
                 ),
               ),
@@ -329,6 +368,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 children: [
                   Checkbox(
                     value: _aceptaTerminos,
+                    activeColor: AppColors.primaryColor,
                     onChanged: (value) {
                       setState(() {
                         _aceptaTerminos = value ?? false;
@@ -341,7 +381,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       child: Text(
                         'Términos y condiciones',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: Colors.blue,
+                              color: AppColors.accentColor,
                               decoration: TextDecoration.underline,
                             ),
                       ),
@@ -353,6 +393,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
               // Botón volver a login
               OutlinedButton(
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: AppColors.tertiaryColor,
+                  side: BorderSide(color: AppColors.tertiaryColor, width: 2),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                ),
                 onPressed: () {
                   Navigator.pop(context);
                 },
