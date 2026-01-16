@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intellihome/screens/auth/login_screen.dart';
 
 void main() {
   runApp(const MainApp());
@@ -15,11 +16,7 @@ class MainApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
         useMaterial3: true,
       ),
-      home: const Scaffold(
-        body: Center(
-          child: Text('Hello World!'),
-        ),
-      ),
+      home: const LoginScreen(),
     );
   }
 }
