@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:intellihome/config/app_colors.dart';
+import 'package:intellihome/modules/autenticacion/services/autenticacion_service.dart';
+import 'package:intellihome/modules/autenticacion/repositories/usuario_repository.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' as p;
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -12,6 +16,12 @@ class _LoginScreenState extends State<LoginScreen> {
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
 
+  late AutenticacionServicio _autenticacionServicio;
+  bool _inicializado = false;
+  bool _cargando = false;
+  String? _errorUsername;
+  String? _errorPassword;
+
   @override
   void dispose() {
     _usernameController.dispose();
@@ -19,15 +29,169 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  void _handleLogin() {
-    print('Username: ${_usernameController.text}');
-    print('Password: ${_passwordController.text}');
-    
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Botón presionado'),
-        backgroundColor: Colors.green,
-      ),
+  void _inicializarServicios() async {
+    try {
+      final appDir = await getApplicationDocumentsDirectory();
+      final rutaJson = p.join(appDir.path, 'usuarios_integrado.json');
+      final repositorio = UsuarioRepositorioJson(rutaArchivo: rutaJson);
+      _autenticacionServicio = AutenticacionServicio(usuarioRepositorio: repositorio);
+    } catch (e) {
+      print('Error inicializando servicios: $e');
+    }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_inicializado) {
+      _inicializarServicios();
+      _inicializado = true;
+    }
+  }
+
+  void _handleLogin() async {
+    setState(() {
+      _cargando = true;
+      _errorUsername = null;
+      _errorPassword = null;
+    });
+
+    try {
+      final resultado = await _autenticacionServicio.iniciarSesion(
+        identificador: _usernameController.text.trim(),
+        contrasena: _passwordController.text,
+      );
+
+      if (resultado.exito) {
+        // Éxito: navegar a Home
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text('¡Inicio de sesión exitoso!'),
+              backgroundColor: AppColors.successColor,
+              duration: const Duration(seconds: 2),
+            ),
+          );
+
+          // Navegar a Home con el username
+          Future.delayed(const Duration(milliseconds: 500), () {
+            if (mounted) {
+              Navigator.pushReplacementNamed(
+                context,
+                '/home',
+                arguments: resultado.username,
+              );
+            }
+          });
+        }
+      } else {
+        // Error
+        if (mounted) {
+          // Determinar cuál campo mostrar error
+          if (resultado.mensaje.contains('usuario') || resultado.mensaje.contains('no existe')) {
+            setState(() {
+              _errorUsername = resultado.mensaje;
+            });
+          } else if (resultado.mensaje.contains('bloqueado')) {
+            setState(() {
+              _errorPassword = resultado.mensaje;
+            });
+          } else if (resultado.mensaje.contains('Contraseña')) {
+            setState(() {
+              _errorPassword = resultado.mensaje;
+            });
+          } else {
+            setState(() {
+              _errorPassword = resultado.mensaje;
+            });
+          }
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(resultado.mensaje),
+              backgroundColor: AppColors.errorColor,
+              duration: const Duration(seconds: 3),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _errorPassword = 'Error: $e';
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: $e'),
+            backgroundColor: AppColors.errorColor,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _cargando = false;
+        });
+      }
+    }
+  }
+
+  /// Construye un TextField con validación visual
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String label,
+    required String? error,
+    bool obscureText = false,
+    IconData? icon,
+  }) {
+    final tieneError = error != null && error.isNotEmpty;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        TextField(
+          controller: controller,
+          obscureText: obscureText,
+          decoration: InputDecoration(
+            labelText: label,
+            labelStyle: TextStyle(
+              color: tieneError ? AppColors.errorColor : AppColors.secondaryColor,
+            ),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide(
+                color: tieneError ? AppColors.errorColor : AppColors.primaryColor,
+                width: 2,
+              ),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide(
+                color: tieneError ? AppColors.errorColor : Colors.grey,
+                width: tieneError ? 2 : 1,
+              ),
+            ),
+            prefixIcon: Icon(
+              icon,
+              color: tieneError ? AppColors.errorColor : AppColors.secondaryColor,
+            ),
+          ),
+        ),
+        if (tieneError) ...[
+          const SizedBox(height: 4),
+          Text(
+            error,
+            style: TextStyle(
+              color: AppColors.errorColor,
+              fontSize: 12,
+            ),
+          ),
+        ],
+      ],
     );
   }
 
@@ -82,39 +246,21 @@ class _LoginScreenState extends State<LoginScreen> {
             const SizedBox(height: 40),
 
             // Campo de usuario
-            TextField(
+            _buildTextField(
               controller: _usernameController,
-              decoration: InputDecoration(
-                labelText: 'Usuario',
-                labelStyle: TextStyle(color: AppColors.secondaryColor),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: AppColors.primaryColor, width: 2),
-                ),
-                prefixIcon: Icon(Icons.person, color: AppColors.secondaryColor),
-              ),
+              label: 'Usuario',
+              error: _errorUsername,
+              icon: Icons.person,
             ),
             const SizedBox(height: 20),
 
             // Campo de contraseña
-            TextField(
+            _buildTextField(
               controller: _passwordController,
+              label: 'Contraseña',
+              error: _errorPassword,
               obscureText: true,
-              decoration: InputDecoration(
-                labelText: 'Contraseña',
-                labelStyle: TextStyle(color: AppColors.secondaryColor),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: AppColors.primaryColor, width: 2),
-                ),
-                prefixIcon: Icon(Icons.lock, color: AppColors.secondaryColor),
-              ),
+              icon: Icons.lock,
             ),
             const SizedBox(height: 30),
 
@@ -128,8 +274,17 @@ class _LoginScreenState extends State<LoginScreen> {
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 14),
                     ),
-                    onPressed: _handleLogin,
-                    child: const Text('Iniciar Sesión'),
+                    onPressed: _cargando ? null : _handleLogin,
+                    child: _cargando
+                        ? const SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(
+                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                              strokeWidth: 2,
+                            ),
+                          )
+                        : const Text('Iniciar Sesión'),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -147,6 +302,26 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
               ],
+            ),
+            const SizedBox(height: 16),
+
+            // Botón Olvidé la contraseña
+            TextButton(
+              onPressed: () {
+                Navigator.pushNamed(
+                  context,
+                  '/recovery',
+                  arguments: _usernameController.text.trim(),
+                );
+              },
+              child: Text(
+                '¿Olvidé mi contraseña?',
+                style: TextStyle(
+                  color: AppColors.accentColor,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
             ),
           ],
         ),

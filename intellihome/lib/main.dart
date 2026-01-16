@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intellihome/screens/auth/login_screen.dart';
 import 'package:intellihome/screens/auth/register_screen.dart';
+import 'package:intellihome/screens/auth/recovery_screen.dart';
+import 'package:intellihome/screens/home/home_screen.dart';
 import 'package:intellihome/config/app_colors.dart';
 
 void main() {
@@ -19,6 +21,16 @@ class MainApp extends StatelessWidget {
       routes: {
         '/login': (context) => const LoginScreen(),
         '/register': (context) => const RegisterScreen(),
+        '/recovery': (context) {
+          // Extraer username de los argumentos
+          final username = ModalRoute.of(context)?.settings.arguments as String?;
+          return RecoveryScreen(username: username);
+        },
+        '/home': (context) {
+          // Extraer username de los argumentos
+          final username = ModalRoute.of(context)?.settings.arguments as String?;
+          return HomeScreen(username: username ?? 'Usuario');
+        },
       },
     );
   }
