@@ -38,7 +38,10 @@ void main() async {
     numeroIBAN: 'CR2400123456789012345678',
     fotoPerfil: 'https://example.com/juan.jpg',
     aceptaTerminos: true,
-    datosTargeta: '4111111111111111',
+    fechaNacimiento: DateTime(1990, 5, 15),
+    numeroTarjeta: '4111111111111111',
+    fechaExpiracion: '12/30',
+    cvv: '123',
     huellaBiometrica: 'HUELLA_001',
   );
 
@@ -64,6 +67,7 @@ void main() async {
     numeroIBAN: 'CR2400123456789012345679',
     fotoPerfil: 'https://example.com/maria.jpg',
     aceptaTerminos: true,
+    fechaNacimiento: DateTime(1992, 8, 20),
   );
 
   print('Resultado: ${resultadoReg2.exito ? 'ÉXITO' : 'ERROR'}');
@@ -86,6 +90,7 @@ void main() async {
     numeroIBAN: 'CR2400123456789012345680',
     fotoPerfil: 'https://example.com/carlos.jpg',
     aceptaTerminos: true,
+    fechaNacimiento: DateTime(1995, 3, 10),
   );
 
   print('Resultado: ${resultadoReg3.exito ? 'ÉXITO' : 'ERROR'}');
@@ -312,6 +317,7 @@ void main() async {
     numeroIBAN: 'CR2400123456789012345681',
     fotoPerfil: 'https://example.com/carlos.jpg',
     aceptaTerminos: true,
+    fechaNacimiento: DateTime(1994, 7, 22),
   );
 
   if (!resultadoReg.exito) {

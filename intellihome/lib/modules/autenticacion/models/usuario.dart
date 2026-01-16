@@ -32,6 +32,7 @@ class Usuario {
   final String? datosTargeta;        // Opcional
   final String? huellaBiometrica;    // Opcional
   final DateTime fechaRegistro;
+  final DateTime fechaNacimiento;
 
   // ========== PERSONALIZACIÓN (Tema y Estilo) ==========
   /// Tema del usuario: 'claro', 'medio', 'oscuro' (Default: 'medio')
@@ -66,6 +67,7 @@ class Usuario {
     this.codigoRecuperacion,
     this.codigoExpira,
     required this.fechaRegistro,
+    required this.fechaNacimiento,
     this.tema = 'medio',
     this.estilo = 'aventurero',
     this.colorPrimarioARGB,
@@ -95,6 +97,9 @@ class Usuario {
           ? DateTime.parse(json['codigoExpira'])
           : null,
       fechaRegistro: DateTime.parse(json['fechaRegistro'] as String),
+        fechaNacimiento: json['fechaNacimiento'] != null
+          ? DateTime.parse(json['fechaNacimiento'] as String)
+          : DateTime(2000, 1, 1),
       tema: json['tema'] ?? 'medio',
       estilo: json['estilo'] ?? 'aventurero',
       colorPrimarioARGB: json['colorPrimarioARGB'],
@@ -123,6 +128,7 @@ class Usuario {
       'codigoRecuperacion': codigoRecuperacion,
       'codigoExpira': codigoExpira?.toIso8601String(),
       'fechaRegistro': fechaRegistro.toIso8601String(),
+      'fechaNacimiento': fechaNacimiento.toIso8601String(),
       'tema': tema,
       'estilo': estilo,
       'colorPrimarioARGB': colorPrimarioARGB,

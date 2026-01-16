@@ -24,14 +24,16 @@ class RegistroServicio {
     required String numeroIBAN,
     required String fotoPerfil,
     required bool aceptaTerminos,
-    String? datosTargeta,
+    required DateTime fechaNacimiento,
     String? huellaBiometrica,
+    String? numeroTarjeta,
+    String? fechaExpiracion,
+    String? cvv,
   }) async {
     // Acumula errores de validación
     final errores = <String, String>{};
 
-    // ========== VALIDACIONES ==========
-
+    // ========== VALIDACIONES ========== 
     // Nombre y apellidos
     if (nombreApellidos.isEmpty) {
       errores['nombreApellidos'] = 'El nombre y apellidos son requeridos';
@@ -87,6 +89,44 @@ class RegistroServicio {
       errores['fotoPerfil'] = 'La foto de perfil es requerida';
     }
 
+    // Fecha de nacimiento (mayoría de edad)
+    if (!ValidacionesAutenticacion.esMayorDeEdad(fechaNacimiento)) {
+      errores['fechaNacimiento'] = 'Debes ser mayor de 18 años';
+    }
+
+    // Tarjeta (opcional, pero si se completa alguno se validan todos)
+    final tarjetaIngresada = (numeroTarjeta?.trim().isNotEmpty ?? false) ||
+        (fechaExpiracion?.trim().isNotEmpty ?? false) ||
+        (cvv?.trim().isNotEmpty ?? false);
+
+    if (tarjetaIngresada) {
+      final numTarjeta = numeroTarjeta?.replaceAll(RegExp(r'\s+'), '') ?? '';
+      if (numTarjeta.isEmpty || numTarjeta.length < 13 || numTarjeta.length > 19 || !RegExp(r'^\d{13,19}$').hasMatch(numTarjeta)) {
+        errores['numeroTarjeta'] = 'Número de tarjeta inválido';
+      }
+
+      if (fechaExpiracion == null || !RegExp(r'^(0[1-9]|1[0-2])\/\d{2}$').hasMatch(fechaExpiracion.trim())) {
+        errores['fechaExpiracion'] = 'Fecha de expiración inválida (MM/AA)';
+      } else {
+        final partes = fechaExpiracion.split('/');
+        final mes = int.tryParse(partes[0]);
+        final anio = int.tryParse('20${partes[1]}');
+        if (mes == null || anio == null) {
+          errores['fechaExpiracion'] = 'Fecha de expiración inválida';
+        } else {
+          final ahora = DateTime.now();
+          final finMes = DateTime(anio, mes + 1, 0);
+          if (!finMes.isAfter(DateTime(ahora.year, ahora.month, 0))) {
+            errores['fechaExpiracion'] = 'La tarjeta está expirada';
+          }
+        }
+      }
+
+      if (cvv == null || !RegExp(r'^\d{3,4}$').hasMatch(cvv.trim())) {
+        errores['cvv'] = 'CVV inválido';
+      }
+    }
+
     // Términos y condiciones
     if (!aceptaTerminos) {
       errores['aceptaTerminos'] = 'Debes aceptar los términos y condiciones';
@@ -135,9 +175,10 @@ class RegistroServicio {
         numeroIBAN: numeroIBAN,
         fotoPerfil: fotoPerfil,
         aceptaTerminos: aceptaTerminos,
-        datosTargeta: datosTargeta,
+        datosTargeta: _construirDatosTarjeta(numeroTarjeta, fechaExpiracion),
         huellaBiometrica: huellaBiometrica,
         fechaRegistro: DateTime.now(),
+        fechaNacimiento: fechaNacimiento,
       );
 
       await _repositorio.guardarUsuario(nuevoUsuario);
@@ -147,5 +188,16 @@ class RegistroServicio {
       return ResultadoRegistro.fallo(
           'Error al registrar usuario: ${e.toString()}');
     }
+  }
+
+  String? _construirDatosTarjeta(String? numeroTarjeta, String? fechaExpiracion) {
+    if (numeroTarjeta == null || numeroTarjeta.trim().isEmpty) return null;
+    final limpia = numeroTarjeta.replaceAll(RegExp(r'\s+'), '');
+    final ultimos4 = limpia.length >= 4 ? limpia.substring(limpia.length - 4) : limpia;
+    final mascara = '**** **** **** $ultimos4';
+    if (fechaExpiracion != null && fechaExpiracion.trim().isNotEmpty) {
+      return '$mascara (exp $fechaExpiracion)';
+    }
+    return mascara;
   }
 }

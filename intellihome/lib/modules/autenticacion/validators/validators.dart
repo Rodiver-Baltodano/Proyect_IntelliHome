@@ -79,4 +79,11 @@ class ValidacionesAutenticacion {
     final regex = RegExp(r'^[A-Z]{2}\d{2}[A-Z0-9]{1,30}$');
     return regex.hasMatch(valor);
   }
+
+  /// Valida si la persona es mayor o igual a 18 años.
+  static bool esMayorDeEdad(DateTime fechaNacimiento) {
+    final hoy = DateTime.now();
+    final fecha18 = DateTime(fechaNacimiento.year + 18, fechaNacimiento.month, fechaNacimiento.day);
+    return !fecha18.isAfter(hoy);
+  }
 }

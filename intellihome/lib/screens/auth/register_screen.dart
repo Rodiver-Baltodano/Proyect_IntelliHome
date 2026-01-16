@@ -22,13 +22,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _confirmarContrasenaController = TextEditingController();
   final _telefonoController = TextEditingController();
   final _ibanController = TextEditingController();
+  final _fechaNacimientoController = TextEditingController();
+  final _cardNumberController = TextEditingController();
+  final _cardExpiryController = TextEditingController();
+  final _cardCvvController = TextEditingController();
 
   String _nacionalidadSeleccionada = 'Costa Rica';
   bool _aceptaTerminos = false;
   bool _mostrarContrasena = false;
   bool _mostrarConfirmarContrasena = false;
+  bool _mostrarTarjeta = false;
   File? _imagenPerfil;
   String? _rutaFoto;
+  DateTime? _fechaNacimiento;
   
   late RegistroServicio _registroServicio;
   bool _inicializado = false;
@@ -61,6 +67,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
     _confirmarContrasenaController.dispose();
     _telefonoController.dispose();
     _ibanController.dispose();
+    _fechaNacimientoController.dispose();
+    _cardNumberController.dispose();
+    _cardExpiryController.dispose();
+    _cardCvvController.dispose();
     super.dispose();
   }
 
@@ -89,6 +99,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
       _cargando = true;
       _erroresValidacion = {};
     });
+
+    if (_fechaNacimiento == null) {
+      setState(() {
+        _erroresValidacion['fechaNacimiento'] = 'Selecciona tu fecha de nacimiento';
+        _cargando = false;
+      });
+      return;
+    }
 
     // Validar que las contraseñas coincidan
     if (_contrasenaController.text != _confirmarContrasenaController.text) {
@@ -121,6 +139,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
         numeroIBAN: _ibanController.text.trim(),
         fotoPerfil: fotoPerfil,
         aceptaTerminos: _aceptaTerminos,
+        fechaNacimiento: _fechaNacimiento!,
+        numeroTarjeta: _cardNumberController.text.trim(),
+        fechaExpiracion: _cardExpiryController.text.trim(),
+        cvv: _cardCvvController.text.trim(),
       );
 
       if (resultado.exito) {
@@ -143,10 +165,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
           _confirmarContrasenaController.clear();
           _telefonoController.clear();
           _ibanController.clear();
+          _fechaNacimientoController.clear();
+          _cardNumberController.clear();
+          _cardExpiryController.clear();
+          _cardCvvController.clear();
           setState(() {
             _imagenPerfil = null;
             _rutaFoto = null;
             _aceptaTerminos = false;
+            _fechaNacimiento = null;
+            _mostrarTarjeta = false;
           });
 
           // Navegar a Personalización después de 2 segundos
@@ -263,6 +291,27 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
+  Future<void> _seleccionarFechaNacimiento() async {
+    final hoy = DateTime.now();
+    final fechaInicial = DateTime(hoy.year - 18, hoy.month, hoy.day);
+    final seleccion = await showDatePicker(
+      context: context,
+      initialDate: fechaInicial,
+      firstDate: DateTime(1900, 1, 1),
+      lastDate: hoy,
+    );
+
+    if (seleccion != null) {
+      setState(() {
+        _fechaNacimiento = seleccion;
+        final dia = seleccion.day.toString().padLeft(2, '0');
+        final mes = seleccion.month.toString().padLeft(2, '0');
+        _fechaNacimientoController.text = '$dia/$mes/${seleccion.year}';
+        _erroresValidacion.remove('fechaNacimiento');
+      });
+    }
+  }
+
   /// Construye un TextField con validación visual
   Widget _buildTextField({
     required TextEditingController controller,
@@ -271,6 +320,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
     TextInputType keyboardType = TextInputType.text,
     bool obscureText = false,
     IconData? icon,
+    bool readOnly = false,
+    VoidCallback? onTap,
   }) {
     final tieneError = _erroresValidacion.containsKey(fieldKey);
     
@@ -281,6 +332,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
           controller: controller,
           obscureText: obscureText,
           keyboardType: keyboardType,
+          readOnly: readOnly,
+          onTap: onTap,
           decoration: InputDecoration(
             labelText: label,
             labelStyle: TextStyle(
@@ -478,6 +531,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
               ),
               const SizedBox(height: 16),
 
+              // Fecha de nacimiento
+              _buildTextField(
+                controller: _fechaNacimientoController,
+                label: 'Fecha de Nacimiento (DD/MM/AAAA)',
+                fieldKey: 'fechaNacimiento',
+                icon: Icons.cake,
+                readOnly: true,
+                onTap: _seleccionarFechaNacimiento,
+              ),
+              const SizedBox(height: 16),
+
               // Campo de contraseña
               _buildPasswordField(
                 controller: _contrasenaController,
@@ -548,6 +612,67 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 fieldKey: 'numeroIBAN',
                 icon: Icons.credit_card,
               ),
+              const SizedBox(height: 16),
+
+              // Tarjeta de crédito/débito (opcional)
+              Container(
+                decoration: BoxDecoration(
+                  border: Border.all(color: AppColors.secondaryColor.withOpacity(0.3)),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: ExpansionTile(
+                  title: const Text('Agregar tarjeta de crédito/débito (opcional)'),
+                  trailing: Icon(_mostrarTarjeta ? Icons.expand_less : Icons.expand_more),
+                  initiallyExpanded: _mostrarTarjeta,
+                  onExpansionChanged: (expanded) {
+                    setState(() {
+                      _mostrarTarjeta = expanded;
+                    });
+                  },
+                  childrenPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  children: [
+                    _buildTextField(
+                      controller: _cardNumberController,
+                      label: 'Número de tarjeta',
+                      fieldKey: 'numeroTarjeta',
+                      keyboardType: TextInputType.number,
+                      icon: Icons.credit_card,
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _buildTextField(
+                            controller: _cardExpiryController,
+                            label: 'Expiración (MM/AA)',
+                            fieldKey: 'fechaExpiracion',
+                            keyboardType: TextInputType.datetime,
+                            icon: Icons.date_range,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: _buildTextField(
+                            controller: _cardCvvController,
+                            label: 'CVV',
+                            fieldKey: 'cvv',
+                            keyboardType: TextInputType.number,
+                            icon: Icons.lock_outline,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Los datos de tarjeta son opcionales. No se guarda el CVV, solo los últimos 4 dígitos y la expiración.',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.textSecondaryColor),
+                    ),
+                    const SizedBox(height: 8),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
+
               const SizedBox(height: 30),
 
               // Botón de registrar
