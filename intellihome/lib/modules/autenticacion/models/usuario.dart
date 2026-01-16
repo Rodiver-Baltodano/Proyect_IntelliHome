@@ -33,6 +33,13 @@ class Usuario {
   final String? huellaBiometrica;    // Opcional
   final DateTime fechaRegistro;
 
+  // ========== PERSONALIZACIÓN (Tema y Estilo) ==========
+  /// Tema del usuario: 'claro', 'medio', 'oscuro' (Default: 'medio')
+  String tema;
+
+  /// Estilo del usuario: 'aventurero', 'minimalista', 'contemporaneo' (Default: 'aventurero')
+  String estilo;
+
   Usuario({
     required this.id,
     required this.username,
@@ -52,6 +59,8 @@ class Usuario {
     this.codigoRecuperacion,
     this.codigoExpira,
     required this.fechaRegistro,
+    this.tema = 'medio',
+    this.estilo = 'aventurero',
   });
 
   /// Crea un Usuario a partir de un Map (JSON)
@@ -77,6 +86,8 @@ class Usuario {
           ? DateTime.parse(json['codigoExpira'])
           : null,
       fechaRegistro: DateTime.parse(json['fechaRegistro'] as String),
+      tema: json['tema'] ?? 'medio',
+      estilo: json['estilo'] ?? 'aventurero',
     );
   }
 
@@ -101,6 +112,8 @@ class Usuario {
       'codigoRecuperacion': codigoRecuperacion,
       'codigoExpira': codigoExpira?.toIso8601String(),
       'fechaRegistro': fechaRegistro.toIso8601String(),
+      'tema': tema,
+      'estilo': estilo,
     };
   }
 

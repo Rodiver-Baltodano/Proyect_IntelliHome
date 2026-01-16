@@ -1,9 +1,9 @@
 import 'dart:math';
 
-import '../models/resultado_autenticacion.dart';
-import '../models/usuario.dart';
-import '../repositories/usuario_repository.dart';
-import '../validators/validators.dart';
+import 'package:intellihome/modules/autenticacion/models/resultado_autenticacion.dart';
+import 'package:intellihome/modules/autenticacion/models/usuario.dart';
+import 'package:intellihome/modules/autenticacion/repositories/usuario_repository.dart';
+import 'package:intellihome/modules/autenticacion/validators/validators.dart';
 
 /// Servicio principal de autenticación.
 /// - Login con username/correo/teléfono

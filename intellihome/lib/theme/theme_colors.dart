@@ -139,33 +139,37 @@ class OscuroThemeColors {
 /// Clase base para manejar los colores del tema de la aplicación
 /// Esta clase se usará para cambiar dinámicamente entre temas
 class AppThemeColors {
-  // Color principal actual
-  final Color primary;
+  // Color principal actual - mutable para permitir personalizaciones
+  Color primary;
   
-  // Color secundario actual
-  final Color secondary;
+  // Color secundario actual - mutable para permitir personalizaciones
+  Color secondary;
   
-  // Color terciario actual
-  final Color tertiary;
+  // Color terciario actual - mutable para permitir personalizaciones
+  Color tertiary;
   
-  // Color de fondo actual
-  final Color background;
+  // Color de fondo actual - mutable para permitir personalizaciones
+  Color background;
+
+  // Color de texto - para updateCustomColors
+  Color textColor;
 
   // Tipo de tema actualmente seleccionado
   final ThemeType themeType;
 
   /// Constructor que inicializa los colores del tema
-  const AppThemeColors({
+  AppThemeColors({
     required this.primary,
     required this.secondary,
     required this.tertiary,
     required this.background,
+    this.textColor = Colors.black87,
     required this.themeType,
   });
 
   /// Factory constructor para crear el tema CLARO
   factory AppThemeColors.claro() {
-    return const AppThemeColors(
+    return AppThemeColors(
       primary: ClaroThemeColors.primary,
       secondary: ClaroThemeColors.secondary,
       tertiary: ClaroThemeColors.tertiary,
@@ -177,7 +181,7 @@ class AppThemeColors {
   /// Factory constructor para crear el tema MEDIO
   /// Este es el tema predeterminado de la aplicación
   factory AppThemeColors.medio() {
-    return const AppThemeColors(
+    return AppThemeColors(
       primary: MedioThemeColors.primary,
       secondary: MedioThemeColors.secondary,
       tertiary: MedioThemeColors.tertiary,
@@ -188,7 +192,7 @@ class AppThemeColors {
 
   /// Factory constructor para crear el tema OSCURO
   factory AppThemeColors.oscuro() {
-    return const AppThemeColors(
+    return AppThemeColors(
       primary: OscuroThemeColors.primary,
       secondary: OscuroThemeColors.secondary,
       tertiary: OscuroThemeColors.tertiary,

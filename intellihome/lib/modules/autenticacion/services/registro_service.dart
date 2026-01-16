@@ -1,8 +1,8 @@
 import 'package:uuid/uuid.dart';
-import '../models/usuario.dart';
-import '../models/resultado_registro.dart';
-import '../validators/validators.dart';
-import '../repositories/usuario_repository.dart';
+import 'package:intellihome/modules/autenticacion/models/resultado_registro.dart';
+import 'package:intellihome/modules/autenticacion/models/usuario.dart';
+import 'package:intellihome/modules/autenticacion/repositories/usuario_repository.dart';
+import 'package:intellihome/modules/autenticacion/validators/validators.dart';
 
 /// Servicio unificado de registro de usuarios
 /// Maneja la creación de nuevos usuarios con validación completa
