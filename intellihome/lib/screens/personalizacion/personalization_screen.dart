@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:intellihome/config/app_colors.dart';
 import 'package:intellihome/modules/autenticacion/repositories/usuario_repository.dart';
-import 'package:intellihome/providers/theme_provider.dart';
 import 'package:intellihome/theme/theme_colors.dart';
+import 'package:intellihome/providers/theme_provider.dart';
+import 'package:provider/provider.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
 
@@ -16,16 +17,18 @@ class PersonalizationScreen extends StatefulWidget {
 }
 
 class _PersonalizationScreenState extends State<PersonalizationScreen> {
-  Color _tempColor = AppColors.primaryColor;
-  bool _isPrimarySelected = true;
-  bool _isBackgroundSelected = false;
+  // Rastrear qué botón está activo: 'primary' o 'background'
+  String _colorSeleccionado = 'primary';
+  
+  // Colores actuales mostrados en los botones (cambian con el tema)
+  Color _colorPrimario = MedioThemeColors.primary;
+  Color _colorFondo = MedioThemeColors.background;
 
   String _tema = 'medio';
   String _estilo = 'aventurero';
   bool _cargando = true;
 
   late UsuarioRepositorioJson _repo;
-  ThemeProvider? _themeProvider;
 
   @override
   void initState() {
@@ -41,19 +44,22 @@ class _PersonalizationScreenState extends State<PersonalizationScreen> {
 
       final u = await _repo.buscarPorIdentificador(widget.username);
 
-      if (u != null) {
-        final provider = ThemeProvider();
+      if (u != null && mounted) {
+        // Inicializar el provider global con el usuario
+        final provider = context.read<ThemeProvider>();
         provider.setRepositorio(_repo);
         provider.inicializarConUsuario(u);
-        provider.addListener(() => mounted ? setState(() {}) : null);
+        
         setState(() {
-          _themeProvider = provider;
           _tema = u.tema;
           _estilo = u.estilo;
+          // Inicializar colores desde el provider
+          _colorPrimario = provider.currentTheme.primary;
+          _colorFondo = provider.currentTheme.background;
         });
       }
     } catch (e) {
-      // no-op, UI-only fallback
+      print('Error inicializando personalización: $e');
     } finally {
       if (mounted) setState(() => _cargando = false);
     }
@@ -93,35 +99,48 @@ class _PersonalizationScreenState extends State<PersonalizationScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Rueda de selección de color (solo UI, no guarda)
+                  // Rueda de selección de color
                   Center(
                     child: ColorPicker(
-                      pickerColor: _tempColor,
-                      onColorChanged: (c) => setState(() => _tempColor = c),
+                      pickerColor: _colorSeleccionado == 'primary' ? _colorPrimario : _colorFondo,
+                      onColorChanged: (c) {
+                        setState(() {
+                          if (_colorSeleccionado == 'primary') {
+                            _colorPrimario = c;
+                            // Actualizar en tiempo real sin persistir
+                            context.read<ThemeProvider>().updatePrimaryColorPreview(c);
+                          } else {
+                            _colorFondo = c;
+                            // Actualizar en tiempo real sin persistir
+                            context.read<ThemeProvider>().updateBackgroundColorPreview(c);
+                          }
+                        });
+                      },
                       pickerAreaHeightPercent: 0.7,
                       enableAlpha: false,
                       labelTypes: const [],
                       displayThumbColor: true,
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 16),
+                  // Botones para seleccionar qué color editar
                   Row(
                     children: [
                       Expanded(
-                        child: CheckboxListTile(
-                          value: _isPrimarySelected,
-                          onChanged: (v) => setState(() => _isPrimarySelected = v ?? false),
-                          title: const Text('Color primario'),
-                          controlAffinity: ListTileControlAffinity.leading,
+                        child: _ColorButton(
+                          label: 'Color Primario',
+                          color: _colorPrimario,
+                          isSelected: _colorSeleccionado == 'primary',
+                          onTap: () => setState(() => _colorSeleccionado = 'primary'),
                         ),
                       ),
-                      const SizedBox(width: 8),
+                      const SizedBox(width: 12),
                       Expanded(
-                        child: CheckboxListTile(
-                          value: _isBackgroundSelected,
-                          onChanged: (v) => setState(() => _isBackgroundSelected = v ?? false),
-                          title: const Text('Color de fondo'),
-                          controlAffinity: ListTileControlAffinity.leading,
+                        child: _ColorButton(
+                          label: 'Color de Fondo',
+                          color: _colorFondo,
+                          isSelected: _colorSeleccionado == 'background',
+                          onTap: () => setState(() => _colorSeleccionado = 'background'),
                         ),
                       ),
                     ],
@@ -141,28 +160,43 @@ class _PersonalizationScreenState extends State<PersonalizationScreen> {
                 children: [
                   ChoiceChip(
                     label: const Text('Claro'),
-                    selected: _themeProvider?.currentThemeType == ThemeType.claro || _tema == 'claro',
-                    onSelected: (_) async {
-                      setState(() => _tema = 'claro');
-                      await _themeProvider?.changeTheme(ThemeType.claro);
+                    selected: _tema == 'claro',
+                    onSelected: (_) {
+                      setState(() {
+                        _tema = 'claro';
+                        _colorPrimario = ClaroThemeColors.primary;
+                        _colorFondo = ClaroThemeColors.background;
+                      });
+                      // Cambiar en tiempo real sin persistir
+                      context.read<ThemeProvider>().changeThemePreview(ThemeType.claro);
                       _showSaved('Tema: Claro');
                     },
                   ),
                   ChoiceChip(
                     label: const Text('Medio'),
-                    selected: _themeProvider?.currentThemeType == ThemeType.medio || _tema == 'medio',
-                    onSelected: (_) async {
-                      setState(() => _tema = 'medio');
-                      await _themeProvider?.changeTheme(ThemeType.medio);
+                    selected: _tema == 'medio',
+                    onSelected: (_) {
+                      setState(() {
+                        _tema = 'medio';
+                        _colorPrimario = MedioThemeColors.primary;
+                        _colorFondo = MedioThemeColors.background;
+                      });
+                      // Cambiar en tiempo real sin persistir
+                      context.read<ThemeProvider>().changeThemePreview(ThemeType.medio);
                       _showSaved('Tema: Medio');
                     },
                   ),
                   ChoiceChip(
                     label: const Text('Oscuro'),
-                    selected: _themeProvider?.currentThemeType == ThemeType.oscuro || _tema == 'oscuro',
-                    onSelected: (_) async {
-                      setState(() => _tema = 'oscuro');
-                      await _themeProvider?.changeTheme(ThemeType.oscuro);
+                    selected: _tema == 'oscuro',
+                    onSelected: (_) {
+                      setState(() {
+                        _tema = 'oscuro';
+                        _colorPrimario = OscuroThemeColors.primary;
+                        _colorFondo = OscuroThemeColors.background;
+                      });
+                      // Cambiar en tiempo real sin persistir
+                      context.read<ThemeProvider>().changeThemePreview(ThemeType.oscuro);
                       _showSaved('Tema: Oscuro');
                     },
                   ),
@@ -181,28 +215,28 @@ class _PersonalizationScreenState extends State<PersonalizationScreen> {
                 children: [
                   ChoiceChip(
                     label: const Text('Minimalista ✨'),
-                    selected: (_themeProvider?.currentStyle == StyleType.minimalista) || _estilo == 'minimalista',
-                    onSelected: (_) async {
+                    selected: _estilo == 'minimalista',
+                    onSelected: (_) {
                       setState(() => _estilo = 'minimalista');
-                      await _themeProvider?.changeStyle(StyleType.minimalista);
+                      context.read<ThemeProvider>().changeStylePreview(StyleType.minimalista);
                       _showSaved('Estilo: Minimalista');
                     },
                   ),
                   ChoiceChip(
                     label: const Text('Aventurero 🚀'),
-                    selected: (_themeProvider?.currentStyle == StyleType.aventurero) || _estilo == 'aventurero',
-                    onSelected: (_) async {
+                    selected: _estilo == 'aventurero',
+                    onSelected: (_) {
                       setState(() => _estilo = 'aventurero');
-                      await _themeProvider?.changeStyle(StyleType.aventurero);
+                      context.read<ThemeProvider>().changeStylePreview(StyleType.aventurero);
                       _showSaved('Estilo: Aventurero');
                     },
                   ),
                   ChoiceChip(
                     label: const Text('Contemporáneo 🖼️'),
-                    selected: (_themeProvider?.currentStyle == StyleType.contemporaneo) || _estilo == 'contemporaneo',
-                    onSelected: (_) async {
+                    selected: _estilo == 'contemporaneo',
+                    onSelected: (_) {
                       setState(() => _estilo = 'contemporaneo');
-                      await _themeProvider?.changeStyle(StyleType.contemporaneo);
+                      context.read<ThemeProvider>().changeStylePreview(StyleType.contemporaneo);
                       _showSaved('Estilo: Contemporáneo');
                     },
                   ),
@@ -219,8 +253,29 @@ class _PersonalizationScreenState extends State<PersonalizationScreen> {
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 14),
               ),
-              onPressed: () {
-                Navigator.pushReplacementNamed(context, '/login');
+              onPressed: () async {
+                // Guardar todos los cambios en el usuario
+                try {
+                  await context.read<ThemeProvider>().guardarCambios(_tema, _estilo);
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Personalización guardada para ${widget.username}'),
+                        backgroundColor: AppColors.successColor,
+                      ),
+                    );
+                    Navigator.pushReplacementNamed(context, '/login');
+                  }
+                } catch (e) {
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Error al guardar: $e'),
+                        backgroundColor: AppColors.errorColor,
+                      ),
+                    );
+                  }
+                }
               },
               child: const Text('Listo'),
             ),
@@ -237,6 +292,76 @@ class _PersonalizationScreenState extends State<PersonalizationScreen> {
         content: Text('$msg guardado'),
         backgroundColor: AppColors.successColor,
         duration: const Duration(seconds: 1),
+      ),
+    );
+  }
+}
+
+/// Widget para botón de selección de color con círculo visual
+class _ColorButton extends StatelessWidget {
+  final String label;
+  final Color color;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _ColorButton({
+    required this.label,
+    required this.color,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.primaryColor.withOpacity(0.1) : Colors.grey[100],
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSelected ? AppColors.primaryColor : Colors.grey[300]!,
+            width: isSelected ? 2.5 : 1.5,
+          ),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // Círculo mostrando el color
+            Container(
+              width: 24,
+              height: 24,
+              decoration: BoxDecoration(
+                color: color,
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.grey[400]!, width: 1),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            // Texto
+            Flexible(
+              child: Text(
+                label,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                  color: isSelected ? AppColors.primaryColor : Colors.grey[700],
+                ),
+                textAlign: TextAlign.center,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

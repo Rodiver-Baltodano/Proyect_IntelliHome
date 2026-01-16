@@ -119,6 +119,27 @@ class ThemeProvider extends ChangeNotifier {
     }
   }
 
+  /// Cambia el tema SIN persistir (para preview en PersonalizationScreen)
+  void changeThemePreview(ThemeType themeType) {
+    switch (themeType) {
+      case ThemeType.claro:
+        _currentTheme = AppThemeColors.claro();
+        break;
+      case ThemeType.oscuro:
+        _currentTheme = AppThemeColors.oscuro();
+        break;
+      case ThemeType.medio:
+        _currentTheme = AppThemeColors.medio();
+        break;
+    }
+    // Actualizar AppColors para que se vea en todas las vistas
+    AppColors.updatePrimaryColor(_currentTheme.primary);
+    AppColors.updateSecondaryColor(_currentTheme.secondary);
+    AppColors.updateTertiaryColor(_currentTheme.tertiary);
+    AppColors.updateAccentColor(_currentTheme.tertiary);
+    notifyListeners();
+  }
+
   /// Cambia el tema y lo persiste en el usuario (limpia colores personalizados)
   /// USO: provider.changeTheme(ThemeType.oscuro);
   Future<void> changeTheme(ThemeType themeType) async {
@@ -148,6 +169,12 @@ class ThemeProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Cambia el estilo SIN persistir (para preview)
+  void changeStylePreview(StyleType styleType) {
+    _currentStyle = styleType;
+    notifyListeners();
+  }
+
   /// Cambia el estilo y lo persiste en el usuario
   /// USO: provider.changeStyle(StyleType.minimalista);
   Future<void> changeStyle(StyleType styleType) async {
@@ -158,6 +185,20 @@ class ThemeProvider extends ChangeNotifier {
     _currentStyle = styleType;
     _usuarioActual!.estilo = styleType.name;
     await _persistirUsuario();
+    notifyListeners();
+  }
+
+  /// Actualiza el color primario SIN persistir (para preview)
+  void updatePrimaryColorPreview(Color color) {
+    _currentTheme.primary = color;
+    AppColors.updatePrimaryColor(color);
+    notifyListeners();
+  }
+
+  /// Actualiza el color de fondo SIN persistir (para preview)
+  void updateBackgroundColorPreview(Color color) {
+    _currentTheme.background = color;
+    AppColors.updateSecondaryColor(color);
     notifyListeners();
   }
 
@@ -189,6 +230,21 @@ class ThemeProvider extends ChangeNotifier {
     _persistirUsuario();
     _syncAppColors();
     notifyListeners();
+  }
+
+  /// Guarda todos los cambios actuales en el usuario y persiste en JSON
+  Future<void> guardarCambios(String tema, String estilo) async {
+    if (_usuarioActual == null) {
+      throw Exception('No hay usuario logueado');
+    }
+
+    _usuarioActual!.tema = tema;
+    _usuarioActual!.estilo = estilo;
+    _usuarioActual!.colorPrimarioARGB = _currentTheme.primary.value;
+    _usuarioActual!.colorBackgroundARGB = _currentTheme.background.value;
+    
+    await _persistirUsuario();
+    _syncAppColors();
   }
 
   /// Obtiene los datos de personalización actual del usuario
