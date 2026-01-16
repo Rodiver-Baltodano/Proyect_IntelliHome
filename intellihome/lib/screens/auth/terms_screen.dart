@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intellihome/config/app_colors.dart';
+import 'package:intellihome/l10n/app_localizations.dart';
 
 class TermsUI extends StatefulWidget {
   const TermsUI({super.key});
@@ -15,7 +16,7 @@ class _TermsUIState extends State<TermsUI> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Términos y Condiciones'),
+        title: Text(AppLocalizations.of(context).termsTitle),
         centerTitle: true,
         backgroundColor: AppColors.primaryColor,
         foregroundColor: Colors.white,
@@ -26,7 +27,7 @@ class _TermsUIState extends State<TermsUI> {
           children: [
             // Encabezado
             Text(
-              'Términos y Condiciones de IntelliHome',
+              AppLocalizations.of(context).termsTitle,
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                     fontWeight: FontWeight.bold,
                     color: AppColors.primaryColor,
@@ -48,81 +49,7 @@ class _TermsUIState extends State<TermsUI> {
                 padding: const EdgeInsets.all(16),
                 child: SingleChildScrollView(
                   child: Text(
-                    '''
-                    Términos y Condiciones de Uso de Intelihome 
-Última actualización: 8/1/2025 
-Bienvenido a Intelihome. Estos Términos y Condiciones ("Términos") regulan el acceso y uso de 
-nuestra plataforma, servicios y aplicaciones (colectivamente, "la Plataforma"). Al acceder o utilizar 
-Intelihome, usted acepta estar sujeto a estos Términos. 
-
-1. Definiciones 
-• "Intelihome": se refiere a la plataforma y los servicios ofrecidos para conectar a anfitriones 
-y huéspedes. 
-• "Usuario": cualquier persona que accede a la Plataforma, ya sea como anfitrión o 
-huésped. 
-• "Anfitrión": usuario que publica propiedades para ser reservadas. 
-• "Huésped": usuario que realiza reservas a través de la Plataforma. 
-• "Contenido": toda información, texto, imágenes, videos, y cualquier otro material 
-compartido en la Plataforma. 
-
-2. Aceptación de los Términos Al usar Intelihome, usted declara que tiene al menos 12 años de 
-edad y que tiene la capacidad legal para aceptar estos Términos. Si no está de acuerdo con alguno 
-de los Términos, debe abstenerse de utilizar la Plataforma.
-
-3. Registro y Cuentas 
-• Para usar Intelihome, debe crear una cuenta proporcionando información veraz y 
-completa. 
-• Usted es responsable de mantener la confidencialidad de su cuenta y contraseña. 
-• Intelihome se reserva el derecho de suspender o cancelar cuentas en caso de uso indebido 
-o violación de estos Términos. 
-
-4. Uso de la Plataforma 
-• Los anfitriones deben garantizar que las propiedades publicadas cumplen con las leyes 
-locales y están debidamente habilitadas para ser alquiladas. 
-• Los huéspedes son responsables de usar las propiedades de manera respetuosa y de 
-cumplir con las reglas establecidas por los anfitriones. 
-• Está prohibido publicar contenido que sea ofensivo, ilegal o que viole derechos de 
-terceros. 
-
-5. Tarifas y Pagos 
-• Intelihome cobra tarifas por el uso de la Plataforma, las cuales se detallan durante el 
-proceso de reserva. 
-• Los pagos se procesan a través de sistemas seguros de terceros. Intelihome no almacena 
-información de tarjetas de crédito. 
-• Cualquier reembolso está sujeto a las políticas especificadas en el momento de la reserva.
-
-6. Políticas de Cancelación 
-• Los anfitriones pueden establecer sus propias políticas de cancelación, siempre que se 
-ajusten a las directrices de Intelihome. 
-• Las cancelaciones realizadas por los huéspedes estarán sujetas a dichas políticas. 
-• Intelihome se reserva el derecho de intervenir en disputas relacionadas con cancelaciones. 
-
-7. Limitación de Responsabilidad 
-• Intelihome no garantiza la calidad, seguridad o legalidad de las propiedades anunciadas. 
-• Intelihome no será responsable por daños directos, indirectos o incidentales derivados del 
-uso de la Plataforma. 
-• Los usuarios asumen toda responsabilidad por las interacciones y acuerdos realizados a 
-través de Intelihome. 
-
-8. Propiedad Intelectual 
-• Todo el contenido de la Plataforma, incluyendo logos, marcas y diseños, es propiedad de 
-Intelihome o sus licenciantes. 
-• Está prohibido reproducir, distribuir o usar dicho contenido sin autorización previa. 
-
-9. Modificaciones a los Términos Intelihome se reserva el derecho de modificar estos Términos en 
-cualquier momento. Las modificaciones serán notificadas a los usuarios a través de la Plataforma. 
-El uso continuado de Intelihome implica la aceptación de los Términos actualizados. 
-
-10. Ley Aplicable y Jurisdicción Estos Términos se regirán por las leyes del país donde Intelihome 
-tenga su sede principal. Cualquier disputa será resuelta ante los tribunales competentes de dicha 
-jurisdicción. 
-
-11. Contacto Si tiene preguntas sobre estos Términos, puede contactarnos en: 
-Correo electrónico: soporte@intelihome.com  
-
-
-Gracias por elegir Intelihome. Disfrute de su experiencia en nuestra plataforma.
-                    ''',
+                    AppLocalizations.of(context).termsContent,
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           color: AppColors.textPrimaryColor,
                           height: 1.5,
@@ -159,7 +86,7 @@ Gracias por elegir Intelihome. Disfrute de su experiencia en nuestra plataforma.
                   ),
                   Expanded(
                     child: Text(
-                      'He leído y acepto los términos y condiciones',
+                      AppLocalizations.of(context).acceptTermsCheckbox,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                             color: AppColors.textPrimaryColor,
                             fontWeight: FontWeight.w500,
@@ -186,8 +113,8 @@ Gracias por elegir Intelihome. Disfrute de su experiencia en nuestra plataforma.
                       Navigator.pop(context, true);
                     }
                   : null,
-              child: const Text(
-                'Aceptar y Continuar',
+              child: Text(
+                AppLocalizations.of(context).acceptAndContinue,
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
@@ -208,8 +135,8 @@ Gracias por elegir Intelihome. Disfrute de su experiencia en nuestra plataforma.
               onPressed: () {
                 Navigator.pop(context, false);
               },
-              child: const Text(
-                'Cancelar',
+              child: Text(
+                AppLocalizations.of(context).cancel,
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
