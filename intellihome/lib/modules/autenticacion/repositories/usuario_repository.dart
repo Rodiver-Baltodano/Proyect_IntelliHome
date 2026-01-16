@@ -20,8 +20,11 @@ class UsuarioRepositorioJson {
   Future<List<Usuario>> cargarUsuarios() async {
     final archivo = File(rutaArchivo);
 
+    print('📂 [REPO] Cargando usuarios desde: $rutaArchivo');
+
     if (!await archivo.exists()) {
       // Si no existe, devolvemos lista vacía (o podés lanzar error si preferís)
+      print('⚠️ [REPO] Archivo no existe, retornando lista vacía.');
       return [];
     }
 

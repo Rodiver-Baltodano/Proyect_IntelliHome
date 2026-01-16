@@ -124,6 +124,13 @@ class AutenticacionServicio {
   }) async {
     final id = identificador.trim();
 
+    // Validar que identificador no esté vacío
+    if (id.isEmpty) {
+      return ResultadoAutenticacion.errorFormato(
+        mensaje: 'Por favor ingrese su teléfono, email o usuario.',
+      );
+    }
+
     if (!_identificadorEsValido(id)) {
       return ResultadoAutenticacion.errorFormato(
         mensaje: 'Formato inválido. Ingrese usuario/correo/teléfono válido.',
@@ -132,16 +139,26 @@ class AutenticacionServicio {
 
     final usuario = await usuarioRepositorio.buscarPorIdentificador(id);
     if (usuario == null) {
+      print('❌ [RECUPERACIÓN] Usuario no encontrado: $id');
       return ResultadoAutenticacion.usuarioNoExiste(
         mensaje: 'El usuario no existe. Verifique sus datos.',
       );
     }
 
+    print('✓ [RECUPERACIÓN] Usuario encontrado: $id (ID: ${usuario.id})');
+
     // Generar código (6 dígitos)
     final codigo = _generarCodigo6Digitos();
 
+    // Imprimir el código en consola para pruebas
+    print('🔐 [RECUPERACIÓN] Código de recuperación para $id: $codigo');
+
     // Guardar código + expiración en usuario
     usuario.asignarCodigoRecuperacion(codigo, duracionCodigoRecuperacion);
+
+    // Resetear intentos fallidos de código para empezar de cero
+    usuario.intentosFallidosCodigo = 0;
+    print('📝 [RECUPERACIÓN] Intentos de código reseteados a 0 para nueva sesión de recuperación.');
 
     // Nota: No importa si estaba bloqueado: este flujo permite desbloquear.
     await usuarioRepositorio.actualizarUsuario(usuario);
@@ -161,6 +178,8 @@ class AutenticacionServicio {
   /// Verifica el código ingresado por el usuario.
   /// Si es válido, permite continuar al cambio de contraseña.
   /// Si hay 5 intentos fallidos, bloquea la cuenta y pide contactar soporte.
+  /// Nota: Este flujo permite verificar código incluso si la cuenta estaba bloqueada,
+  /// porque es el mecanismo para desbloquear.
   Future<ResultadoAutenticacion> verificarCodigoRecuperacion({
     required String identificador,
     required String codigo,
@@ -181,21 +200,24 @@ class AutenticacionServicio {
       );
     }
 
-    // Verificar si está bloqueado
-    if (usuario.estaBloqueado) {
-      return ResultadoAutenticacion.usuarioBloqueado(
-        mensaje: 'Cuenta bloqueada. Por favor contacte a soporte para desbloquearla.',
-      );
-    }
+    // NO verificar bloqueo aquí - el flujo de recuperación es para desbloquear
+    // if (usuario.estaBloqueado) { ... }
 
     final esValido = usuario.codigoRecuperacionEsValido(cod);
+    print('📋 [VERIFICACIÓN CÓDIGO] Verificando código para $id. Intento ${usuario.intentosFallidosCodigo + 1} de $maxIntentos');
+
     if (!esValido) {
+      print('❌ [VERIFICACIÓN CÓDIGO] Código inválido. Código actual en BD: ${usuario.codigoRecuperacion}, Enviado: $cod');
+
       // Incrementar intentos fallidos de código
       usuario.incrementarIntentosFallidosCodigo(maxIntentos: maxIntentos);
+      print('⚠️ [VERIFICACIÓN CÓDIGO] Intentos fallidos incrementados a: ${usuario.intentosFallidosCodigo}. Bloqueado: ${usuario.estaBloqueado}');
+
       await usuarioRepositorio.actualizarUsuario(usuario);
 
-      // Si se bloqueó la cuenta
+      // Si se bloqueó la cuenta por demasiados intentos de código
       if (usuario.estaBloqueado) {
+        print('🔒 [VERIFICACIÓN CÓDIGO] Cuenta bloqueada por demasiados intentos fallidos.');
         return ResultadoAutenticacion.usuarioBloqueado(
           mensaje: 'Demasiados intentos fallidos. Cuenta bloqueada. Por favor contacte a soporte.',
         );
@@ -208,6 +230,7 @@ class AutenticacionServicio {
       );
     }
 
+    print('✅ [VERIFICACIÓN CÓDIGO] Código válido para $id');
     return ResultadoAutenticacion.exitoso(
       mensaje: 'Código verificado. Puede actualizar la contraseña.',
       idUsuario: usuario.id,

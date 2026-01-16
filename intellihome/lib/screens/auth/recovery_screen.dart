@@ -39,10 +39,16 @@ class _RecoveryScreenState extends State<RecoveryScreen> {
     super.didChangeDependencies();
     if (!_inicializado) {
       _inicializarServicios();
-      // Si viene username del login, lo inicializamos
+      // Si viene username del login, solicitar código automáticamente
       if (widget.username != null && widget.username!.isNotEmpty) {
         _usuarioController.text = widget.username!;
         _usuarioIngresado = true;
+        // Solicitar código automáticamente
+        Future.delayed(const Duration(milliseconds: 500), () {
+          if (mounted) {
+            _handleSolicitarCodigo();
+          }
+        });
       }
       _inicializado = true;
     }
@@ -73,7 +79,7 @@ class _RecoveryScreenState extends State<RecoveryScreen> {
 
     if (usuario.isEmpty) {
       setState(() {
-        _errorUsuario = 'Ingresa tu usuario o correo';
+        _errorUsuario = 'Por favor ingresa tu teléfono, email o usuario.';
       });
       return;
     }
@@ -437,7 +443,7 @@ class _RecoveryScreenState extends State<RecoveryScreen> {
               ),
               const SizedBox(height: 30),
 
-              // Paso 1: Ingresar usuario/correo
+              // Paso 1: Ingresar usuario/correo (solo si no viene del login)
               if (!_usuarioIngresado) ...[
                 _buildTextField(
                   controller: _usuarioController,
@@ -464,10 +470,31 @@ class _RecoveryScreenState extends State<RecoveryScreen> {
                         )
                       : const Text('Solicitar Código'),
                 ),
+              ] else if (_cargando && !_mostrarCamposContrasena) ...[
+                // Indicador de que se está solicitando código
+                Center(
+                  child: Column(
+                    children: [
+                      const SizedBox(height: 40),
+                      const CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
+                        strokeWidth: 3,
+                      ),
+                      const SizedBox(height: 20),
+                      Text(
+                        'Solicitando código...',
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              color: AppColors.primaryColor,
+                            ),
+                      ),
+                      const SizedBox(height: 40),
+                    ],
+                  ),
+                ),
               ],
 
               // Paso 2: Ingresar código
-              if (_usuarioIngresado && !_mostrarCamposContrasena) ...[
+              if (_usuarioIngresado && !_mostrarCamposContrasena && !_cargando) ...[
                 _buildTextField(
                   controller: _codigoController,
                   label: 'Código de Recuperación',
