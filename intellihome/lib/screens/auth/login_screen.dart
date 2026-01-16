@@ -76,16 +76,25 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
             const SizedBox(height: 30),
 
-            // Botón de login
-            ElevatedButton(
-              onPressed: _handleLogin,
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 16),
-              ),
-              child: const Text(
-                'Iniciar Sesión',
-                style: TextStyle(fontSize: 16),
-              ),
+            // Botones de login y registrarse
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: _handleLogin,
+                    child: const Text('Iniciar Sesión'),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () {
+                      Navigator.pushNamed(context, '/register');
+                    },
+                    child: const Text('Registrarse'),
+                  ),
+                ),
+              ],
             ),
           ],
         ),
