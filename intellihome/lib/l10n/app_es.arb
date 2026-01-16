@@ -1,0 +1,10 @@
+{
+  "@@locale": "es",
+  "appTitle": "IntelliHome",
+  "selectTheme": "Selecciona tu tema",
+  "selectStyle": "Elige tu estilo",
+  "lightTheme": "Claro",
+  "mediumTheme": "Medio",
+  "darkTheme": "Oscuro",
+  "confirm": "Confirmar"
+}

@@ -28,6 +28,9 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        
+        // Configuración de idiomas soportados
+        resourceConfigurations.addAll(listOf("en", "es", "pt"))
     }
 
     buildTypes {
