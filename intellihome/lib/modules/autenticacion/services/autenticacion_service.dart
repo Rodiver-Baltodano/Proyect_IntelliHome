@@ -1,9 +1,9 @@
 import 'dart:math';
 
-import '../modelos/resultado_autenticacion.dart';
-import '../modelos/usuario.dart';
-import '../repositorios/usuario_repositorio_json.dart';
-import '../validadores/validadores.dart';
+import '../models/resultado_autenticacion.dart';
+import '../models/usuario.dart';
+import '../repositories/usuario_repository.dart';
+import '../validators/validators.dart';
 
 /// Servicio principal de autenticación.
 /// - Login con username/correo/teléfono

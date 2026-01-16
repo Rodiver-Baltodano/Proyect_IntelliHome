@@ -79,12 +79,4 @@ class ValidacionesAutenticacion {
     final regex = RegExp(r'^[A-Z]{2}\d{2}[A-Z0-9]{1,30}$');
     return regex.hasMatch(valor);
   }
-
-  /// Valida si es alfanumérico (letras, números y espacios).
-  static bool esAlfanumerico(String valor) {
-    if (valor.isEmpty) return false;
-
-    final regex = RegExp(r'^[a-zA-Z0-9\s]+$');
-    return regex.hasMatch(valor);
-  }
 }

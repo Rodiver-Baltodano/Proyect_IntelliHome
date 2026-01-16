@@ -1,8 +1,6 @@
 import 'dart:io';
 import 'package:path/path.dart' as p;
-import 'moduloAutenticacion/servicios/registro_servicio.dart';
-import 'moduloAutenticacion/servicios/autenticacion_servicio.dart';
-import 'moduloAutenticacion/repositorios/usuario_repositorio_json.dart';
+import 'modules/autenticacion/autenticacion.dart';
 
 void main() async {
   print('========================================');

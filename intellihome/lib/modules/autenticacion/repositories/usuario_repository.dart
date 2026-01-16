@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:intellihome/moduloAutenticacion/modelos/usuario.dart';
+import 'package:intellihome/modules/autenticacion/models/usuario.dart';
 
 /// Repositorio que carga y guarda usuarios en un archivo JSON.
 ///

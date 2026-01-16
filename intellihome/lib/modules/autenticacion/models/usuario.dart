@@ -135,4 +135,3 @@ class Usuario {
     return codigoRecuperacion == codigo;
   }
 }
-

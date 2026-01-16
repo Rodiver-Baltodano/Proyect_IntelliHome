@@ -1,8 +1,8 @@
 import 'package:uuid/uuid.dart';
-import '../modelos/usuario.dart';
-import '../modelos/resultado_registro.dart';
-import '../validadores/validadores.dart';
-import '../repositorios/usuario_repositorio_json.dart';
+import '../models/usuario.dart';
+import '../models/resultado_registro.dart';
+import '../validators/validators.dart';
+import '../repositories/usuario_repository.dart';
 
 /// Servicio unificado de registro de usuarios
 /// Maneja la creación de nuevos usuarios con validación completa
