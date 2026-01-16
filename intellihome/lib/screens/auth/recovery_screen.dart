@@ -33,6 +33,8 @@ class _RecoveryScreenState extends State<RecoveryScreen> {
   bool _usuarioIngresado = false;
   bool _mostrarCamposContrasena = false;
   String? _usuarioRecuperando;
+  bool _mostrarContrasena = false;
+  bool _mostrarConfirmarContrasena = false;
 
   @override
   void didChangeDependencies() {
@@ -379,6 +381,72 @@ class _RecoveryScreenState extends State<RecoveryScreen> {
     );
   }
 
+  Widget _buildPasswordField({
+    required TextEditingController controller,
+    required String label,
+    required String? error,
+    required bool obscureText,
+    required VoidCallback onToggleVisibility,
+    IconData? icon,
+  }) {
+    final tieneError = error != null && error.isNotEmpty;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        TextField(
+          controller: controller,
+          obscureText: obscureText,
+          keyboardType: TextInputType.visiblePassword,
+          decoration: InputDecoration(
+            labelText: label,
+            labelStyle: TextStyle(
+              color: tieneError ? AppColors.errorColor : AppColors.secondaryColor,
+            ),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide(
+                color: tieneError ? AppColors.errorColor : AppColors.primaryColor,
+                width: 2,
+              ),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide(
+                color: tieneError ? AppColors.errorColor : Colors.grey,
+                width: tieneError ? 2 : 1,
+              ),
+            ),
+            prefixIcon: Icon(
+              icon,
+              color: tieneError ? AppColors.errorColor : AppColors.secondaryColor,
+            ),
+            suffixIcon: IconButton(
+              icon: Icon(
+                obscureText ? Icons.visibility_off : Icons.visibility,
+                color: AppColors.secondaryColor,
+              ),
+              onPressed: onToggleVisibility,
+            ),
+          ),
+        ),
+        if (tieneError) ...[
+          const SizedBox(height: 4),
+          Text(
+            error,
+            style: TextStyle(
+              color: AppColors.errorColor,
+              fontSize: 12,
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -525,19 +593,21 @@ class _RecoveryScreenState extends State<RecoveryScreen> {
               // Campos de nueva contraseña (aparecen después de verificar código)
               if (_mostrarCamposContrasena) ...[
                 const SizedBox(height: 16),
-                _buildTextField(
+                _buildPasswordField(
                   controller: _contrasenaController,
                   label: 'Nueva Contraseña',
                   error: _errorContrasena,
-                  obscureText: true,
+                  obscureText: !_mostrarContrasena,
+                  onToggleVisibility: () => setState(() => _mostrarContrasena = !_mostrarContrasena),
                   icon: Icons.lock,
                 ),
                 const SizedBox(height: 16),
-                _buildTextField(
+                _buildPasswordField(
                   controller: _confirmarContrasenaController,
                   label: 'Confirmar Contraseña',
                   error: _errorConfirmar,
-                  obscureText: true,
+                  obscureText: !_mostrarConfirmarContrasena,
+                  onToggleVisibility: () => setState(() => _mostrarConfirmarContrasena = !_mostrarConfirmarContrasena),
                   icon: Icons.lock_outline,
                 ),
                 const SizedBox(height: 20),

@@ -23,6 +23,7 @@ class _LoginScreenState extends State<LoginScreen> {
   UsuarioRepositorioJson? _repositorio;
   bool _inicializado = false;
   bool _cargando = false;
+  bool _mostrarPassword = false;
   String? _errorUsername;
   String? _errorPassword;
 
@@ -152,6 +153,73 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  /// Construye un TextField con validación visual y toggle para contraseñas
+  Widget _buildPasswordField({
+    required TextEditingController controller,
+    required String label,
+    required String? error,
+    required bool obscureText,
+    required VoidCallback onToggleVisibility,
+    IconData? icon,
+  }) {
+    final tieneError = error != null && error.isNotEmpty;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        TextField(
+          controller: controller,
+          obscureText: obscureText,
+          keyboardType: TextInputType.visiblePassword,
+          decoration: InputDecoration(
+            labelText: label,
+            labelStyle: TextStyle(
+              color: tieneError ? AppColors.errorColor : AppColors.secondaryColor,
+            ),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide(
+                color: tieneError ? AppColors.errorColor : AppColors.primaryColor,
+                width: 2,
+              ),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide(
+                color: tieneError ? AppColors.errorColor : Colors.grey,
+                width: tieneError ? 2 : 1,
+              ),
+            ),
+            prefixIcon: Icon(
+              icon,
+              color: tieneError ? AppColors.errorColor : AppColors.secondaryColor,
+            ),
+            suffixIcon: IconButton(
+              icon: Icon(
+                obscureText ? Icons.visibility_off : Icons.visibility,
+                color: AppColors.secondaryColor,
+              ),
+              onPressed: onToggleVisibility,
+            ),
+          ),
+        ),
+        if (tieneError) ...[
+          const SizedBox(height: 4),
+          Text(
+            error,
+            style: TextStyle(
+              color: AppColors.errorColor,
+              fontSize: 12,
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
   /// Construye un TextField con validación visual
   Widget _buildTextField({
     required TextEditingController controller,
@@ -270,11 +338,12 @@ class _LoginScreenState extends State<LoginScreen> {
             const SizedBox(height: 20),
 
             // Campo de contraseña
-            _buildTextField(
+            _buildPasswordField(
               controller: _passwordController,
               label: 'Contraseña',
               error: _errorPassword,
-              obscureText: true,
+              obscureText: !_mostrarPassword,
+              onToggleVisibility: () => setState(() => _mostrarPassword = !_mostrarPassword),
               icon: Icons.lock,
             ),
             const SizedBox(height: 30),

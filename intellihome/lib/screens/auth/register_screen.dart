@@ -19,11 +19,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _correoController = TextEditingController();
   final _usernameController = TextEditingController();
   final _contrasenaController = TextEditingController();
+  final _confirmarContrasenaController = TextEditingController();
   final _telefonoController = TextEditingController();
   final _ibanController = TextEditingController();
 
   String _nacionalidadSeleccionada = 'Costa Rica';
   bool _aceptaTerminos = false;
+  bool _mostrarContrasena = false;
+  bool _mostrarConfirmarContrasena = false;
   File? _imagenPerfil;
   String? _rutaFoto;
   
@@ -55,6 +58,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     _correoController.dispose();
     _usernameController.dispose();
     _contrasenaController.dispose();
+    _confirmarContrasenaController.dispose();
     _telefonoController.dispose();
     _ibanController.dispose();
     super.dispose();
@@ -85,6 +89,23 @@ class _RegisterScreenState extends State<RegisterScreen> {
       _cargando = true;
       _erroresValidacion = {};
     });
+
+    // Validar que las contraseñas coincidan
+    if (_contrasenaController.text != _confirmarContrasenaController.text) {
+      setState(() {
+        _erroresValidacion['contrasena'] = 'Las contraseñas no coinciden';
+        _cargando = false;
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Las contraseñas no coinciden'),
+            backgroundColor: AppColors.errorColor,
+          ),
+        );
+      }
+      return;
+    }
 
     try {
       // Usar ruta de la foto o un placeholder
@@ -119,6 +140,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           _correoController.clear();
           _usernameController.clear();
           _contrasenaController.clear();
+          _confirmarContrasenaController.clear();
           _telefonoController.clear();
           _ibanController.clear();
           setState(() {
@@ -172,6 +194,73 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   void _handleTerminosAndCondiciones() {
     print('Hipervinculo de Términos y Condiciones presionado');
+  }
+
+  /// Construye un TextField con validación visual y toggle de visibilidad para contraseñas
+  Widget _buildPasswordField({
+    required TextEditingController controller,
+    required String label,
+    required String fieldKey,
+    required bool obscureText,
+    required VoidCallback onToggleVisibility,
+    IconData? icon,
+  }) {
+    final tieneError = _erroresValidacion.containsKey(fieldKey);
+    
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        TextField(
+          controller: controller,
+          obscureText: obscureText,
+          keyboardType: TextInputType.visiblePassword,
+          decoration: InputDecoration(
+            labelText: label,
+            labelStyle: TextStyle(
+              color: tieneError ? AppColors.errorColor : AppColors.secondaryColor,
+            ),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide(
+                color: tieneError ? AppColors.errorColor : AppColors.primaryColor,
+                width: 2,
+              ),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide(
+                color: tieneError ? AppColors.errorColor : Colors.grey,
+                width: tieneError ? 2 : 1,
+              ),
+            ),
+            prefixIcon: Icon(
+              icon,
+              color: tieneError ? AppColors.errorColor : AppColors.secondaryColor,
+            ),
+            suffixIcon: IconButton(
+              icon: Icon(
+                obscureText ? Icons.visibility_off : Icons.visibility,
+                color: AppColors.secondaryColor,
+              ),
+              onPressed: onToggleVisibility,
+            ),
+          ),
+        ),
+        if (tieneError) ...[
+          const SizedBox(height: 4),
+          Text(
+            _erroresValidacion[fieldKey] ?? '',
+            style: TextStyle(
+              color: AppColors.errorColor,
+              fontSize: 12,
+            ),
+          ),
+        ],
+      ],
+    );
   }
 
   /// Construye un TextField con validación visual
@@ -390,11 +479,23 @@ class _RegisterScreenState extends State<RegisterScreen> {
               const SizedBox(height: 16),
 
               // Campo de contraseña
-              _buildTextField(
+              _buildPasswordField(
                 controller: _contrasenaController,
                 label: 'Contraseña',
                 fieldKey: 'contrasena',
-                obscureText: true,
+                obscureText: !_mostrarContrasena,
+                onToggleVisibility: () => setState(() => _mostrarContrasena = !_mostrarContrasena),
+                icon: Icons.lock,
+              ),
+              const SizedBox(height: 16),
+
+              // Campo de confirmar contraseña
+              _buildPasswordField(
+                controller: _confirmarContrasenaController,
+                label: 'Confirmar Contraseña',
+                fieldKey: 'confirmarContrasena',
+                obscureText: !_mostrarConfirmarContrasena,
+                onToggleVisibility: () => setState(() => _mostrarConfirmarContrasena = !_mostrarConfirmarContrasena),
                 icon: Icons.lock,
               ),
               const SizedBox(height: 16),
