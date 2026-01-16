@@ -40,6 +40,13 @@ class Usuario {
   /// Estilo del usuario: 'aventurero', 'minimalista', 'contemporaneo' (Default: 'aventurero')
   String estilo;
 
+  // ========== PERSONALIZACIÓN (Colores personalizados) ==========
+  /// Color primario personalizado guardado como int ARGB (null = usar default del tema)
+  int? colorPrimarioARGB;
+
+  /// Color de fondo personalizado guardado como int ARGB (null = usar default del tema)
+  int? colorBackgroundARGB;
+
   Usuario({
     required this.id,
     required this.username,
@@ -61,6 +68,8 @@ class Usuario {
     required this.fechaRegistro,
     this.tema = 'medio',
     this.estilo = 'aventurero',
+    this.colorPrimarioARGB,
+    this.colorBackgroundARGB,
   });
 
   /// Crea un Usuario a partir de un Map (JSON)
@@ -88,6 +97,8 @@ class Usuario {
       fechaRegistro: DateTime.parse(json['fechaRegistro'] as String),
       tema: json['tema'] ?? 'medio',
       estilo: json['estilo'] ?? 'aventurero',
+      colorPrimarioARGB: json['colorPrimarioARGB'],
+      colorBackgroundARGB: json['colorBackgroundARGB'],
     );
   }
 
@@ -114,6 +125,8 @@ class Usuario {
       'fechaRegistro': fechaRegistro.toIso8601String(),
       'tema': tema,
       'estilo': estilo,
+      'colorPrimarioARGB': colorPrimarioARGB,
+      'colorBackgroundARGB': colorBackgroundARGB,
     };
   }
 

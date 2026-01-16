@@ -374,26 +374,34 @@ void main() async {
   print('✓ Todos los cambios aplicados correctamente');
   print('');
 
-  // PRUEBA 5.5: Actualizar colores personalizados
-  print('PRUEBA 5.5: Actualizar colores personalizados');
+  // PRUEBA 5.5: Actualizar color primario
+  print('PRUEBA 5.5: Actualizar color primario');
   print('-' * 40);
   final colorPrimarioOriginal = themeProvider.currentTheme.primary;
-  themeProvider.updateCustomColors(primary: const Color.fromARGB(255, 255, 0, 0));
-  print('✓ Color primario actualizado de:');
+  themeProvider.updatePrimaryColor(const Color.fromARGB(255, 255, 0, 0));
+  print('✓ Color primario actualizado:');
   print('  - Anterior: $colorPrimarioOriginal');
   print('  - Nuevo: ${themeProvider.currentTheme.primary}');
+  print('  - Guardado en usuario: ${themeProvider.usuarioActual?.colorPrimarioARGB}');
   assert(themeProvider.currentTheme.primary == const Color.fromARGB(255, 255, 0, 0),
       'Color primario no se actualizó correctamente');
-  
-  themeProvider.updateCustomColors(
-    secondary: const Color.fromARGB(255, 0, 255, 0),
-    background: const Color.fromARGB(255, 0, 0, 255),
-  );
-  print('✓ Color secundario y fondo actualizados');
-  assert(themeProvider.currentTheme.secondary == const Color.fromARGB(255, 0, 255, 0),
-      'Color secundario no se actualizó correctamente');
+  assert(themeProvider.usuarioActual?.colorPrimarioARGB != null,
+      'Color primario no se guardó en usuario');
+  print('');
+
+  // PRUEBA 5.6: Actualizar color de fondo
+  print('PRUEBA 5.6: Actualizar color de fondo');
+  print('-' * 40);
+  final colorFondoOriginal = themeProvider.currentTheme.background;
+  themeProvider.updateBackgroundColor(const Color.fromARGB(255, 0, 0, 255));
+  print('✓ Color de fondo actualizado:');
+  print('  - Anterior: $colorFondoOriginal');
+  print('  - Nuevo: ${themeProvider.currentTheme.background}');
+  print('  - Guardado en usuario: ${themeProvider.usuarioActual?.colorBackgroundARGB}');
   assert(themeProvider.currentTheme.background == const Color.fromARGB(255, 0, 0, 255),
       'Color de fondo no se actualizó correctamente');
+  assert(themeProvider.usuarioActual?.colorBackgroundARGB != null,
+      'Color de fondo no se guardó en usuario');
   print('');
 
   // PRUEBA 6: Obtener datos de personalización
@@ -422,11 +430,13 @@ void main() async {
       'Estilo no es aventurero');
   print('');
 
-  // PRUEBA 8: Guardar cambios en JSON
-  print('PRUEBA 8: Verificar que cambios persisten en JSON');
+// PRUEBA 9: Guardar cambios en JSON
+  print('PRUEBA 9: Verificar que cambios persisten en JSON');
   print('-' * 40);
-    await themeProvider.changeTheme(ThemeType.claro);
-    await themeProvider.changeStyle(StyleType.contemporaneo);
+  await themeProvider.changeTheme(ThemeType.claro);
+  await themeProvider.changeStyle(StyleType.contemporaneo);
+  themeProvider.updatePrimaryColor(const Color.fromARGB(255, 100, 200, 50));
+  themeProvider.updateBackgroundColor(const Color.fromARGB(255, 220, 180, 100));
     // Actualizamos al usuario existente en el repositorio (no creamos uno nuevo)
     await repositorio.actualizarUsuario(themeProvider.usuarioActual!);
   
@@ -438,9 +448,13 @@ void main() async {
   print('Datos después de recargar desde JSON:');
   print('  - Tema: ${usuarioRecargado.tema}');
   print('  - Estilo: ${usuarioRecargado.estilo}');
+  print('  - Color primario ARGB: ${usuarioRecargado.colorPrimarioARGB}');
+  print('  - Color fondo ARGB: ${usuarioRecargado.colorBackgroundARGB}');
   assert(usuarioRecargado.tema == 'claro', 'Tema no persistió en JSON');
   assert(usuarioRecargado.estilo == 'contemporaneo',
       'Estilo no persistió en JSON');
+  assert(usuarioRecargado.colorPrimarioARGB != null, 'Color primario no persistió');
+  assert(usuarioRecargado.colorBackgroundARGB != null, 'Color fondo no persistió');
   print('✓ Cambios guardados correctamente en JSON');
   print('');
 
@@ -463,10 +477,11 @@ void main() async {
   print('  ✓ Cambio de tema (claro/medio/oscuro)');
   print('  ✓ Cambio de estilo (aventurero/minimalista/contemporáneo)');
   print('  ✓ Múltiples cambios consecutivos');
-  print('  ✓ Actualización de colores personalizados');
+  print('  ✓ Actualización de color primario (persistencia)');
+  print('  ✓ Actualización de color de fondo (persistencia)');
   print('  ✓ Obtención de datos de personalización');
   print('  ✓ Reseteo a valores por defecto');
-  print('  ✓ Persistencia en JSON');
+  print('  ✓ Persistencia completa en JSON');
   print('');
   print('✨ TODAS LAS PRUEBAS COMPLETADAS EXITOSAMENTE');
   print('');

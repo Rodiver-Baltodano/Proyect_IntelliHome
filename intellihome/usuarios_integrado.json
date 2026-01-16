@@ -1,6 +1,6 @@
 [
   {
-    "id": "2b4a0dc2-2aae-4f8b-b674-ebc1b6afe8a8",
+    "id": "03fb4e0f-2580-4896-87e9-8d1e3f93a1a0",
     "username": "juanperez123",
     "nombreApellidos": "Juan Pérez",
     "correo": "juan@example.com",
@@ -17,12 +17,14 @@
     "estaBloqueado": false,
     "codigoRecuperacion": null,
     "codigoExpira": null,
-    "fechaRegistro": "2026-01-15T23:09:21.972290",
+    "fechaRegistro": "2026-01-15T23:36:19.972556",
     "tema": "medio",
-    "estilo": "aventurero"
+    "estilo": "aventurero",
+    "colorPrimarioARGB": null,
+    "colorBackgroundARGB": null
   },
   {
-    "id": "4ed13720-4bef-4ea7-9665-f948f68c3e71",
+    "id": "77047b45-0e20-495e-8f8e-d438bffab504",
     "username": "carlostema",
     "nombreApellidos": "Carlos Tema",
     "correo": "carlos@example.com",
@@ -39,8 +41,10 @@
     "estaBloqueado": false,
     "codigoRecuperacion": null,
     "codigoExpira": null,
-    "fechaRegistro": "2026-01-15T23:09:22.296631",
+    "fechaRegistro": "2026-01-15T23:36:20.330513",
     "tema": "claro",
-    "estilo": "contemporaneo"
+    "estilo": "contemporaneo",
+    "colorPrimarioARGB": 4284794930,
+    "colorBackgroundARGB": 4292654180
   }
 ]

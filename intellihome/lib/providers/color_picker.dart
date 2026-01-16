@@ -16,7 +16,7 @@ class ColorPickerHelper {
       title: 'Color Primario',
       currentColor: provider.currentTheme.primary,
       onColorChanged: (color) {
-        provider.updateCustomColors(primary: color);
+        provider.updatePrimaryColor(color);
       },
     );
   }
@@ -33,7 +33,7 @@ class ColorPickerHelper {
       title: 'Color de Fondo',
       currentColor: provider.currentTheme.background,
       onColorChanged: (color) {
-        provider.updateCustomColors(background: color);
+        provider.updateBackgroundColor(color);
       },
     );
   }

@@ -9,11 +9,13 @@ enum StyleType {
 }
 
 /// ThemeProvider: Gestiona tema y estilo del usuario logueado
-/// Trabaja directamente con el modelo Usuario y permite guardar en JSON
+/// - Cada tema (claro/medio/oscuro) tiene 4 colores: primario, secundario, terciario, background
+/// - Solo 2 métodos para personalizar: updatePrimaryColor() y updateBackgroundColor()
+/// - Los cambios se guardan en Usuario y persisten en JSON
 class ThemeProvider extends ChangeNotifier {
   Usuario? _usuarioActual;
   AppThemeColors _currentTheme = AppThemeColors.medio();
-  StyleType _currentStyle = StyleType.minimalista;
+  StyleType _currentStyle = StyleType.aventurero;
 
   // ========== GETTERS ==========
 
@@ -35,10 +37,11 @@ class ThemeProvider extends ChangeNotifier {
   // ========== MÉTODOS PRINCIPALES ==========
 
   /// Inicializa el provider con un usuario logueado
-  /// Carga su tema y estilo guardados
+  /// Carga su tema, estilo y colores personalizados guardados
   void inicializarConUsuario(Usuario usuario) {
     _usuarioActual = usuario;
     _cargarTemaDelUsuario(usuario);
+    _cargarColoresPersonalizados(usuario);
     notifyListeners();
   }
 
@@ -77,7 +80,17 @@ class ThemeProvider extends ChangeNotifier {
     }
   }
 
-  /// Cambia el tema y lo persiste en el usuario
+  /// Carga colores personalizados del usuario si existen
+  void _cargarColoresPersonalizados(Usuario usuario) {
+    if (usuario.colorPrimarioARGB != null) {
+      _currentTheme.primary = Color(usuario.colorPrimarioARGB!);
+    }
+    if (usuario.colorBackgroundARGB != null) {
+      _currentTheme.background = Color(usuario.colorBackgroundARGB!);
+    }
+  }
+
+  /// Cambia el tema y lo persiste en el usuario (limpia colores personalizados)
   /// USO: provider.changeTheme(ThemeType.oscuro);
   Future<void> changeTheme(ThemeType themeType) async {
     if (_usuarioActual == null) {
@@ -98,6 +111,9 @@ class ThemeProvider extends ChangeNotifier {
         _usuarioActual!.tema = 'medio';
         break;
     }
+    // Limpiar colores personalizados al cambiar tema
+    _usuarioActual!.colorPrimarioARGB = null;
+    _usuarioActual!.colorBackgroundARGB = null;
     notifyListeners();
   }
 
@@ -113,8 +129,34 @@ class ThemeProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Actualiza el color primario del tema actual
+  /// Guarda el cambio en el usuario como int ARGB
+  /// USO: provider.updatePrimaryColor(Color(0xFF123456));
+  void updatePrimaryColor(Color color) {
+    if (_usuarioActual == null) {
+      throw Exception('No hay usuario logueado');
+    }
+
+    _currentTheme.primary = color;
+    _usuarioActual!.colorPrimarioARGB = color.value;
+    notifyListeners();
+  }
+
+  /// Actualiza el color de fondo del tema actual
+  /// Guarda el cambio en el usuario como int ARGB
+  /// USO: provider.updateBackgroundColor(Color(0xFFABCDEF));
+  void updateBackgroundColor(Color color) {
+    if (_usuarioActual == null) {
+      throw Exception('No hay usuario logueado');
+    }
+
+    _currentTheme.background = color;
+    _usuarioActual!.colorBackgroundARGB = color.value;
+    notifyListeners();
+  }
+
   /// Obtiene los datos de personalización actual del usuario
-  /// RETORNA: {'tema': 'oscuro', 'estilo': 'minimalista'}
+  /// RETORNA: {'tema': 'oscuro', 'estilo': 'minimalista', 'colorPrimario': '4294901760', 'colorBackground': '4294967295'}
   Map<String, String> obtenerPersonalizacion() {
     if (_usuarioActual == null) {
       throw Exception('No hay usuario logueado');
@@ -123,11 +165,13 @@ class ThemeProvider extends ChangeNotifier {
     return {
       'tema': _usuarioActual!.tema,
       'estilo': _usuarioActual!.estilo,
+      'colorPrimario': _usuarioActual!.colorPrimarioARGB?.toString() ?? 'default',
+      'colorBackground': _usuarioActual!.colorBackgroundARGB?.toString() ?? 'default',
     };
   }
 
   /// Reinicia el tema y estilo a los valores por defecto
-  /// Default: tema='medio', estilo='aventurero'
+  /// Default: tema='medio', estilo='aventurero', sin colores personalizados
   Future<void> resetearADefaults() async {
     if (_usuarioActual == null) {
       throw Exception('No hay usuario logueado');
@@ -137,36 +181,8 @@ class ThemeProvider extends ChangeNotifier {
     _currentStyle = StyleType.aventurero;
     _usuarioActual!.tema = 'medio';
     _usuarioActual!.estilo = 'aventurero';
-    notifyListeners();
-  }
-
-  /// Actualiza colores personalizados del tema actual
-  /// USO: provider.updateCustomColors(primary: Colors.red);
-  /// PARÁMETROS: primary, secondary, background, text (todos opcionales)
-  void updateCustomColors({
-    Color? primary,
-    Color? secondary,
-    Color? background,
-    Color? text,
-  }) {
-    if (_usuarioActual == null) {
-      throw Exception('No hay usuario logueado');
-    }
-
-    // Actualizar colores en el tema actual
-    if (primary != null) {
-      _currentTheme.primary = primary;
-    }
-    if (secondary != null) {
-      _currentTheme.secondary = secondary;
-    }
-    if (background != null) {
-      _currentTheme.background = background;
-    }
-    if (text != null) {
-      _currentTheme.textColor = text;
-    }
-
+    _usuarioActual!.colorPrimarioARGB = null;
+    _usuarioActual!.colorBackgroundARGB = null;
     notifyListeners();
   }
 
