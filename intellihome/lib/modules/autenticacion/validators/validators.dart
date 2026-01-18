@@ -50,6 +50,43 @@ class ValidacionesAutenticacion {
     return RegExp(r'^\d{8}$').hasMatch(valor);
   }
 
+  /// Valida si la cédula es válida.
+  /// Para Costa Rica: 9 dígitos en formato 1-2345-6789 o 123456789
+  /// Para otros países: entre 7 y 15 dígitos
+  static bool esCedulaValida(String cedula, {String? nacionalidad}) {
+    var valor = cedula.trim();
+    if (valor.isEmpty) return false;
+
+    // Eliminar espacios, guiones y otros caracteres
+    valor = valor.replaceAll(RegExp(r'[\s\-]'), '');
+
+    // Validación específica para Costa Rica
+    if (nacionalidad == 'Costa Rica') {
+      // Debe tener exactamente 9 dígitos
+      if (valor.length != 9) return false;
+      return RegExp(r'^\d{9}$').hasMatch(valor);
+    }
+
+    // Validación genérica para otros países
+    // Entre 7 y 15 dígitos
+    if (valor.length < 7 || valor.length > 15) return false;
+    return RegExp(r'^\d{7,15}$').hasMatch(valor);
+  }
+
+  /// Formatea la cédula para mostrarla de forma legible
+  /// Costa Rica: 1-2345-6789
+  /// Otros: mantiene el formato original
+  static String formatearCedula(String cedula, {String? nacionalidad}) {
+    var valor = cedula.trim().replaceAll(RegExp(r'[\s\-]'), '');
+    
+    if (nacionalidad == 'Costa Rica' && valor.length == 9) {
+      // Formato: 1-2345-6789
+      return '${valor.substring(0, 1)}-${valor.substring(1, 5)}-${valor.substring(5)}';
+    }
+    
+    return valor;
+  }
+
   /// Valida si el identificador es un username válido.
   /// Solo letras y números (alfanumérico), 3 a 20 caracteres.
   static bool esUsernameValido(String username) {

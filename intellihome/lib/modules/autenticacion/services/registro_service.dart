@@ -24,6 +24,7 @@ class RegistroServicio {
     required String fotoPerfil,
     required bool aceptaTerminos,
     required DateTime fechaNacimiento,
+    String? cedula,
     String? huellaBiometrica,
     String? numeroTarjeta,
     String? fechaExpiracion,
@@ -63,6 +64,16 @@ class RegistroServicio {
       errores['telefono'] = 'El teléfono debe tener entre 8 y 15 dígitos';
     }
 
+    if (cedula == null || cedula.trim().isEmpty) {
+      errores['cedula'] = 'La cédula es requerida';
+    } else if (!ValidacionesAutenticacion.esCedulaValida(cedula, nacionalidad: nacionalidad)) {
+      if (nacionalidad == 'Costa Rica') {
+        errores['cedula'] = 'La cédula debe tener 9 dígitos';
+      } else {
+        errores['cedula'] = 'La cédula debe tener entre 7 y 15 dígitos';
+      }
+    }
+    
     // Contraseña
     if (contrasena.isEmpty) {
       errores['contrasena'] = 'La contraseña es requerida';
@@ -170,6 +181,16 @@ class RegistroServicio {
           'El teléfono ya está registrado',
         );
       }
+      if (cedula != null && cedula.isNotEmpty) {
+        final cedulaLimpia = cedula.trim().replaceAll(RegExp(r'[\s\-]'), '');
+        if (usuariosExistentes.any((u) => 
+          u.cedula?.replaceAll(RegExp(r'[\s\-]'), '') == cedulaLimpia)) {
+          return ResultadoRegistro.error(
+            'cedula',
+            'La cédula ya está registrada',
+          );
+        }
+      }
 
       // ========== CREAR Y GUARDAR USUARIO ==========
 
@@ -184,6 +205,7 @@ class RegistroServicio {
         numeroIBAN: numeroIBAN,
         fotoPerfil: fotoPerfil,
         aceptaTerminos: aceptaTerminos,
+        cedula: cedula?.trim(),
         datosTargeta: _construirDatosTarjeta(numeroTarjeta, fechaExpiracion),
         huellaBiometrica: huellaBiometrica,
         fechaRegistro: DateTime.now(),

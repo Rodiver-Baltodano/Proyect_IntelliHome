@@ -49,6 +49,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get phoneNumber => 'Número de Teléfono';
   
   @override
+  String get idNumber => 'Número de Cédula';
+
+  @override
   String get nationality => 'Nacionalidad';
   
   @override

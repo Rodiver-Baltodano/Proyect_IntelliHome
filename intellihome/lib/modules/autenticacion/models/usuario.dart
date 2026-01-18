@@ -29,6 +29,7 @@ class Usuario {
   final String numeroIBAN;
   final String fotoPerfil;
   bool aceptaTerminos;
+  final String? cedula; 
   final String? datosTargeta;        // Opcional
   final String? huellaBiometrica;    // Opcional
   final DateTime fechaRegistro;
@@ -59,6 +60,7 @@ class Usuario {
     required this.numeroIBAN,
     required this.fotoPerfil,
     required this.aceptaTerminos,
+    this.cedula,
     this.datosTargeta,
     this.huellaBiometrica,
     this.intentosFallidos = 0,
@@ -87,6 +89,7 @@ class Usuario {
       numeroIBAN: json['numeroIBAN'] as String,
       fotoPerfil: json['fotoPerfil'] as String,
       aceptaTerminos: json['aceptaTerminos'] as bool,
+      cedula: json['cedula'],
       datosTargeta: json['datosTargeta'],
       huellaBiometrica: json['huellaBiometrica'],
       intentosFallidos: json['intentosFallidos'] ?? 0,
@@ -120,6 +123,7 @@ class Usuario {
       'numeroIBAN': numeroIBAN,
       'fotoPerfil': fotoPerfil,
       'aceptaTerminos': aceptaTerminos,
+      'cedula': cedula,
       'datosTargeta': datosTargeta,
       'huellaBiometrica': huellaBiometrica,
       'intentosFallidos': intentosFallidos,

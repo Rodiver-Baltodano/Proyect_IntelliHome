@@ -47,6 +47,9 @@ class AppLocalizationsPt extends AppLocalizations {
   
   @override
   String get phoneNumber => 'Número de Telefone';
+
+  @override
+  String get idNumber => 'Número de Identidade';
   
   @override
   String get nationality => 'Nacionalidade';

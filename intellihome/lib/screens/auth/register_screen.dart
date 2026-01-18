@@ -17,6 +17,7 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
+  final _cedulaController = TextEditingController();
   final _nombreController = TextEditingController();
   final _correoController = TextEditingController();
   final _usernameController = TextEditingController();
@@ -74,6 +75,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     _cardNumberController.dispose();
     _cardExpiryController.dispose();
     _cardCvvController.dispose();
+    _cedulaController.dispose(); 
     super.dispose();
   }
 
@@ -161,6 +163,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         numeroTarjeta: _cardNumberController.text.trim(),
         fechaExpiracion: _cardExpiryController.text.trim(),
         cvv: _cardCvvController.text.trim(),
+        cedula: _cedulaController.text.trim(),
       );
 
       if (resultado.exito) {
@@ -187,6 +190,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           _cardNumberController.clear();
           _cardExpiryController.clear();
           _cardCvvController.clear();
+          _cedulaController.clear();
           setState(() {
             _imagenPerfil = null;
             _rutaFoto = null;
@@ -609,6 +613,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 fieldKey: 'telefono',
                 keyboardType: TextInputType.phone,
                 icon: Icons.phone,
+              ),
+              const SizedBox(height: 16),
+
+              _buildTextField(
+                controller: _cedulaController,
+                label: AppLocalizations.of(context).idNumber,
+                fieldKey: 'cedula',
+                keyboardType: TextInputType.number,
+                icon: Icons.credit_card_outlined,
               ),
               const SizedBox(height: 16),
 

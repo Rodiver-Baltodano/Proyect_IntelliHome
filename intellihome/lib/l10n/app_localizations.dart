@@ -38,6 +38,7 @@ abstract class AppLocalizations {
   String get email;
   String get confirmPassword;
   String get phoneNumber;
+  String get idNumber;
   String get nationality;
   String get ibanNumber;
   String get birthDate;
