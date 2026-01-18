@@ -1,16 +1,22 @@
 import 'package:uuid/uuid.dart';
+import 'package:flutter/material.dart';
 import 'package:intellihome/modules/autenticacion/models/resultado_registro.dart';
 import 'package:intellihome/modules/autenticacion/models/usuario.dart';
 import 'package:intellihome/modules/autenticacion/repositories/usuario_repository.dart';
 import 'package:intellihome/modules/autenticacion/validators/validators.dart';
+import 'package:intellihome/l10n/app_localizations.dart';
 
 /// Servicio unificado de registro de usuarios
 /// Maneja la creación de nuevos usuarios con validación completa
 class RegistroServicio {
   final UsuarioRepositorioJson _repositorio;
+  final BuildContext _context;
 
-  RegistroServicio({required UsuarioRepositorioJson repositorio})
-    : _repositorio = repositorio;
+  RegistroServicio({
+    required UsuarioRepositorioJson repositorio,
+    required BuildContext context,
+  })  : _repositorio = repositorio,
+        _context = context;
 
   /// Registra un nuevo usuario con todos sus datos
   Future<ResultadoRegistro> registrarUsuario({
@@ -30,73 +36,71 @@ class RegistroServicio {
     String? fechaExpiracion,
     String? cvv,
   }) async {
-    // Acumula errores de validación
+    final loc = AppLocalizations.of(_context);
     final errores = <String, String>{};
 
     // ========== VALIDACIONES ==========
     // Nombre y apellidos
     if (nombreApellidos.isEmpty) {
-      errores['nombreApellidos'] = 'El nombre y apellidos son requeridos';
+      errores['nombreApellidos'] = loc.nameRequired;
     } else if (!ValidacionesAutenticacion.esNombreValido(nombreApellidos)) {
-      errores['nombreApellidos'] =
-          'El nombre y apellidos son requeridos, sólo se permiten letras y espacios';
+      errores['nombreApellidos'] = loc.nameInvalidFormat;
     }
 
     // Username
     if (username.isEmpty) {
-      errores['username'] = 'El nombre de usuario es requerido';
+      errores['username'] = loc.usernameRequired;
     } else if (!ValidacionesAutenticacion.esUsernameValido(username)) {
-      errores['username'] =
-          'El username debe tener entre 3 y 20 caracteres alfanuméricos';
+      errores['username'] = loc.usernameInvalidFormat;
     }
 
     // Email
     if (correo.isEmpty) {
-      errores['correo'] = 'El correo es requerido';
+      errores['correo'] = loc.emailRequired;
     } else if (!ValidacionesAutenticacion.esEmailValido(correo)) {
-      errores['correo'] = 'El correo no tiene un formato válido';
+      errores['correo'] = loc.emailInvalidFormat;
     }
 
     // Teléfono
     if (telefono.isEmpty) {
-      errores['telefono'] = 'El teléfono es requerido';
+      errores['telefono'] = loc.phoneRequired;
     } else if (!ValidacionesAutenticacion.esTelefonoValido(telefono)) {
-      errores['telefono'] = 'El teléfono debe tener entre 8 y 15 dígitos';
+      errores['telefono'] = loc.phoneInvalidFormat;
     }
 
+    // Cédula (OBLIGATORIA)
     if (cedula == null || cedula.trim().isEmpty) {
-      errores['cedula'] = 'La cédula es requerida';
+      errores['cedula'] = loc.idRequired;
     } else if (!ValidacionesAutenticacion.esCedulaValida(cedula, nacionalidad: nacionalidad)) {
       if (nacionalidad == 'Costa Rica') {
-        errores['cedula'] = 'La cédula debe tener 9 dígitos';
+        errores['cedula'] = loc.idInvalidFormatCR;
       } else {
-        errores['cedula'] = 'La cédula debe tener entre 7 y 15 dígitos';
+        errores['cedula'] = loc.idInvalidFormatGeneric;
       }
     }
-    
+
     // Contraseña
     if (contrasena.isEmpty) {
-      errores['contrasena'] = 'La contraseña es requerida';
+      errores['contrasena'] = loc.passwordRequired;
     } else if (!ValidacionesAutenticacion.esContrasenaValida(contrasena)) {
-      errores['contrasena'] =
-          'La contraseña debe tener mínimo 8 caracteres alfanuméricos';
+      errores['contrasena'] = loc.passwordInvalidFormat;
     }
 
     // Nacionalidad
     if (nacionalidad.isEmpty) {
-      errores['nacionalidad'] = 'La nacionalidad es requerida';
+      errores['nacionalidad'] = loc.nationalityRequired;
     }
 
     // Número IBAN
-    if (numeroIBAN.isNotEmpty){
+    if (numeroIBAN.isNotEmpty) {
       if (!ValidacionesAutenticacion.esIBANValido(numeroIBAN)) {
-      errores['numeroIBAN'] = 'El IBAN no tiene un formato válido';
+        errores['numeroIBAN'] = loc.ibanInvalidFormat;
+      }
     }
-    } 
 
     // Fecha de nacimiento (mayoría de edad)
     if (!ValidacionesAutenticacion.esMayorDeEdad(fechaNacimiento)) {
-      errores['fechaNacimiento'] = 'Debes ser mayor de 18 años';
+      errores['fechaNacimiento'] = loc.mustBeOver18;
     }
 
     // Tarjeta (opcional, pero si se completa alguno se validan todos)
@@ -111,37 +115,35 @@ class RegistroServicio {
           numTarjeta.length < 13 ||
           numTarjeta.length > 19 ||
           !RegExp(r'^\d{13,19}$').hasMatch(numTarjeta)) {
-        errores['numeroTarjeta'] = 'Número de tarjeta inválido';
+        errores['numeroTarjeta'] = loc.cardNumberInvalid;
       }
 
       if (fechaExpiracion == null ||
-          !RegExp(
-            r'^(0[1-9]|1[0-2])\/\d{2}$',
-          ).hasMatch(fechaExpiracion.trim())) {
-        errores['fechaExpiracion'] = 'Fecha de expiración inválida (MM/AA)';
+          !RegExp(r'^(0[1-9]|1[0-2])\/\d{2}$').hasMatch(fechaExpiracion.trim())) {
+        errores['fechaExpiracion'] = loc.cardExpiryInvalid;
       } else {
         final partes = fechaExpiracion.split('/');
         final mes = int.tryParse(partes[0]);
         final anio = int.tryParse('20${partes[1]}');
         if (mes == null || anio == null) {
-          errores['fechaExpiracion'] = 'Fecha de expiración inválida';
+          errores['fechaExpiracion'] = loc.cardExpiryInvalid;
         } else {
           final ahora = DateTime.now();
           final finMes = DateTime(anio, mes + 1, 0);
           if (!finMes.isAfter(DateTime(ahora.year, ahora.month, 0))) {
-            errores['fechaExpiracion'] = 'La tarjeta está expirada';
+            errores['fechaExpiracion'] = loc.cardExpired;
           }
         }
       }
 
       if (cvv == null || !RegExp(r'^\d{3,4}$').hasMatch(cvv.trim())) {
-        errores['cvv'] = 'CVV inválido';
+        errores['cvv'] = loc.cvvInvalid;
       }
     }
 
     // Términos y condiciones
     if (!aceptaTerminos) {
-      errores['aceptaTerminos'] = 'Debes aceptar los términos y condiciones';
+      errores['aceptaTerminos'] = loc.mustAcceptTermsValidation;
     }
 
     // Si hay errores, retorna sin guardar
@@ -150,7 +152,6 @@ class RegistroServicio {
     }
 
     // ========== VERIFICAR DUPLICADOS ==========
-
     try {
       final usuariosExistentes = await _repositorio.cargarUsuarios();
 
@@ -160,7 +161,7 @@ class RegistroServicio {
       )) {
         return ResultadoRegistro.error(
           'username',
-          'El nombre de usuario ya está registrado',
+          loc.usernameAlreadyExists,
         );
       }
 
@@ -170,7 +171,7 @@ class RegistroServicio {
       )) {
         return ResultadoRegistro.error(
           'correo',
-          'El correo ya está registrado',
+          loc.emailAlreadyExists,
         );
       }
 
@@ -178,22 +179,23 @@ class RegistroServicio {
       if (usuariosExistentes.any((u) => u.telefono == telefono)) {
         return ResultadoRegistro.error(
           'telefono',
-          'El teléfono ya está registrado',
+          loc.phoneAlreadyExists,
         );
       }
+
+      // Verificar cédula duplicada
       if (cedula != null && cedula.isNotEmpty) {
         final cedulaLimpia = cedula.trim().replaceAll(RegExp(r'[\s\-]'), '');
-        if (usuariosExistentes.any((u) => 
-          u.cedula?.replaceAll(RegExp(r'[\s\-]'), '') == cedulaLimpia)) {
+        if (usuariosExistentes.any((u) =>
+            u.cedula?.replaceAll(RegExp(r'[\s\-]'), '') == cedulaLimpia)) {
           return ResultadoRegistro.error(
             'cedula',
-            'La cédula ya está registrada',
+            loc.idAlreadyExists,
           );
         }
       }
 
       // ========== CREAR Y GUARDAR USUARIO ==========
-
       final nuevoUsuario = Usuario(
         id: const Uuid().v4(),
         username: username,
@@ -217,7 +219,7 @@ class RegistroServicio {
       return ResultadoRegistro.exito(usuario: nuevoUsuario);
     } catch (e) {
       return ResultadoRegistro.fallo(
-        'Error al registrar usuario: ${e.toString()}',
+        '${loc.registrationError}: ${e.toString()}',
       );
     }
   }

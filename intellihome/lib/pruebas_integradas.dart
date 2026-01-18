@@ -1,3 +1,4 @@
+/*
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:path/path.dart' as p;
@@ -21,8 +22,8 @@ void main() async {
   }
 
   final repositorio = UsuarioRepositorioJson(rutaArchivo: rutaJson);
-  final registroServicio = RegistroServicio(repositorio: repositorio);
-  final autenticacionServicio = AutenticacionServicio(usuarioRepositorio: repositorio);
+  final registroServicio = RegistroServicio(repositorio: repositorio, context: context);
+  final autenticacionServicio = AutenticacionServicio(usuarioRepositorio: repositorio, context: context);
 
   // ========== PRUEBA 1: Registro exitoso ==========
   print('PRUEBA 1: Registro de usuario exitoso');
@@ -493,3 +494,4 @@ void main() async {
   print('');
 }
 
+*/

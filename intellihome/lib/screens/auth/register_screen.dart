@@ -84,7 +84,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
       final appDir = await getApplicationDocumentsDirectory();
       final rutaJson = p.join(appDir.path, 'usuarios_integrado.json');
       final repositorio = UsuarioRepositorioJson(rutaArchivo: rutaJson);
-      _registroServicio = RegistroServicio(repositorio: repositorio);
+      _registroServicio = RegistroServicio(
+        repositorio: 
+          repositorio, 
+          context: context
+        );
     } catch (e) {
       print('Error inicializando servicios: $e');
     }
@@ -104,6 +108,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
       _cargando = true;
       _erroresValidacion = {};
     });
+
+    
 
     if (_fechaNacimiento == null) {
       setState(() {
@@ -148,7 +154,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     try {
       // Usar ruta de la foto o un placeholder
       final fotoPerfil = _rutaFoto ?? 'https://via.placeholder.com/150';
-
+      
       final resultado = await _registroServicio.registrarUsuario(
         nombreApellidos: _nombreController.text.trim(),
         username: _usernameController.text.trim(),

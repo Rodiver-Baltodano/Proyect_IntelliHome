@@ -60,7 +60,7 @@ class _RecoveryScreenState extends State<RecoveryScreen> {
       final appDir = await getApplicationDocumentsDirectory();
       final rutaJson = p.join(appDir.path, 'usuarios_integrado.json');
       final repositorio = UsuarioRepositorioJson(rutaArchivo: rutaJson);
-      _autenticacionServicio = AutenticacionServicio(usuarioRepositorio: repositorio);
+      _autenticacionServicio = AutenticacionServicio(usuarioRepositorio: repositorio, context: context);
     } catch (e) {
       print('Error inicializando servicios: $e');
     }

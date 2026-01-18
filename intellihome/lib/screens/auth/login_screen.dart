@@ -42,7 +42,7 @@ class _LoginScreenState extends State<LoginScreen> {
       final appDir = await getApplicationDocumentsDirectory();
       final rutaJson = p.join(appDir.path, 'usuarios_integrado.json');
       _repositorio = UsuarioRepositorioJson(rutaArchivo: rutaJson);
-      _autenticacionServicio = AutenticacionServicio(usuarioRepositorio: _repositorio!);
+      _autenticacionServicio = AutenticacionServicio(usuarioRepositorio: _repositorio!, context: context);
     } catch (e) {
       print('Error inicializando servicios: $e');
     }
@@ -73,12 +73,10 @@ class _LoginScreenState extends State<LoginScreen> {
       );
 
       if (resultado.exito) {
-        // Éxito: configurar SessionManager y ThemeProvider
         SessionManager.setCurrentUserId(resultado.idUsuario ?? '');
         
         final usuario = await _repositorio?.buscarPorId(resultado.idUsuario ?? '');
         if (usuario != null && mounted) {
-          // Inicializar el ThemeProvider con el usuario logueado
           context.read<ThemeProvider>().inicializarConUsuario(
             usuario,
             repositorio: _repositorio,
@@ -93,7 +91,7 @@ class _LoginScreenState extends State<LoginScreen> {
               duration: const Duration(seconds: 2),
             ),
           );
-// Navegar a Home con el username
+
           Future.delayed(const Duration(milliseconds: 500), () {
             if (mounted) {
               Navigator.pushReplacementNamed(
@@ -105,9 +103,7 @@ class _LoginScreenState extends State<LoginScreen> {
           });
         }
       } else {
-         // Error
         if (mounted) {
-          // Determinar cuál campo mostrar error
           if (resultado.mensaje.contains('usuario') || resultado.mensaje.contains('no existe')) {
             setState(() {
               _errorUsername = resultado.mensaje;
@@ -156,7 +152,7 @@ class _LoginScreenState extends State<LoginScreen> {
       }
     }
   }
- /// Construye un TextField con validación visual y toggle para contraseñas
+
   Widget _buildPasswordField({
     required TextEditingController controller,
     required String label,
@@ -222,7 +218,7 @@ class _LoginScreenState extends State<LoginScreen> {
       ],
     );
   }
-/// Construye un TextField con validación visual
+
   Widget _buildTextField({
     required TextEditingController controller,
     required String label,
@@ -282,15 +278,14 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Obtener las traducciones
     final loc = AppLocalizations.of(context);
     final languageProvider = Provider.of<LanguageProvider>(context);
     
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       appBar: AppBar(
         title: Text(loc.appTitle),
         centerTitle: true,
-        // Botón de ayuda a la izquierda
         leading: IconButton(
           icon: Image.asset(
             'lib/assets/icons/question_mark.png',
@@ -309,7 +304,6 @@ class _LoginScreenState extends State<LoginScreen> {
           tooltip: loc.help,
         ),
         actions: [
-          // Botón de idioma (bandera) con cambio cíclico
           IconButton(
             icon: Image.asset(
               'lib/assets/icons/${languageProvider.currentFlag}',
@@ -334,132 +328,137 @@ class _LoginScreenState extends State<LoginScreen> {
           const SizedBox(width: 11),
         ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // Logo
-            Center(
-              child: Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.15),
-                      blurRadius: 12,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(20),
-                  child: Image.asset(
-                    'lib/assets/icons/IntelliHomeLogo.png',
-                    height: 160,
-                    width: 160,
-                    fit: BoxFit.cover,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 20),
-
-            // Título
-            Text(
-              loc.loginTitle,
-              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.primaryColor,
-                  ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 20),
-
-            // Campo de usuario
-            _buildTextField(
-              controller: _usernameController,
-              label: loc.username,
-              error: _errorUsername,
-              icon: Icons.person,
-            ),
-            const SizedBox(height: 15),
-
-            // Campo de contraseña
-            _buildPasswordField(
-              controller: _passwordController,
-              label: loc.password,
-              error: _errorPassword,
-              obscureText: !_mostrarPassword,
-              onToggleVisibility: () => setState(() => _mostrarPassword = !_mostrarPassword),
-              icon: Icons.lock,
-            ),
-            const SizedBox(height: 15),
-
-            // Botones de login y registrarse
-            Row(
-              children: [
-                Expanded(
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primaryColor,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                    ),
-                    onPressed: _cargando ? null : _handleLogin,
-                    child: _cargando
-                        ? const SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(
-                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                              strokeWidth: 2,
-                            ),
-                          )
-                        : Text(loc.loginButton),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: OutlinedButton(
-                    style: OutlinedButton.styleFrom(
-                      backgroundColor: AppColors.primaryColor,  
-                      foregroundColor: Colors.white,
-                      side: BorderSide(color: AppColors.tertiaryColor, width: 2),
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                    ),
-                    onPressed: () {
-                      Navigator.pushNamed(context, '/register');
-                    },
-                    child: Text(loc.registerButton),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-
-            // Botón Olvidé la contraseña
-            TextButton(
-              onPressed: () {
-                Navigator.pushNamed(
-                  context,
-                  '/recovery',
-                  arguments: _usernameController.text.trim(),
-                );
-              },
-              child: Text(
-                loc.forgotPassword,
-                style: TextStyle(
-                  color: AppColors.primaryColor,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ),
-          ],
+      body: SingleChildScrollView(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom,
         ),
-      ),
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+                  // Logo
+                  Center(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.15),
+                            blurRadius: 12,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(20),
+                        child: Image.asset(
+                          'lib/assets/icons/IntelliHomeLogo.png',
+                          height: 160,
+                          width: 160,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Título
+                  Text(
+                    loc.loginTitle,
+                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.primaryColor,
+                        ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Campo de usuario
+                  _buildTextField(
+                    controller: _usernameController,
+                    label: loc.username,
+                    error: _errorUsername,
+                    icon: Icons.person,
+                  ),
+                  const SizedBox(height: 15),
+
+                  // Campo de contraseña
+                  _buildPasswordField(
+                    controller: _passwordController,
+                    label: loc.password,
+                    error: _errorPassword,
+                    obscureText: !_mostrarPassword,
+                    onToggleVisibility: () => setState(() => _mostrarPassword = !_mostrarPassword),
+                    icon: Icons.lock,
+                  ),
+                  const SizedBox(height: 15),
+
+                  // Botones de login y registrarse
+                  Row(
+                    children: [
+                      Expanded(
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primaryColor,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                          ),
+                          onPressed: _cargando ? null : _handleLogin,
+                          child: _cargando
+                              ? const SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(
+                                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : Text(loc.loginButton),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: OutlinedButton(
+                          style: OutlinedButton.styleFrom(
+                            backgroundColor: AppColors.primaryColor,  
+                            foregroundColor: Colors.white,
+                            side: BorderSide(color: AppColors.tertiaryColor, width: 2),
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                          ),
+                          onPressed: () {
+                            Navigator.pushNamed(context, '/register');
+                          },
+                          child: Text(loc.registerButton),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Botón Olvidé la contraseña
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pushNamed(
+                        context,
+                        '/recovery',
+                        arguments: _usernameController.text.trim(),
+                      );
+                    },
+                    child: Text(
+                      loc.forgotPassword,
+                      style: TextStyle(
+                        color: AppColors.primaryColor,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
     );
   }
 }

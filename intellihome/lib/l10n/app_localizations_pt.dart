@@ -383,4 +383,194 @@ Obrigado por escolher o Intelihome. Aproveite sua experiência em nossa platafor
   
   @override
   String get loading => 'Carregando...';
+
+  @override
+  String get nameRequired => 'Nome e sobrenome são obrigatórios';
+  
+  @override
+  String get nameInvalidFormat => 'Nome e sobrenome são obrigatórios, apenas letras e espaços permitidos';
+  
+  @override
+  String get usernameRequired => 'Nome de usuário é obrigatório';
+  
+  @override
+  String get usernameInvalidFormat => 'Nome de usuário deve ter entre 3 e 20 caracteres alfanuméricos';
+  
+  @override
+  String get usernameAlreadyExists => 'Nome de usuário já está registrado';
+  
+  @override
+  String get emailRequired => 'Email é obrigatório';
+  
+  @override
+  String get emailInvalidFormat => 'Formato de email inválido';
+  
+  @override
+  String get emailAlreadyExists => 'Email já está registrado';
+  
+  @override
+  String get phoneRequired => 'Telefone é obrigatório';
+  
+  @override
+  String get phoneInvalidFormat => 'Telefone deve ter entre 8 e 15 dígitos';
+  
+  @override
+  String get phoneAlreadyExists => 'Telefone já está registrado';
+  
+  @override
+  String get idRequired => 'Número de identidade é obrigatório';
+  
+  @override
+  String get idInvalidFormatCR => 'Número de identidade deve ter 9 dígitos';
+  
+  @override
+  String get idInvalidFormatGeneric => 'Número de identidade deve ter entre 7 e 15 dígitos';
+  
+  @override
+  String get idAlreadyExists => 'Número de identidade já está registrado';
+  
+  @override
+  String get passwordRequired => 'Senha é obrigatória';
+  
+  @override
+  String get passwordInvalidFormat => 'Senha deve ter no mínimo 8 caracteres alfanuméricos';
+  
+  @override
+  String get nationalityRequired => 'Nacionalidade é obrigatória';
+  
+  @override
+  String get ibanInvalidFormat => 'Formato de IBAN inválido';
+  
+  @override
+  String get birthDateRequired => 'Selecione sua data de nascimento';
+  
+  @override
+  String get mustBeOver18 => 'Você deve ter mais de 18 anos';
+  
+  @override
+  String get cardNumberInvalid => 'Número de cartão inválido';
+  
+  @override
+  String get cardExpiryInvalid => 'Data de validade inválida (MM/AA)';
+  
+  @override
+  String get cardExpired => 'Cartão expirado';
+  
+  @override
+  String get cvvInvalid => 'CVV inválido';
+  
+  @override
+  String get mustAcceptTermsValidation => 'Você deve aceitar os termos e condições';
+  
+  // ============================================
+  // MENSAGENS DE AUTENTICAÇÃO (LOGIN)
+  // ============================================
+  
+  @override
+  String get invalidFormatMessage => 'Formato inválido';
+  
+  @override
+  String get invalidIdentifierAndPassword => 'Formato inválido. Verifique identificador e senha.';
+  
+  @override
+  String get userNotExistMessage => 'Usuário não existe';
+  
+  @override
+  String get verifyDataOrRegister => 'Usuário não existe. Verifique seus dados ou registre-se.';
+  
+  @override
+  String get userBlockedMessage => 'Usuário bloqueado';
+  
+  @override
+  String get userBlockedUseRecovery => 'Usuário bloqueado por muitas tentativas. Use "Esqueci minha senha" para desbloquear.';
+  
+  @override
+  String get incorrectPassword => 'Senha incorreta';
+  
+  @override
+  String get attemptsRemaining => 'Tentativas restantes';
+  
+  @override
+  String get loginSuccessMessage => 'Login bem-sucedido';
+  
+  // ============================================
+  // MENSAGENS DE RECUPERAÇÃO DE SENHA
+  // ============================================
+  
+  @override
+  String get enterPhoneEmailOrUser => 'Por favor insira seu telefone, email ou usuário';
+  
+  @override
+  String get invalidIdentifierFormat => 'Formato inválido. Insira usuário/email/telefone válido';
+  
+  @override
+  String get userNotFoundRecovery => 'Usuário não existe. Verifique seus dados';
+  
+  @override
+  String get recoveryCodeSentToEmail => 'Código de recuperação enviado para seu email';
+  
+  @override
+  String get recoveryCodeGenerated => 'Código gerado';
+  
+  @override
+  String get checkEnvConfiguration => 'Não foi possível enviar email - verifique a configuração do .env';
+  
+  @override
+  String get invalidDataVerifyIdentifierAndCode => 'Dados inválidos. Verifique identificador e código';
+  
+  @override
+  String get invalidOrExpiredCode => 'Código inválido ou expirado';
+  
+  @override
+  String get tooManyAttempts => 'Muitas tentativas falhadas';
+  
+  @override
+  String get accountBlockedContactSupport => 'Conta bloqueada. Por favor contate o suporte';
+  
+  @override
+  String get requestNewCode => 'Solicite um novo';
+  
+  @override
+  String get codeVerifiedCanUpdatePassword => 'Código verificado. Você pode atualizar sua senha';
+  
+  @override
+  String get invalidIdentifier => 'Identificador inválido';
+  
+  @override
+  String get mustEnterCode => 'Você deve inserir o código';
+  
+  @override
+  String get passwordMustBeAlphanumeric8 => 'Senha deve ser alfanumérica e ter no mínimo 8 caracteres';
+  
+  @override
+  String get invalidOrExpiredCodeRetry => 'Código inválido ou expirado. Solicite um novo';
+  
+  @override
+  String get passwordUpdatedCanLogin => 'Senha atualizada. Você já pode fazer login';
+  
+  // ============================================
+  // MENSAGENS DE REGISTRO
+  // ============================================
+  
+  @override
+  String get registrationError => 'Erro ao registrar usuário';
+  
+  @override
+  String get savingError => 'Erro ao salvar';
+  
+  // ============================================
+  // MENSAGENS GERAIS DO SISTEMA
+  // ============================================
+  
+  @override
+  String get operationSuccessful => 'Operação bem-sucedida';
+  
+  @override
+  String get operationFailed => 'Operação falhou';
+  
+  @override
+  String get pleaseWait => 'Por favor aguarde';
+  
+  @override
+  String get processing => 'Processando...';
 }

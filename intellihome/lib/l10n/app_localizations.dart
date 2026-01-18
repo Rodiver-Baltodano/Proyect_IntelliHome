@@ -143,6 +143,105 @@ abstract class AppLocalizations {
   String get error;
   String get success;
   String get loading;
+
+  String get nameRequired;
+  String get nameInvalidFormat;
+  
+  // Username
+  String get usernameRequired;
+  String get usernameInvalidFormat;
+  String get usernameAlreadyExists;
+  
+  // Email
+  String get emailRequired;
+  String get emailInvalidFormat;
+  String get emailAlreadyExists;
+  
+  // Teléfono
+  String get phoneRequired;
+  String get phoneInvalidFormat;
+  String get phoneAlreadyExists;
+  
+  // Cédula
+  String get idRequired;
+  String get idInvalidFormatCR;
+  String get idInvalidFormatGeneric;
+  String get idAlreadyExists;
+  
+  // Contraseña
+  String get passwordRequired;
+  String get passwordInvalidFormat;
+  
+  // Nacionalidad
+  String get nationalityRequired;
+  
+  // IBAN
+  String get ibanInvalidFormat;
+  
+  // Fecha de nacimiento
+  String get birthDateRequired;
+  String get mustBeOver18;
+  
+  // Tarjeta
+  String get cardNumberInvalid;
+  String get cardExpiryInvalid;
+  String get cardExpired;
+  String get cvvInvalid;
+  
+  // Términos
+  String get mustAcceptTermsValidation;
+  
+  // ============================================
+  // MENSAJES DE AUTENTICACIÓN (LOGIN)
+  // ============================================
+  
+  String get invalidFormatMessage;
+  String get invalidIdentifierAndPassword;
+  String get userNotExistMessage;
+  String get verifyDataOrRegister;
+  String get userBlockedMessage;
+  String get userBlockedUseRecovery;
+  String get incorrectPassword;
+  String get attemptsRemaining;
+  String get loginSuccessMessage;
+  
+  // ============================================
+  // MENSAJES DE RECUPERACIÓN DE CONTRASEÑA
+  // ============================================
+  
+  String get enterPhoneEmailOrUser;
+  String get invalidIdentifierFormat;
+  String get userNotFoundRecovery;
+  String get recoveryCodeSentToEmail;
+  String get recoveryCodeGenerated;
+  String get checkEnvConfiguration;
+  String get invalidDataVerifyIdentifierAndCode;
+  String get invalidOrExpiredCode;
+  String get tooManyAttempts;
+  String get accountBlockedContactSupport;
+  String get requestNewCode;
+  String get codeVerifiedCanUpdatePassword;
+  String get invalidIdentifier;
+  String get mustEnterCode;
+  String get passwordMustBeAlphanumeric8;
+  String get invalidOrExpiredCodeRetry;
+  String get passwordUpdatedCanLogin;
+  
+  // ============================================
+  // MENSAJES DE REGISTRO
+  // ============================================
+  
+  String get registrationError;
+  String get savingError;
+  
+  // ============================================
+  // MENSAJES GENERALES DEL SISTEMA
+  // ============================================
+  
+  String get operationSuccessful;
+  String get operationFailed;
+  String get pleaseWait;
+  String get processing;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

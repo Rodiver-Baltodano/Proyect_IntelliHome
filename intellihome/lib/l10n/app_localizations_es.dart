@@ -382,4 +382,194 @@ Gracias por elegir Intelihome. Disfrute de su experiencia en nuestra plataforma.
   
   @override
   String get loading => 'Cargando...';
+
+  @override
+  String get nameRequired => 'El nombre y apellidos son requeridos';
+  
+  @override
+  String get nameInvalidFormat => 'El nombre y apellidos son requeridos, sólo se permiten letras y espacios';
+  
+  @override
+  String get usernameRequired => 'El nombre de usuario es requerido';
+  
+  @override
+  String get usernameInvalidFormat => 'El username debe tener entre 3 y 20 caracteres alfanuméricos';
+  
+  @override
+  String get usernameAlreadyExists => 'El nombre de usuario ya está registrado';
+  
+  @override
+  String get emailRequired => 'El correo es requerido';
+  
+  @override
+  String get emailInvalidFormat => 'El correo no tiene un formato válido';
+  
+  @override
+  String get emailAlreadyExists => 'El correo ya está registrado';
+  
+  @override
+  String get phoneRequired => 'El teléfono es requerido';
+  
+  @override
+  String get phoneInvalidFormat => 'El teléfono debe tener entre 8 y 15 dígitos';
+  
+  @override
+  String get phoneAlreadyExists => 'El teléfono ya está registrado';
+  
+  @override
+  String get idRequired => 'La cédula es requerida';
+  
+  @override
+  String get idInvalidFormatCR => 'La cédula debe tener 9 dígitos';
+  
+  @override
+  String get idInvalidFormatGeneric => 'La cédula debe tener entre 7 y 15 dígitos';
+  
+  @override
+  String get idAlreadyExists => 'La cédula ya está registrada';
+  
+  @override
+  String get passwordRequired => 'La contraseña es requerida';
+  
+  @override
+  String get passwordInvalidFormat => 'La contraseña debe tener mínimo 8 caracteres alfanuméricos';
+  
+  @override
+  String get nationalityRequired => 'La nacionalidad es requerida';
+  
+  @override
+  String get ibanInvalidFormat => 'El IBAN no tiene un formato válido';
+  
+  @override
+  String get birthDateRequired => 'Selecciona tu fecha de nacimiento';
+  
+  @override
+  String get mustBeOver18 => 'Debes ser mayor de 18 años';
+  
+  @override
+  String get cardNumberInvalid => 'Número de tarjeta inválido';
+  
+  @override
+  String get cardExpiryInvalid => 'Fecha de expiración inválida (MM/AA)';
+  
+  @override
+  String get cardExpired => 'La tarjeta está expirada';
+  
+  @override
+  String get cvvInvalid => 'CVV inválido';
+  
+  @override
+  String get mustAcceptTermsValidation => 'Debes aceptar los términos y condiciones';
+  
+  // ============================================
+  // MENSAJES DE AUTENTICACIÓN (LOGIN)
+  // ============================================
+  
+  @override
+  String get invalidFormatMessage => 'Formato inválido';
+  
+  @override
+  String get invalidIdentifierAndPassword => 'Formato inválido. Verifique usuario y contraseña.';
+  
+  @override
+  String get userNotExistMessage => 'El usuario no existe';
+  
+  @override
+  String get verifyDataOrRegister => 'El usuario no existe. Verifique sus datos o regístrese.';
+  
+  @override
+  String get userBlockedMessage => 'Usuario bloqueado';
+  
+  @override
+  String get userBlockedUseRecovery => 'Usuario bloqueado por demasiados intentos. Use "Olvidé la contraseña" para desbloquear.';
+  
+  @override
+  String get incorrectPassword => 'Contraseña incorrecta';
+  
+  @override
+  String get attemptsRemaining => 'Intentos restantes';
+  
+  @override
+  String get loginSuccessMessage => 'Inicio de sesión exitoso';
+  
+  // ============================================
+  // MENSAJES DE RECUPERACIÓN DE CONTRASEÑA
+  // ============================================
+  
+  @override
+  String get enterPhoneEmailOrUser => 'Por favor ingrese su teléfono, email o usuario';
+  
+  @override
+  String get invalidIdentifierFormat => 'Formato inválido. Ingrese usuario/correo/teléfono válido';
+  
+  @override
+  String get userNotFoundRecovery => 'El usuario no existe. Verifique sus datos';
+  
+  @override
+  String get recoveryCodeSentToEmail => 'Código de recuperación enviado a tu email';
+  
+  @override
+  String get recoveryCodeGenerated => 'Código generado';
+  
+  @override
+  String get checkEnvConfiguration => 'No se pudo enviar email - verifica la configuración de .env';
+  
+  @override
+  String get invalidDataVerifyIdentifierAndCode => 'Datos inválidos. Verifique identificador y código';
+  
+  @override
+  String get invalidOrExpiredCode => 'Código inválido o expirado';
+  
+  @override
+  String get tooManyAttempts => 'Demasiados intentos fallidos';
+  
+  @override
+  String get accountBlockedContactSupport => 'Cuenta bloqueada. Por favor contacte a soporte';
+  
+  @override
+  String get requestNewCode => 'Solicite uno nuevo';
+  
+  @override
+  String get codeVerifiedCanUpdatePassword => 'Código verificado. Puede actualizar la contraseña';
+  
+  @override
+  String get invalidIdentifier => 'Identificador inválido';
+  
+  @override
+  String get mustEnterCode => 'Debe ingresar el código';
+  
+  @override
+  String get passwordMustBeAlphanumeric8 => 'La contraseña debe ser alfanumérica y tener mínimo 8 caracteres';
+  
+  @override
+  String get invalidOrExpiredCodeRetry => 'Código inválido o expirado. Solicite uno nuevo';
+  
+  @override
+  String get passwordUpdatedCanLogin => 'Contraseña actualizada. Ya puede iniciar sesión';
+  
+  // ============================================
+  // MENSAJES DE REGISTRO
+  // ============================================
+  
+  @override
+  String get registrationError => 'Error al registrar usuario';
+  
+  @override
+  String get savingError => 'Error al guardar';
+  
+  // ============================================
+  // MENSAJES GENERALES DEL SISTEMA
+  // ============================================
+  
+  @override
+  String get operationSuccessful => 'Operación exitosa';
+  
+  @override
+  String get operationFailed => 'Operación fallida';
+  
+  @override
+  String get pleaseWait => 'Por favor espere';
+  
+  @override
+  String get processing => 'Procesando...';
 }
