@@ -313,8 +313,8 @@ class _LoginScreenState extends State<LoginScreen> {
           IconButton(
             icon: Image.asset(
               'lib/assets/icons/${languageProvider.currentFlag}',
-              width: 41,
-              height: 41,
+              width: 29,
+              height: 29,
             ),
             onPressed: () async {
               await languageProvider.toggleLanguage();

@@ -9,9 +9,8 @@ import 'package:intellihome/modules/autenticacion/validators/validators.dart';
 class RegistroServicio {
   final UsuarioRepositorioJson _repositorio;
 
-  RegistroServicio({
-    required UsuarioRepositorioJson repositorio,
-  }) : _repositorio = repositorio;
+  RegistroServicio({required UsuarioRepositorioJson repositorio})
+    : _repositorio = repositorio;
 
   /// Registra un nuevo usuario con todos sus datos
   Future<ResultadoRegistro> registrarUsuario({
@@ -33,13 +32,13 @@ class RegistroServicio {
     // Acumula errores de validación
     final errores = <String, String>{};
 
-    // ========== VALIDACIONES ========== 
+    // ========== VALIDACIONES ==========
     // Nombre y apellidos
     if (nombreApellidos.isEmpty) {
       errores['nombreApellidos'] = 'El nombre y apellidos son requeridos';
     } else if (!ValidacionesAutenticacion.esNombreValido(nombreApellidos)) {
       errores['nombreApellidos'] =
-          'El nombre debe contener solo letras y espacios';
+          'El nombre y apellidos son requeridos, sólo se permiten letras y espacios';
     }
 
     // Username
@@ -78,16 +77,11 @@ class RegistroServicio {
     }
 
     // Número IBAN
-    if (numeroIBAN.isEmpty) {
-      errores['numeroIBAN'] = 'El IBAN es requerido';
-    } else if (!ValidacionesAutenticacion.esIBANValido(numeroIBAN)) {
+    if (numeroIBAN.isNotEmpty){
+      if (!ValidacionesAutenticacion.esIBANValido(numeroIBAN)) {
       errores['numeroIBAN'] = 'El IBAN no tiene un formato válido';
     }
-
-    // Foto de perfil
-    if (fotoPerfil.isEmpty) {
-      errores['fotoPerfil'] = 'La foto de perfil es requerida';
-    }
+    } 
 
     // Fecha de nacimiento (mayoría de edad)
     if (!ValidacionesAutenticacion.esMayorDeEdad(fechaNacimiento)) {
@@ -95,17 +89,24 @@ class RegistroServicio {
     }
 
     // Tarjeta (opcional, pero si se completa alguno se validan todos)
-    final tarjetaIngresada = (numeroTarjeta?.trim().isNotEmpty ?? false) ||
+    final tarjetaIngresada =
+        (numeroTarjeta?.trim().isNotEmpty ?? false) ||
         (fechaExpiracion?.trim().isNotEmpty ?? false) ||
         (cvv?.trim().isNotEmpty ?? false);
 
     if (tarjetaIngresada) {
       final numTarjeta = numeroTarjeta?.replaceAll(RegExp(r'\s+'), '') ?? '';
-      if (numTarjeta.isEmpty || numTarjeta.length < 13 || numTarjeta.length > 19 || !RegExp(r'^\d{13,19}$').hasMatch(numTarjeta)) {
+      if (numTarjeta.isEmpty ||
+          numTarjeta.length < 13 ||
+          numTarjeta.length > 19 ||
+          !RegExp(r'^\d{13,19}$').hasMatch(numTarjeta)) {
         errores['numeroTarjeta'] = 'Número de tarjeta inválido';
       }
 
-      if (fechaExpiracion == null || !RegExp(r'^(0[1-9]|1[0-2])\/\d{2}$').hasMatch(fechaExpiracion.trim())) {
+      if (fechaExpiracion == null ||
+          !RegExp(
+            r'^(0[1-9]|1[0-2])\/\d{2}$',
+          ).hasMatch(fechaExpiracion.trim())) {
         errores['fechaExpiracion'] = 'Fecha de expiración inválida (MM/AA)';
       } else {
         final partes = fechaExpiracion.split('/');
@@ -143,23 +144,31 @@ class RegistroServicio {
       final usuariosExistentes = await _repositorio.cargarUsuarios();
 
       // Verificar username duplicado
-      if (usuariosExistentes
-          .any((u) => u.username.toLowerCase() == username.toLowerCase())) {
+      if (usuariosExistentes.any(
+        (u) => u.username.toLowerCase() == username.toLowerCase(),
+      )) {
         return ResultadoRegistro.error(
-            'username', 'El nombre de usuario ya está registrado');
+          'username',
+          'El nombre de usuario ya está registrado',
+        );
       }
 
       // Verificar correo duplicado
-      if (usuariosExistentes
-          .any((u) => u.correo.toLowerCase() == correo.toLowerCase())) {
+      if (usuariosExistentes.any(
+        (u) => u.correo.toLowerCase() == correo.toLowerCase(),
+      )) {
         return ResultadoRegistro.error(
-            'correo', 'El correo ya está registrado');
+          'correo',
+          'El correo ya está registrado',
+        );
       }
 
       // Verificar teléfono duplicado
       if (usuariosExistentes.any((u) => u.telefono == telefono)) {
         return ResultadoRegistro.error(
-            'telefono', 'El teléfono ya está registrado');
+          'telefono',
+          'El teléfono ya está registrado',
+        );
       }
 
       // ========== CREAR Y GUARDAR USUARIO ==========
@@ -186,14 +195,20 @@ class RegistroServicio {
       return ResultadoRegistro.exito(usuario: nuevoUsuario);
     } catch (e) {
       return ResultadoRegistro.fallo(
-          'Error al registrar usuario: ${e.toString()}');
+        'Error al registrar usuario: ${e.toString()}',
+      );
     }
   }
 
-  String? _construirDatosTarjeta(String? numeroTarjeta, String? fechaExpiracion) {
+  String? _construirDatosTarjeta(
+    String? numeroTarjeta,
+    String? fechaExpiracion,
+  ) {
     if (numeroTarjeta == null || numeroTarjeta.trim().isEmpty) return null;
     final limpia = numeroTarjeta.replaceAll(RegExp(r'\s+'), '');
-    final ultimos4 = limpia.length >= 4 ? limpia.substring(limpia.length - 4) : limpia;
+    final ultimos4 = limpia.length >= 4
+        ? limpia.substring(limpia.length - 4)
+        : limpia;
     final mascara = '**** **** **** $ultimos4';
     if (fechaExpiracion != null && fechaExpiracion.trim().isNotEmpty) {
       return '$mascara (exp $fechaExpiracion)';

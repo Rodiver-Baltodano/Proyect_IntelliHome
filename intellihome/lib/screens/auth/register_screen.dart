@@ -169,7 +169,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           final username = resultado.usuario?.username ?? 'Usuario';
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(AppLocalizations.of(context).registrationSuccess + ' $username'),
+              content: Text('${AppLocalizations.of(context).registrationSuccess} $username'),
               backgroundColor: AppColors.successColor,
               duration: const Duration(seconds: 2),
             ),

@@ -6,13 +6,6 @@ class LanguageProvider extends ChangeNotifier {
   
   Locale get locale => _locale;
   
-  // Mapa de banderas a códigos de idioma
-  final Map<String, String> _flagToLanguage = {
-    'spain_flag.png': 'es',
-    'usa_flag.png': 'en',
-    'brazil_flag.png': 'pt',
-  };
-  
   // Mapa inverso: código de idioma a bandera
   final Map<String, String> _languageToFlag = {
     'es': 'spain_flag.png',
