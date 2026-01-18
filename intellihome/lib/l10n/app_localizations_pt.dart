@@ -240,22 +240,60 @@ class AppLocalizationsPt extends AppLocalizations {
   
   @override
   String get termsContent => '''Termos e Condições de Uso do Intelihome
+
 Última atualização: 8/1/2025
-Bem-vindo ao Intelihome. Estes Termos e Condições ("Termos") regem o acesso e uso de
-nossa plataforma, serviços e aplicativos (coletivamente, "a Plataforma"). Ao acessar ou usar
-o Intelihome, você concorda em estar vinculado a estes Termos.
+
+Bem-vindo ao Intelihome. Estes Termos e Condições ("Termos") regem o acesso e uso de nossa plataforma, serviços e aplicativos (coletivamente, "a Plataforma"). Ao acessar ou usar o Intelihome, você concorda em estar vinculado a estes Termos.
 
 1. Definições
-• "Intelihome": refere-se à plataforma e aos serviços oferecidos para conectar anfitriões
-e hóspedes.
-• "Usuário": qualquer pessoa que acessa a Plataforma, seja como anfitrião ou
-hóspede.
+• "Intelihome": refere-se à plataforma e aos serviços oferecidos para conectar anfitriões e hóspedes.
+• "Usuário": qualquer pessoa que acessa a Plataforma, seja como anfitrião ou hóspede.
 • "Anfitrião": usuário que publica propriedades para serem reservadas.
 • "Hóspede": usuário que faz reservas através da Plataforma.
-• "Conteúdo": todas as informações, texto, imagens, vídeos e qualquer outro material
-compartilhado na Plataforma.
+• "Conteúdo": todas as informações, texto, imagens, vídeos e qualquer outro material compartilhado na Plataforma.
 
-[...]
+2. Aceitação dos Termos
+Ao utilizar a Intelihome, você declara que possui pelo menos 12 anos de idade e que tem capacidade legal para aceitar estes Termos. Caso não concorde com algum dos Termos, deve abster-se de utilizar a Plataforma.
+
+3. Registro e Contas
+• Para utilizar a Intelihome, é necessário criar uma conta fornecendo informações verdadeiras e completas.
+• Você é responsável por manter a confidencialidade da sua conta e senha.
+• A Intelihome reserva-se o direito de suspender ou cancelar contas em caso de uso indevido ou violação destes Termos.
+
+4. Uso da Plataforma
+• Os anfitriões devem garantir que as propriedades anunciadas estejam em conformidade com as leis locais e devidamente autorizadas para locação.
+• Os hóspedes são responsáveis por utilizar as propriedades de forma respeitosa e por cumprir as regras estabelecidas pelos anfitriões.
+• É proibida a publicação de conteúdo ofensivo, ilegal ou que viole direitos de terceiros.
+
+5. Tarifas e Pagamentos
+• A Intelihome cobra tarifas pelo uso da Plataforma, que são detalhadas durante o processo de reserva.
+• Os pagamentos são processados por sistemas seguros de terceiros. A Intelihome não armazena informações de cartões de crédito.
+• Qualquer reembolso estará sujeito às políticas especificadas no momento da reserva.
+
+6. Políticas de Cancelamento
+• Os anfitriões podem estabelecer suas próprias políticas de cancelamento, desde que estejam de acordo com as diretrizes da Intelihome.
+• Os cancelamentos realizados pelos hóspedes estarão sujeitos a essas políticas.
+• A Intelihome reserva-se o direito de intervir em disputas relacionadas a cancelamentos.
+
+7. Limitação de Responsabilidade
+• A Intelihome não garante a qualidade, segurança ou legalidade das propriedades anunciadas.
+• A Intelihome não será responsável por danos diretos, indiretos ou incidentais decorrentes do uso da Plataforma.
+• Os usuários assumem total responsabilidade pelas interações e acordos realizados por meio da Intelihome.
+
+8. Propriedade Intelectual
+• Todo o conteúdo da Plataforma, incluindo logotipos, marcas e designs, é propriedade da Intelihome ou de seus licenciadores.
+• É proibida a reprodução, distribuição ou utilização desse conteúdo sem autorização prévia.
+
+9. Alterações nos Termos
+A Intelihome reserva-se o direito de modificar estes Termos a qualquer momento. As alterações serão comunicadas aos usuários por meio da Plataforma. O uso contínuo da Intelihome implica a aceitação dos Termos atualizados.
+
+10. Lei Aplicável e Jurisdição
+Estes Termos serão regidos pelas leis do país onde a Intelihome possui sua sede principal. Qualquer disputa será resolvida perante os tribunais competentes dessa jurisdição.
+
+11. Contato
+Caso tenha dúvidas sobre estes Termos, entre em contato conosco pelo e-mail:
+
+Email: suporte@intelihome.com
 
 Obrigado por escolher o Intelihome. Aproveite sua experiência em nossa plataforma.''';
   

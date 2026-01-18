@@ -240,22 +240,59 @@ class AppLocalizationsEn extends AppLocalizations {
   
   @override
   String get termsContent => '''Terms and Conditions of Use of Intelihome
+
 Last updated: 1/8/2025
-Welcome to Intelihome. These Terms and Conditions ("Terms") govern access to and use of
-our platform, services and applications (collectively, "the Platform"). By accessing or using
-Intelihome, you agree to be bound by these Terms.
+
+Welcome to Intelihome. These Terms and Conditions ("Terms") govern access to and use of our platform, services and applications (collectively, "the Platform"). By accessing or using Intelihome, you agree to be bound by these Terms.
 
 1. Definitions
-• "Intelihome": refers to the platform and services offered to connect hosts
-and guests.
-• "User": any person accessing the Platform, either as a host or
-guest.
+• "Intelihome": refers to the platform and services offered to connect hosts and guests.
+• "User": any person accessing the Platform, either as a host or guest.
 • "Host": user who posts properties to be booked.
 • "Guest": user who makes reservations through the Platform.
-• "Content": all information, text, images, videos, and any other material
-shared on the Platform.
+• "Content": all information, text, images, videos, and any other material shared on the Platform.
 
-[...]
+2. Acceptance of the Terms
+By using Intelihome, you declare that you are at least 12 years old and that you have the legal capacity to accept these Terms. If you do not agree with any of the Terms, you must refrain from using the Platform.
+
+3. Registration and Accounts
+• To use Intelihome, you must create an account by providing truthful and complete information.
+• You are responsible for maintaining the confidentiality of your account and password.
+• Intelihome reserves the right to suspend or terminate accounts in cases of misuse or violation of these Terms.
+
+4. Use of the Platform
+• Hosts must ensure that the listed properties comply with local laws and are properly authorized for rental.
+• Guests are responsible for using the properties respectfully and complying with the rules established by the hosts.
+• Posting content that is offensive, illegal, or infringes upon third-party rights is strictly prohibited.
+
+5. Fees and Payments
+• Intelihome charges fees for the use of the Platform, which are detailed during the booking process.
+• Payments are processed through secure third-party systems. Intelihome does not store credit card information.
+• Any refunds are subject to the policies specified at the time of booking.
+
+6. Cancellation Policies
+• Hosts may establish their own cancellation policies, provided they comply with Intelihome guidelines.
+• Guest cancellations will be subject to those policies.
+• Intelihome reserves the right to intervene in disputes related to cancellations.
+
+7. Limitation of Liability
+• Intelihome does not guarantee the quality, safety, or legality of the listed properties.
+• Intelihome shall not be liable for direct, indirect, or incidental damages arising from the use of the Platform.
+• Users assume full responsibility for interactions and agreements made through Intelihome.
+
+8. Intellectual Property
+• All content on the Platform, including logos, trademarks, and designs, is the property of Intelihome or its licensors.
+• Reproduction, distribution, or use of such content without prior authorization is prohibited.
+
+9. Modifications to the Terms
+Intelihome reserves the right to modify these Terms at any time. Modifications will be notified to users through the Platform. Continued use of Intelihome implies acceptance of the updated Terms.
+
+10. Governing Law and Jurisdiction
+These Terms shall be governed by the laws of the country where Intelihome has its principal place of business. Any disputes shall be resolved before the competent courts of that jurisdiction.
+
+11. Contact
+If you have questions regarding these Terms, you may contact us at:
+Email: soporte@intelihome.com
 
 Thank you for choosing Intelihome. Enjoy your experience on our platform.''';
   
