@@ -110,8 +110,13 @@ class _MainAppState extends State<MainApp> {
               },
               '/terms': (context) => const TermsUI(),
               '/personalizacion': (context) {
-                final username = ModalRoute.of(context)?.settings.arguments as String?;
-                return PersonalizationScreen(username: username ?? 'Usuario');
+                final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+                final username = args?['username'] as String? ?? 'Usuario';
+                final fromRegister = args?['fromRegister'] as bool? ?? true;
+                return PersonalizationScreen(
+                  username: username,
+                  fromRegister: fromRegister,
+                );
               },
               '/home': (context) {
                 final username = ModalRoute.of(context)?.settings.arguments as String?;

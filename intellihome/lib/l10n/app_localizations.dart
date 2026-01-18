@@ -113,6 +113,31 @@ abstract class AppLocalizations {
   String get acceptAndContinue;
   String get cancel;
   
+  // Home Screen
+  String get welcome;
+  String get adventurous;
+  String get minimalist;
+  String get contemporary;
+  String get customize;
+  String get logout;
+  
+  // Personalization Screen
+  String get registeredSuccessfully;
+  String get customizeColors;
+  String get primaryColor;
+  String get backgroundColor;
+  String get theme;
+  String get light;
+  String get medium;
+  String get dark;
+  String get style;
+  String get minimalistStyle;
+  String get adventurousStyle;
+  String get contemporaryStyle;
+  String get done;
+  String get personalizationSaved;
+  String get errorSaving;
+  
   // Errores comunes
   String get error;
   String get success;

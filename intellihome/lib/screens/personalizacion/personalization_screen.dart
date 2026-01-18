@@ -4,13 +4,20 @@ import 'package:intellihome/config/app_colors.dart';
 import 'package:intellihome/modules/autenticacion/repositories/usuario_repository.dart';
 import 'package:intellihome/theme/theme_colors.dart';
 import 'package:intellihome/providers/theme_provider.dart';
+import 'package:intellihome/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
 
 class PersonalizationScreen extends StatefulWidget {
   final String username;
-  const PersonalizationScreen({super.key, required this.username});
+  final bool fromRegister;
+  
+  const PersonalizationScreen({
+    super.key,
+    required this.username,
+    this.fromRegister = true,
+  });
 
   @override
   State<PersonalizationScreen> createState() => _PersonalizationScreenState();
@@ -84,7 +91,7 @@ class _PersonalizationScreenState extends State<PersonalizationScreen> {
             ],
             // Mensaje de éxito
             Text(
-              'Se ha registrado con éxito ${widget.username}',
+              '${AppLocalizations.of(context).registeredSuccessfully} ${widget.username}',
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
                     color: AppColors.primaryColor,
@@ -95,7 +102,7 @@ class _PersonalizationScreenState extends State<PersonalizationScreen> {
 
             // 1) Personalizar colores
             _Section(
-              title: 'Personalizar colores',
+              title: AppLocalizations.of(context).customizeColors,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -128,7 +135,7 @@ class _PersonalizationScreenState extends State<PersonalizationScreen> {
                     children: [
                       Expanded(
                         child: _ColorButton(
-                          label: 'Color Primario',
+                          label: AppLocalizations.of(context).primaryColor,
                           color: _colorPrimario,
                           isSelected: _colorSeleccionado == 'primary',
                           onTap: () => setState(() => _colorSeleccionado = 'primary'),
@@ -137,7 +144,7 @@ class _PersonalizationScreenState extends State<PersonalizationScreen> {
                       const SizedBox(width: 12),
                       Expanded(
                         child: _ColorButton(
-                          label: 'Color de Fondo',
+                          label: AppLocalizations.of(context).backgroundColor,
                           color: _colorFondo,
                           isSelected: _colorSeleccionado == 'background',
                           onTap: () => setState(() => _colorSeleccionado = 'background'),
@@ -153,13 +160,13 @@ class _PersonalizationScreenState extends State<PersonalizationScreen> {
 
             // 2) Tema
             _Section(
-              title: 'Tema',
+              title: AppLocalizations.of(context).theme,
               child: Wrap(
                 spacing: 8,
                 runSpacing: 8,
                 children: [
                   ChoiceChip(
-                    label: const Text('Claro'),
+                    label: Text(AppLocalizations.of(context).light),
                     selected: _tema == 'claro',
                     onSelected: (_) {
                       setState(() {
@@ -169,11 +176,11 @@ class _PersonalizationScreenState extends State<PersonalizationScreen> {
                       });
                       // Cambiar en tiempo real sin persistir
                       context.read<ThemeProvider>().changeThemePreview(ThemeType.claro);
-                      _showSaved('Tema: Claro');
+                      _showSaved('${AppLocalizations.of(context).theme}: ${AppLocalizations.of(context).light}');
                     },
                   ),
                   ChoiceChip(
-                    label: const Text('Medio'),
+                    label: Text(AppLocalizations.of(context).medium),
                     selected: _tema == 'medio',
                     onSelected: (_) {
                       setState(() {
@@ -183,11 +190,11 @@ class _PersonalizationScreenState extends State<PersonalizationScreen> {
                       });
                       // Cambiar en tiempo real sin persistir
                       context.read<ThemeProvider>().changeThemePreview(ThemeType.medio);
-                      _showSaved('Tema: Medio');
+                      _showSaved('${AppLocalizations.of(context).theme}: ${AppLocalizations.of(context).medium}');
                     },
                   ),
                   ChoiceChip(
-                    label: const Text('Oscuro'),
+                    label: Text(AppLocalizations.of(context).dark),
                     selected: _tema == 'oscuro',
                     onSelected: (_) {
                       setState(() {
@@ -197,7 +204,7 @@ class _PersonalizationScreenState extends State<PersonalizationScreen> {
                       });
                       // Cambiar en tiempo real sin persistir
                       context.read<ThemeProvider>().changeThemePreview(ThemeType.oscuro);
-                      _showSaved('Tema: Oscuro');
+                      _showSaved('${AppLocalizations.of(context).theme}: ${AppLocalizations.of(context).dark}');
                     },
                   ),
                 ],
@@ -208,36 +215,36 @@ class _PersonalizationScreenState extends State<PersonalizationScreen> {
 
             // 3) Estilo
             _Section(
-              title: 'Estilo',
+              title: AppLocalizations.of(context).style,
               child: Wrap(
                 spacing: 8,
                 runSpacing: 8,
                 children: [
                   ChoiceChip(
-                    label: const Text('Minimalista ✨'),
+                    label: Text(AppLocalizations.of(context).minimalistStyle),
                     selected: _estilo == 'minimalista',
                     onSelected: (_) {
                       setState(() => _estilo = 'minimalista');
                       context.read<ThemeProvider>().changeStylePreview(StyleType.minimalista);
-                      _showSaved('Estilo: Minimalista');
+                      _showSaved('${AppLocalizations.of(context).style}: ${AppLocalizations.of(context).minimalistStyle}');
                     },
                   ),
                   ChoiceChip(
-                    label: const Text('Aventurero 🚀'),
+                    label: Text(AppLocalizations.of(context).adventurousStyle),
                     selected: _estilo == 'aventurero',
                     onSelected: (_) {
                       setState(() => _estilo = 'aventurero');
                       context.read<ThemeProvider>().changeStylePreview(StyleType.aventurero);
-                      _showSaved('Estilo: Aventurero');
+                      _showSaved('${AppLocalizations.of(context).style}: ${AppLocalizations.of(context).adventurousStyle}');
                     },
                   ),
                   ChoiceChip(
-                    label: const Text('Contemporáneo 🖼️'),
+                    label: Text(AppLocalizations.of(context).contemporaryStyle),
                     selected: _estilo == 'contemporaneo',
                     onSelected: (_) {
                       setState(() => _estilo = 'contemporaneo');
                       context.read<ThemeProvider>().changeStylePreview(StyleType.contemporaneo);
-                      _showSaved('Estilo: Contemporáneo');
+                      _showSaved('${AppLocalizations.of(context).style}: ${AppLocalizations.of(context).contemporaryStyle}');
                     },
                   ),
                 ],
@@ -260,24 +267,33 @@ class _PersonalizationScreenState extends State<PersonalizationScreen> {
                   if (mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text('Personalización guardada para ${widget.username}'),
+                        content: Text('${AppLocalizations.of(context).personalizationSaved} ${widget.username}'),
                         backgroundColor: AppColors.successColor,
                       ),
                     );
-                    Navigator.pushReplacementNamed(context, '/login');
+                    // Si viene de registro, ir a login. Si viene de home, ir a home
+                    if (widget.fromRegister) {
+                      Navigator.pushReplacementNamed(context, '/login');
+                    } else {
+                      Navigator.pushReplacementNamed(
+                        context,
+                        '/home',
+                        arguments: widget.username,
+                      );
+                    }
                   }
                 } catch (e) {
                   if (mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text('Error al guardar: $e'),
+                        content: Text('${AppLocalizations.of(context).errorSaving} $e'),
                         backgroundColor: AppColors.errorColor,
                       ),
                     );
                   }
                 }
               },
-              child: const Text('Listo'),
+              child: Text(AppLocalizations.of(context).done),
             ),
           ],
         ),

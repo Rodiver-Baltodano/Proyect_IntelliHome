@@ -305,6 +305,71 @@ Thank you for choosing Intelihome. Enjoy your experience on our platform.''';
   @override
   String get cancel => 'Cancel';
   
+  // Home Screen
+  @override
+  String get welcome => 'Welcome';
+  
+  @override
+  String get adventurous => 'Adventurous';
+  
+  @override
+  String get minimalist => 'Minimalist';
+  
+  @override
+  String get contemporary => 'Contemporary';
+  
+  @override
+  String get customize => 'Customize';
+  
+  @override
+  String get logout => 'Logout';
+  
+  // Personalization Screen
+  @override
+  String get registeredSuccessfully => 'Successfully registered';
+  
+  @override
+  String get customizeColors => 'Customize Colors';
+  
+  @override
+  String get primaryColor => 'Primary Color';
+  
+  @override
+  String get backgroundColor => 'Background Color';
+  
+  @override
+  String get theme => 'Theme';
+  
+  @override
+  String get light => 'Light';
+  
+  @override
+  String get medium => 'Medium';
+  
+  @override
+  String get dark => 'Dark';
+  
+  @override
+  String get style => 'Style';
+  
+  @override
+  String get minimalistStyle => 'Minimalist ✨';
+  
+  @override
+  String get adventurousStyle => 'Adventurous 🚀';
+  
+  @override
+  String get contemporaryStyle => 'Contemporary 🖼️';
+  
+  @override
+  String get done => 'Done';
+  
+  @override
+  String get personalizationSaved => 'Personalization saved for';
+  
+  @override
+  String get errorSaving => 'Error saving:';
+  
   // Common errors
   @override
   String get error => 'Error';

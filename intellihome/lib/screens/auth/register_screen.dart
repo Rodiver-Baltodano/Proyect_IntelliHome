@@ -198,7 +198,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
           // Navegar a Personalización después de 2 segundos
           Future.delayed(const Duration(seconds: 2), () {
             if (mounted) {
-              Navigator.pushReplacementNamed(context, '/personalizacion', arguments: username);
+              Navigator.pushReplacementNamed(
+                context,
+                '/personalizacion',
+                arguments: {
+                  'username': username,
+                  'fromRegister': true,
+                },
+              );
             }
           });
         }

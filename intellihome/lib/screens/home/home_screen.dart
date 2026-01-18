@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:intellihome/config/app_colors.dart';
 import 'package:intellihome/providers/theme_provider.dart';
+import 'package:intellihome/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -20,13 +21,79 @@ class HomeScreen extends StatelessWidget {
     final nombreUsuario = usuario?.username ?? username;
     final fotoPerfil = usuario?.fotoPerfil;
     final estilo = usuario?.estilo ?? themeProvider.currentStyle.name;
-    final estiloDisplay = _estiloConEmoji(estilo);
+    final estiloDisplay = _estiloConEmoji(estilo, context);
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('IntelliHome'),
         centerTitle: true,
         elevation: 0,
+      ),
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            DrawerHeader(
+              decoration: BoxDecoration(
+                color: AppColors.primaryColor,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  CircleAvatar(
+                    radius: 32,
+                    backgroundColor: Colors.white.withOpacity(0.3),
+                    backgroundImage: _buildImageProvider(fotoPerfil),
+                    child: (fotoPerfil == null || fotoPerfil.isEmpty)
+                        ? const Icon(Icons.person, size: 32, color: Colors.white)
+                        : null,
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    nombreUsuario,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.palette),
+              title: Text(AppLocalizations.of(context).customize),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.pushNamed(
+                  context,
+                  '/personalizacion',
+                  arguments: {
+                    'username': nombreUsuario,
+                    'fromRegister': false,
+                  },
+                );
+              },
+            ),
+            const Divider(),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+              child: ElevatedButton.icon(
+                icon: const Icon(Icons.logout),
+                label: Text(AppLocalizations.of(context).logout),
+                onPressed: () {
+                  Navigator.pushReplacementNamed(context, '/login');
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.errorColor,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
       body: Center(
         child: Column(
@@ -47,7 +114,7 @@ class HomeScreen extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              'Bienvenido',
+              AppLocalizations.of(context).welcome,
               style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                     color: AppColors.primaryColor,
                   ),
@@ -92,14 +159,15 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  _EstiloDisplay? _estiloConEmoji(String estilo) {
+  _EstiloDisplay? _estiloConEmoji(String estilo, BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     switch (estilo) {
       case 'aventurero':
-        return const _EstiloDisplay(label: 'Aventurero', emoji: '🚀');
+        return _EstiloDisplay(label: l10n.adventurous, emoji: '🚀');
       case 'minimalista':
-        return const _EstiloDisplay(label: 'Minimalista', emoji: '✨');
+        return _EstiloDisplay(label: l10n.minimalist, emoji: '✨');
       case 'contemporaneo':
-        return const _EstiloDisplay(label: 'Contemporáneo', emoji: '🖼️');
+        return _EstiloDisplay(label: l10n.contemporary, emoji: '🖼️');
       default:
         return null;
     }
@@ -121,5 +189,5 @@ class HomeScreen extends StatelessWidget {
 class _EstiloDisplay {
   final String label;
   final String emoji;
-  const _EstiloDisplay({required this.label, required this.emoji});
+  _EstiloDisplay({required this.label, required this.emoji});
 }
