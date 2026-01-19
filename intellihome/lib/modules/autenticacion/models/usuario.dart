@@ -29,9 +29,25 @@ class Usuario {
   final String numeroIBAN;
   final String fotoPerfil;
   bool aceptaTerminos;
+  final String? cedula; 
   final String? datosTargeta;        // Opcional
   final String? huellaBiometrica;    // Opcional
   final DateTime fechaRegistro;
+  final DateTime fechaNacimiento;
+
+  // ========== PERSONALIZACIÓN (Tema y Estilo) ==========
+  /// Tema del usuario: 'claro', 'medio', 'oscuro' (Default: 'medio')
+  String tema;
+
+  /// Estilo del usuario: 'aventurero', 'minimalista', 'contemporaneo' (Default: 'aventurero')
+  String estilo;
+
+  // ========== PERSONALIZACIÓN (Colores personalizados) ==========
+  /// Color primario personalizado guardado como int ARGB (null = usar default del tema)
+  int? colorPrimarioARGB;
+
+  /// Color de fondo personalizado guardado como int ARGB (null = usar default del tema)
+  int? colorBackgroundARGB;
 
   Usuario({
     required this.id,
@@ -44,6 +60,7 @@ class Usuario {
     required this.numeroIBAN,
     required this.fotoPerfil,
     required this.aceptaTerminos,
+    this.cedula,
     this.datosTargeta,
     this.huellaBiometrica,
     this.intentosFallidos = 0,
@@ -52,6 +69,11 @@ class Usuario {
     this.codigoRecuperacion,
     this.codigoExpira,
     required this.fechaRegistro,
+    required this.fechaNacimiento,
+    this.tema = 'medio',
+    this.estilo = 'aventurero',
+    this.colorPrimarioARGB,
+    this.colorBackgroundARGB,
   });
 
   /// Crea un Usuario a partir de un Map (JSON)
@@ -67,6 +89,7 @@ class Usuario {
       numeroIBAN: json['numeroIBAN'] as String,
       fotoPerfil: json['fotoPerfil'] as String,
       aceptaTerminos: json['aceptaTerminos'] as bool,
+      cedula: json['cedula'],
       datosTargeta: json['datosTargeta'],
       huellaBiometrica: json['huellaBiometrica'],
       intentosFallidos: json['intentosFallidos'] ?? 0,
@@ -77,6 +100,13 @@ class Usuario {
           ? DateTime.parse(json['codigoExpira'])
           : null,
       fechaRegistro: DateTime.parse(json['fechaRegistro'] as String),
+        fechaNacimiento: json['fechaNacimiento'] != null
+          ? DateTime.parse(json['fechaNacimiento'] as String)
+          : DateTime(2000, 1, 1),
+      tema: json['tema'] ?? 'medio',
+      estilo: json['estilo'] ?? 'aventurero',
+      colorPrimarioARGB: json['colorPrimarioARGB'],
+      colorBackgroundARGB: json['colorBackgroundARGB'],
     );
   }
 
@@ -93,6 +123,7 @@ class Usuario {
       'numeroIBAN': numeroIBAN,
       'fotoPerfil': fotoPerfil,
       'aceptaTerminos': aceptaTerminos,
+      'cedula': cedula,
       'datosTargeta': datosTargeta,
       'huellaBiometrica': huellaBiometrica,
       'intentosFallidos': intentosFallidos,
@@ -101,6 +132,11 @@ class Usuario {
       'codigoRecuperacion': codigoRecuperacion,
       'codigoExpira': codigoExpira?.toIso8601String(),
       'fechaRegistro': fechaRegistro.toIso8601String(),
+      'fechaNacimiento': fechaNacimiento.toIso8601String(),
+      'tema': tema,
+      'estilo': estilo,
+      'colorPrimarioARGB': colorPrimarioARGB,
+      'colorBackgroundARGB': colorBackgroundARGB,
     };
   }
 

@@ -1,197 +1,270 @@
-import 'dart:async';
-
-import 'package:flutter/foundation.dart';
-import 'package:flutter/widgets.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:intl/intl.dart' as intl;
-
-import 'app_localizations_en.dart';
+import 'package:flutter/material.dart';
 import 'app_localizations_es.dart';
+import 'app_localizations_en.dart';
 import 'app_localizations_pt.dart';
 
-// ignore_for_file: type=lint
-
-/// Callers can lookup localized strings with an instance of AppLocalizations
-/// returned by `AppLocalizations.of(context)`.
-///
-/// Applications need to include `AppLocalizations.delegate()` in their app's
-/// `localizationDelegates` list, and the locales they support in the app's
-/// `supportedLocales` list. For example:
-///
-/// ```dart
-/// import 'l10n/app_localizations.dart';
-///
-/// return MaterialApp(
-///   localizationsDelegates: AppLocalizations.localizationsDelegates,
-///   supportedLocales: AppLocalizations.supportedLocales,
-///   home: MyApplicationHome(),
-/// );
-/// ```
-///
-/// ## Update pubspec.yaml
-///
-/// Please make sure to update your pubspec.yaml to include the following
-/// packages:
-///
-/// ```yaml
-/// dependencies:
-///   # Internationalization support.
-///   flutter_localizations:
-///     sdk: flutter
-///   intl: any # Use the pinned version from flutter_localizations
-///
-///   # Rest of dependencies
-/// ```
-///
-/// ## iOS Applications
-///
-/// iOS applications define key application metadata, including supported
-/// locales, in an Info.plist file that is built into the application bundle.
-/// To configure the locales supported by your app, you’ll need to edit this
-/// file.
-///
-/// First, open your project’s ios/Runner.xcworkspace Xcode workspace file.
-/// Then, in the Project Navigator, open the Info.plist file under the Runner
-/// project’s Runner folder.
-///
-/// Next, select the Information Property List item, select Add Item from the
-/// Editor menu, then select Localizations from the pop-up menu.
-///
-/// Select and expand the newly-created Localizations item then, for each
-/// locale your application supports, add a new item and select the locale
-/// you wish to add from the pop-up menu in the Value field. This list should
-/// be consistent with the languages listed in the AppLocalizations.supportedLocales
-/// property.
 abstract class AppLocalizations {
-  AppLocalizations(String locale)
-    : localeName = intl.Intl.canonicalizedLocale(locale.toString());
-
-  final String localeName;
-
-  // UI: Obtener instancia de localización desde el context
-  // USO: final l10n = AppLocalizations.of(context)!;
-  // RETORNA: AppLocalizations? (objeto con todos los strings traducidos)
-  static AppLocalizations? of(BuildContext context) {
-    return Localizations.of<AppLocalizations>(context, AppLocalizations);
+  static AppLocalizations of(BuildContext context) {
+    return Localizations.of<AppLocalizations>(context, AppLocalizations)!;
   }
 
-  static const LocalizationsDelegate<AppLocalizations> delegate =
-      _AppLocalizationsDelegate();
+  // Método para obtener el delegado
+  static const LocalizationsDelegate<AppLocalizations> delegate = _AppLocalizationsDelegate();
 
-  /// A list of this localizations delegate along with the default localizations
-  /// delegates.
-  ///
-  /// Returns a list of localizations delegates containing this delegate along with
-  /// GlobalMaterialLocalizations.delegate, GlobalCupertinoLocalizations.delegate,
-  /// and GlobalWidgetsLocalizations.delegate.
-  ///
-  /// Additional delegates can be added by appending to this list in
-  /// MaterialApp. This list does not have to be used at all if a custom list
-  /// of delegates is preferred or required.
-  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
-      <LocalizationsDelegate<dynamic>>[
-        delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-      ];
-
-  /// A list of this localizations delegate's supported locales.
-  static const List<Locale> supportedLocales = <Locale>[
-    Locale('en'),
-    Locale('es'),
-    Locale('pt'),
+  // Idiomas soportados
+  static const List<Locale> supportedLocales = [
+    Locale('es', ''), // Español
+    Locale('en', ''), // Inglés
+    Locale('pt', ''), // Portugués
   ];
 
-  /// No description provided for @appTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'IntelliHome'**
-  // USO: String titulo = l10n.appTitle;
-  // RETORNA: String ("IntelliHome" / "IntelliHome" / "IntelliHome")
+  // Textos generales
   String get appTitle;
+  String get help;
+  String get language;
+  
+  // Login Screen
+  String get loginTitle;
+  String get username;
+  String get password;
+  String get loginButton;
+  String get registerButton;
+  String get forgotPassword;
+  String get loginSuccess;
+  
+  // Register Screen
+  String get registerTitle;
+  String get name;
+  String get email;
+  String get confirmPassword;
+  String get phoneNumber;
+  String get idNumber;
+  String get nationality;
+  String get ibanNumber;
+  String get birthDate;
+  String get addCreditCard;
+  String get cardNumber;
+  String get expirationDate;
+  String get cvv;
+  String get cardOptionalNote;
+  String get registerAccount;
+  String get termsMessage;
+  String get termsAndConditions;
+  String get mustAcceptTerms;
+  String get backToLogin;
+  String get passwordsDontMatch;
+  String get mustAcceptTermsError;
+  String get registrationSuccess;
+  
+  // Recovery Screen
+  String get recoveryTitle;
+  String get recoveryDescription;
+  String get recoveryCodeDescription;
+  String get usernameOrEmail;
+  String get requestCode;
+  String get recoveryCode;
+  String get verifyCode;
+  String get newPassword;
+  String get confirmNewPassword;
+  String get changePassword;
+  String get codeSent;
+  String get codeVerified;
+  String get passwordUpdated;
+  String get requestingCode;
+  
+  // Recovery Screen - Nuevos
+  String get enterUserOrEmail;
+  String get codeSentToPhone;
+  String get codeRequired;
+  String get codeVerifiedEnterPassword;
+  String get passwordsMismatch;
+  String get passwordMinLength;
+  String get userNotIdentified;
+  String get passwordUpdatedBackToLogin;
+  String get enterCodeSentToEmail;
+  String get enterUserForRecoveryCode;
+  String get recoverAccount;
+  
+  // Help Screen
+  String get aboutApp;
+  String get aboutDescription;
+  String get version;
+  String get developerTeam;
+  String get developer;
+  String get contactSupport;
+  String get emailLabel;
+  String get phoneLabel;
+  String get websiteLabel;
+  String get mainFeatures;
+  String get feature1;
+  String get feature2;
+  String get feature3;
+  String get feature4;
+  String get feature5;
+  String get feature6;
+  String get feature7;
+  String get feature8;
+  String get feature9;
+  String get close;
+  
+  // Terms Screen
+  String get termsTitle;
+  String get termsContent;
+  String get acceptTermsCheckbox;
+  String get acceptAndContinue;
+  String get cancel;
+  
+  // Home Screen
+  String get welcome;
+  String get adventurous;
+  String get minimalist;
+  String get contemporary;
+  String get customize;
+  String get logout;
+  
+  // Personalization Screen
+  String get registeredSuccessfully;
+  String get customizeColors;
+  String get primaryColor;
+  String get backgroundColor;
+  String get theme;
+  String get light;
+  String get medium;
+  String get dark;
+  String get style;
+  String get minimalistStyle;
+  String get adventurousStyle;
+  String get contemporaryStyle;
+  String get done;
+  String get personalizationSaved;
+  String get errorSaving;
+  
+  // Errores comunes
+  String get error;
+  String get success;
+  String get loading;
 
-  /// No description provided for @selectTheme.
-  ///
-  /// In en, this message translates to:
-  /// **'Select your theme'**
-  // USO: String texto = l10n.selectTheme;
-  // RETORNA: String ("Select your theme" / "Selecciona tu tema" / "Selecione seu tema")
-  String get selectTheme;
-
-  /// No description provided for @selectStyle.
-  ///
-  /// In en, this message translates to:
-  /// **'Choose your style'**
-  // USO: String texto = l10n.selectStyle;
-  // RETORNA: String ("Choose your style" / "Elige tu estilo" / "Escolha seu estilo")
-  String get selectStyle;
-
-  /// No description provided for @lightTheme.
-  ///
-  /// In en, this message translates to:
-  /// **'Light'**
-  // USO: String texto = l10n.lightTheme;
-  // RETORNA: String ("Light" / "Claro" / "Claro")
-  String get lightTheme;
-
-  /// No description provided for @mediumTheme.
-  ///
-  /// In en, this message translates to:
-  /// **'Medium'**
-  // USO: String texto = l10n.mediumTheme;
-  // RETORNA: String ("Medium" / "Medio" / "Médio")
-  String get mediumTheme;
-
-  /// No description provided for @darkTheme.
-  ///
-  /// In en, this message translates to:
-  /// **'Dark'**
-  // USO: String texto = l10n.darkTheme;
-  // RETORNA: String ("Dark" / "Oscuro" / "Escuro")
-  String get darkTheme;
-
-  /// No description provided for @confirm.
-  ///
-  /// In en, this message translates to:
-  /// **'Confirm'**
-  // USO: String texto = l10n.confirm;
-  // RETORNA: String ("Confirm" / "Confirmar" / "Confirmar")
-  String get confirm;
+  String get nameRequired;
+  String get nameInvalidFormat;
+  
+  // Username
+  String get usernameRequired;
+  String get usernameInvalidFormat;
+  String get usernameAlreadyExists;
+  
+  // Email
+  String get emailRequired;
+  String get emailInvalidFormat;
+  String get emailAlreadyExists;
+  
+  // Teléfono
+  String get phoneRequired;
+  String get phoneInvalidFormat;
+  String get phoneAlreadyExists;
+  
+  // Cédula
+  String get idRequired;
+  String get idInvalidFormatCR;
+  String get idInvalidFormatGeneric;
+  String get idAlreadyExists;
+  
+  // Contraseña
+  String get passwordRequired;
+  String get passwordInvalidFormat;
+  
+  // Nacionalidad
+  String get nationalityRequired;
+  
+  // IBAN
+  String get ibanInvalidFormat;
+  
+  // Fecha de nacimiento
+  String get birthDateRequired;
+  String get mustBeOver18;
+  
+  // Tarjeta
+  String get cardNumberInvalid;
+  String get cardExpiryInvalid;
+  String get cardExpired;
+  String get cvvInvalid;
+  
+  // Términos
+  String get mustAcceptTermsValidation;
+  
+  // ============================================
+  // MENSAJES DE AUTENTICACIÓN (LOGIN)
+  // ============================================
+  
+  String get invalidFormatMessage;
+  String get invalidIdentifierAndPassword;
+  String get userNotExistMessage;
+  String get verifyDataOrRegister;
+  String get userBlockedMessage;
+  String get userBlockedUseRecovery;
+  String get incorrectPassword;
+  String get attemptsRemaining;
+  String get loginSuccessMessage;
+  
+  // ============================================
+  // MENSAJES DE RECUPERACIÓN DE CONTRASEÑA
+  // ============================================
+  
+  String get enterPhoneEmailOrUser;
+  String get invalidIdentifierFormat;
+  String get userNotFoundRecovery;
+  String get recoveryCodeSentToEmail;
+  String get recoveryCodeGenerated;
+  String get checkEnvConfiguration;
+  String get invalidDataVerifyIdentifierAndCode;
+  String get invalidOrExpiredCode;
+  String get tooManyAttempts;
+  String get accountBlockedContactSupport;
+  String get requestNewCode;
+  String get codeVerifiedCanUpdatePassword;
+  String get invalidIdentifier;
+  String get mustEnterCode;
+  String get passwordMustBeAlphanumeric8;
+  String get invalidOrExpiredCodeRetry;
+  String get passwordUpdatedCanLogin;
+  
+  // ============================================
+  // MENSAJES DE REGISTRO
+  // ============================================
+  
+  String get registrationError;
+  String get savingError;
+  
+  // ============================================
+  // MENSAJES GENERALES DEL SISTEMA
+  // ============================================
+  
+  String get operationSuccessful;
+  String get operationFailed;
+  String get pleaseWait;
+  String get processing;
 }
 
-class _AppLocalizationsDelegate
-    extends LocalizationsDelegate<AppLocalizations> {
+class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
   const _AppLocalizationsDelegate();
 
   @override
-  Future<AppLocalizations> load(Locale locale) {
-    return SynchronousFuture<AppLocalizations>(lookupAppLocalizations(locale));
+  bool isSupported(Locale locale) {
+    return ['es', 'en', 'pt'].contains(locale.languageCode);
   }
 
   @override
-  bool isSupported(Locale locale) =>
-      <String>['en', 'es', 'pt'].contains(locale.languageCode);
+  Future<AppLocalizations> load(Locale locale) async {
+    switch (locale.languageCode) {
+      case 'en':
+        return AppLocalizationsEn();
+      case 'pt':
+        return AppLocalizationsPt();
+      case 'es':
+      default:
+        return AppLocalizationsEs();
+    }
+  }
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;
-}
-
-AppLocalizations lookupAppLocalizations(Locale locale) {
-  // Lookup logic when only language code is specified.
-  switch (locale.languageCode) {
-    case 'en':
-      return AppLocalizationsEn();
-    case 'es':
-      return AppLocalizationsEs();
-    case 'pt':
-      return AppLocalizationsPt();
-  }
-
-  throw FlutterError(
-    'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
-    'an issue with the localizations generation tool. Please file an issue '
-    'on GitHub with a reproducible sample app and the gen-l10n configuration '
-    'that was used.',
-  );
 }

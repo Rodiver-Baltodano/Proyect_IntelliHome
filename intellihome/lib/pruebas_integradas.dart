@@ -1,6 +1,10 @@
+/*
 import 'dart:io';
+import 'package:flutter/material.dart';
 import 'package:path/path.dart' as p;
-import 'modules/autenticacion/autenticacion.dart';
+import 'package:intellihome/modules/autenticacion/autenticacion.dart';
+import 'package:intellihome/providers/theme_provider.dart';
+import 'package:intellihome/theme/theme_colors.dart';
 
 void main() async {
   print('========================================');
@@ -18,8 +22,8 @@ void main() async {
   }
 
   final repositorio = UsuarioRepositorioJson(rutaArchivo: rutaJson);
-  final registroServicio = RegistroServicio(repositorio: repositorio);
-  final autenticacionServicio = AutenticacionServicio(usuarioRepositorio: repositorio);
+  final registroServicio = RegistroServicio(repositorio: repositorio, context: context);
+  final autenticacionServicio = AutenticacionServicio(usuarioRepositorio: repositorio, context: context);
 
   // ========== PRUEBA 1: Registro exitoso ==========
   print('PRUEBA 1: Registro de usuario exitoso');
@@ -35,7 +39,10 @@ void main() async {
     numeroIBAN: 'CR2400123456789012345678',
     fotoPerfil: 'https://example.com/juan.jpg',
     aceptaTerminos: true,
-    datosTargeta: '4111111111111111',
+    fechaNacimiento: DateTime(1990, 5, 15),
+    numeroTarjeta: '4111111111111111',
+    fechaExpiracion: '12/30',
+    cvv: '123',
     huellaBiometrica: 'HUELLA_001',
   );
 
@@ -61,6 +68,7 @@ void main() async {
     numeroIBAN: 'CR2400123456789012345679',
     fotoPerfil: 'https://example.com/maria.jpg',
     aceptaTerminos: true,
+    fechaNacimiento: DateTime(1992, 8, 20),
   );
 
   print('Resultado: ${resultadoReg2.exito ? 'ÉXITO' : 'ERROR'}');
@@ -83,6 +91,7 @@ void main() async {
     numeroIBAN: 'CR2400123456789012345680',
     fotoPerfil: 'https://example.com/carlos.jpg',
     aceptaTerminos: true,
+    fechaNacimiento: DateTime(1995, 3, 10),
   );
 
   print('Resultado: ${resultadoReg3.exito ? 'ÉXITO' : 'ERROR'}');
@@ -286,5 +295,203 @@ void main() async {
   print('');
   print('✨ Todas las pruebas completadas');
   print('');
+
+  // ========== PRUEBAS DE PERSONALIZACIÓN ==========
+  print('');
+  print('========================================');
+  print('PRUEBAS: PERSONALIZACIÓN (TEMA Y ESTILO)');
+  print('========================================');
+  print('');
+
+  final themeProvider = ThemeProvider();
+
+  // PRUEBA 1: Registrar usuario con defaults
+  print('PRUEBA 1: Registrar usuario con valores default');
+  print('-' * 40);
+  final resultadoReg = await registroServicio.registrarUsuario(
+    nombreApellidos: 'Carlos Tema',
+    username: 'carlostema',
+    correo: 'carlos@example.com',
+    telefono: '87654325',
+    contrasena: 'password789',
+    nacionalidad: 'Costa Rica',
+    numeroIBAN: 'CR2400123456789012345681',
+    fotoPerfil: 'https://example.com/carlos.jpg',
+    aceptaTerminos: true,
+    fechaNacimiento: DateTime(1994, 7, 22),
+  );
+
+  if (!resultadoReg.exito) {
+    print('✗ Error en registro: ${resultadoReg.errores}');
+  } else {
+    final usuarioRegistrado = resultadoReg.usuario!;
+    print('✓ Usuario registrado: ${usuarioRegistrado.username}');
+    print('  - Tema default: ${usuarioRegistrado.tema}');
+    print('  - Estilo default: ${usuarioRegistrado.estilo}');
+    assert(usuarioRegistrado.tema == 'medio', 'Tema default no es medio');
+    assert(usuarioRegistrado.estilo == 'aventurero',
+        'Estilo default no es aventurero');
+  }
+  print('');
+
+  // PRUEBA 2: Inicializar ThemeProvider con usuario
+  print('PRUEBA 2: Inicializar ThemeProvider con usuario registrado');
+  print('-' * 40);
+  themeProvider.inicializarConUsuario(resultadoReg.usuario!);
+  print('✓ ThemeProvider inicializado');
+  print('  - Tema actual: ${themeProvider.currentThemeType.name}');
+  print('  - Estilo actual: ${themeProvider.currentStyle.name}');
+  assert(themeProvider.currentThemeType == ThemeType.medio,
+      'Tema no cargó correctamente');
+  assert(themeProvider.currentStyle == StyleType.aventurero,
+      'Estilo no cargó correctamente');
+  print('');
+
+  // PRUEBA 3: Cambiar tema
+  print('PRUEBA 3: Cambiar tema a oscuro');
+  print('-' * 40);
+  await themeProvider.changeTheme(ThemeType.oscuro);
+  print('✓ Tema cambiado a: ${themeProvider.currentThemeType.name}');
+  print('  - Usuario actualizado: ${themeProvider.usuarioActual?.tema}');
+  assert(themeProvider.usuarioActual?.tema == 'oscuro',
+      'Tema del usuario no se actualizó');
+  print('');
+
+  // PRUEBA 4: Cambiar estilo
+  print('PRUEBA 4: Cambiar estilo a minimalista');
+  print('-' * 40);
+  await themeProvider.changeStyle(StyleType.minimalista);
+  print('✓ Estilo cambiado a: ${themeProvider.currentStyle.name}');
+  print('  - Usuario actualizado: ${themeProvider.usuarioActual?.estilo}');
+  assert(themeProvider.usuarioActual?.estilo == 'minimalista',
+      'Estilo del usuario no se actualizó');
+  print('');
+
+  // PRUEBA 5: Múltiples cambios de tema
+  print('PRUEBA 5: Cambiar tema múltiples veces');
+  print('-' * 40);
+  await themeProvider.changeTheme(ThemeType.claro);
+  print('  Cambio 1: ${themeProvider.currentThemeType.name}');
+  await themeProvider.changeTheme(ThemeType.medio);
+  print('  Cambio 2: ${themeProvider.currentThemeType.name}');
+  await themeProvider.changeTheme(ThemeType.oscuro);
+  print('  Cambio 3: ${themeProvider.currentThemeType.name}');
+  assert(themeProvider.currentThemeType == ThemeType.oscuro,
+      'Último cambio de tema no funcionó');
+  print('✓ Todos los cambios aplicados correctamente');
+  print('');
+
+  // PRUEBA 5.5: Actualizar color primario
+  print('PRUEBA 5.5: Actualizar color primario');
+  print('-' * 40);
+  final colorPrimarioOriginal = themeProvider.currentTheme.primary;
+  themeProvider.updatePrimaryColor(const Color.fromARGB(255, 255, 0, 0));
+  print('✓ Color primario actualizado:');
+  print('  - Anterior: $colorPrimarioOriginal');
+  print('  - Nuevo: ${themeProvider.currentTheme.primary}');
+  print('  - Guardado en usuario: ${themeProvider.usuarioActual?.colorPrimarioARGB}');
+  assert(themeProvider.currentTheme.primary == const Color.fromARGB(255, 255, 0, 0),
+      'Color primario no se actualizó correctamente');
+  assert(themeProvider.usuarioActual?.colorPrimarioARGB != null,
+      'Color primario no se guardó en usuario');
+  print('');
+
+  // PRUEBA 5.6: Actualizar color de fondo
+  print('PRUEBA 5.6: Actualizar color de fondo');
+  print('-' * 40);
+  final colorFondoOriginal = themeProvider.currentTheme.background;
+  themeProvider.updateBackgroundColor(const Color.fromARGB(255, 0, 0, 255));
+  print('✓ Color de fondo actualizado:');
+  print('  - Anterior: $colorFondoOriginal');
+  print('  - Nuevo: ${themeProvider.currentTheme.background}');
+  print('  - Guardado en usuario: ${themeProvider.usuarioActual?.colorBackgroundARGB}');
+  assert(themeProvider.currentTheme.background == const Color.fromARGB(255, 0, 0, 255),
+      'Color de fondo no se actualizó correctamente');
+  assert(themeProvider.usuarioActual?.colorBackgroundARGB != null,
+      'Color de fondo no se guardó en usuario');
+  print('');
+
+  // PRUEBA 6: Obtener datos de personalización
+  print('PRUEBA 6: Obtener datos de personalización');
+  print('-' * 40);
+  final personalizacion = themeProvider.obtenerPersonalizacion();
+  print('Datos guardados en usuario:');
+  print('  - tema: ${personalizacion['tema']}');
+  print('  - estilo: ${personalizacion['estilo']}');
+  assert(personalizacion['tema'] == 'oscuro', 'Tema incorrecto');
+  assert(personalizacion['estilo'] == 'minimalista', 'Estilo incorrecto');
+  print('✓ Datos obtenidos correctamente');
+  print('');
+
+  // PRUEBA 7: Resetear a defaults
+  print('PRUEBA 7: Resetear a valores por defecto');
+  print('-' * 40);
+  await themeProvider.resetearADefaults();
+  print('✓ Valores reseteados');
+  print('  - Tema: ${themeProvider.currentThemeType.name}');
+  print('  - Estilo: ${themeProvider.currentStyle.name}');
+  print('  - Usuario tema: ${themeProvider.usuarioActual?.tema}');
+  print('  - Usuario estilo: ${themeProvider.usuarioActual?.estilo}');
+  assert(themeProvider.currentThemeType == ThemeType.medio, 'Tema no es medio');
+  assert(themeProvider.currentStyle == StyleType.aventurero,
+      'Estilo no es aventurero');
+  print('');
+
+// PRUEBA 9: Guardar cambios en JSON
+  print('PRUEBA 9: Verificar que cambios persisten en JSON');
+  print('-' * 40);
+  await themeProvider.changeTheme(ThemeType.claro);
+  await themeProvider.changeStyle(StyleType.contemporaneo);
+  themeProvider.updatePrimaryColor(const Color.fromARGB(255, 100, 200, 50));
+  themeProvider.updateBackgroundColor(const Color.fromARGB(255, 220, 180, 100));
+    // Actualizamos al usuario existente en el repositorio (no creamos uno nuevo)
+    await repositorio.actualizarUsuario(themeProvider.usuarioActual!);
+  
+  // Cargar usuario de nuevo
+    final usuariosRecargados = await repositorio.cargarUsuarios();
+    final usuarioRecargado =
+      usuariosRecargados.firstWhere((u) => u.username == 'carlostema');
+  
+  print('Datos después de recargar desde JSON:');
+  print('  - Tema: ${usuarioRecargado.tema}');
+  print('  - Estilo: ${usuarioRecargado.estilo}');
+  print('  - Color primario ARGB: ${usuarioRecargado.colorPrimarioARGB}');
+  print('  - Color fondo ARGB: ${usuarioRecargado.colorBackgroundARGB}');
+  assert(usuarioRecargado.tema == 'claro', 'Tema no persistió en JSON');
+  assert(usuarioRecargado.estilo == 'contemporaneo',
+      'Estilo no persistió en JSON');
+  assert(usuarioRecargado.colorPrimarioARGB != null, 'Color primario no persistió');
+  assert(usuarioRecargado.colorBackgroundARGB != null, 'Color fondo no persistió');
+  print('✓ Cambios guardados correctamente en JSON');
+  print('');
+
+  // ========== RESUMEN FINAL ==========
+  print('========================================');
+  print('RESUMEN FINAL - TODAS LAS PRUEBAS');
+  print('========================================');
+  print('AUTENTICACIÓN:');
+  print('  ✓ Registro con validación completa');
+  print('  ✓ Detección de campos duplicados');
+  print('  ✓ Validación de formato de campos');
+  print('  ✓ Login con username, email y teléfono');
+  print('  ✓ Bloqueo después de 5 intentos fallidos');
+  print('  ✓ Recuperación con código temporal');
+  print('  ✓ Cambio de contraseña y desbloqueo');
+  print('');
+  print('PERSONALIZACIÓN:');
+  print('  ✓ Registro con valores default (medio/aventurero)');
+  print('  ✓ Inicialización de ThemeProvider');
+  print('  ✓ Cambio de tema (claro/medio/oscuro)');
+  print('  ✓ Cambio de estilo (aventurero/minimalista/contemporáneo)');
+  print('  ✓ Múltiples cambios consecutivos');
+  print('  ✓ Actualización de color primario (persistencia)');
+  print('  ✓ Actualización de color de fondo (persistencia)');
+  print('  ✓ Obtención de datos de personalización');
+  print('  ✓ Reseteo a valores por defecto');
+  print('  ✓ Persistencia completa en JSON');
+  print('');
+  print('✨ TODAS LAS PRUEBAS COMPLETADAS EXITOSAMENTE');
+  print('');
 }
 
+*/

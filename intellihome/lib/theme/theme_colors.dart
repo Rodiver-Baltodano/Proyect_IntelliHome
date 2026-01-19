@@ -15,19 +15,19 @@ enum ThemeType {
 class ClaroThemeColors {
   // Color más oscuro - usado para fondos principales o elementos destacados
   // Azul oscuro profundo
-  static const Color primary = Color(0xFF164863);
+    static const Color primary = Color(0xFF1F5A74);
   
   // Color secundario - usado para elementos interactivos y acentos
   // Azul medio
-  static const Color secondary = Color(0xFF427D9D);
+    static const Color secondary = Color(0xFF4F8AA3);
   
   // Color terciario - usado para elementos secundarios y fondos suaves
   // Azul claro
-  static const Color tertiary = Color(0xFF9BBEC8);
+    static const Color tertiary = Color(0xFF9EBFCC);
   
   // Color de fondo - usado para fondos generales y superficies
   // Azul muy claro, casi blanco
-  static const Color background = Color(0xFFDDF2FD);
+    static const Color background = Color(0xFFE2F3FA);
 
   /// Método que retorna todos los colores como una lista
   /// Útil para mostrarlos en un selector de paleta
@@ -99,19 +99,19 @@ class MedioThemeColors {
 class OscuroThemeColors {
   // Color más oscuro - usado para fondos principales
   // Azul muy oscuro, casi negro
-  static const Color primary = Color(0xFF070F2B);
+    static const Color primary = Color(0xFF0B132B);
   
   // Color secundario - usado para elementos interactivos y acentos
   // Azul oscuro púrpura
-  static const Color secondary = Color(0xFF1B1A55);
+    static const Color secondary = Color(0xFF1C2541);
   
   // Color terciario - usado para elementos secundarios
   // Gris azulado medio
-  static const Color tertiary = Color(0xFF535C91);
+    static const Color tertiary = Color(0xFF3A3F6B);
   
   // Color de fondo - usado para fondos suaves y superficies elevadas
   // Lavanda claro
-  static const Color background = Color(0xFF9290C3);
+    static const Color background = Color(0xFF8D8FC3);
 
   /// Método que retorna todos los colores como una lista
   /// Útil para mostrarlos en un selector de paleta
@@ -139,33 +139,37 @@ class OscuroThemeColors {
 /// Clase base para manejar los colores del tema de la aplicación
 /// Esta clase se usará para cambiar dinámicamente entre temas
 class AppThemeColors {
-  // Color principal actual
-  final Color primary;
+  // Color principal actual - mutable para permitir personalizaciones
+  Color primary;
   
-  // Color secundario actual
-  final Color secondary;
+  // Color secundario actual - mutable para permitir personalizaciones
+  Color secondary;
   
-  // Color terciario actual
-  final Color tertiary;
+  // Color terciario actual - mutable para permitir personalizaciones
+  Color tertiary;
   
-  // Color de fondo actual
-  final Color background;
+  // Color de fondo actual - mutable para permitir personalizaciones
+  Color background;
+
+  // Color de texto - para updateCustomColors
+  Color textColor;
 
   // Tipo de tema actualmente seleccionado
   final ThemeType themeType;
 
   /// Constructor que inicializa los colores del tema
-  const AppThemeColors({
+  AppThemeColors({
     required this.primary,
     required this.secondary,
     required this.tertiary,
     required this.background,
+    this.textColor = Colors.black87,
     required this.themeType,
   });
 
   /// Factory constructor para crear el tema CLARO
   factory AppThemeColors.claro() {
-    return const AppThemeColors(
+    return AppThemeColors(
       primary: ClaroThemeColors.primary,
       secondary: ClaroThemeColors.secondary,
       tertiary: ClaroThemeColors.tertiary,
@@ -177,7 +181,7 @@ class AppThemeColors {
   /// Factory constructor para crear el tema MEDIO
   /// Este es el tema predeterminado de la aplicación
   factory AppThemeColors.medio() {
-    return const AppThemeColors(
+    return AppThemeColors(
       primary: MedioThemeColors.primary,
       secondary: MedioThemeColors.secondary,
       tertiary: MedioThemeColors.tertiary,
@@ -188,7 +192,7 @@ class AppThemeColors {
 
   /// Factory constructor para crear el tema OSCURO
   factory AppThemeColors.oscuro() {
-    return const AppThemeColors(
+    return AppThemeColors(
       primary: OscuroThemeColors.primary,
       secondary: OscuroThemeColors.secondary,
       tertiary: OscuroThemeColors.tertiary,

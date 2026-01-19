@@ -20,8 +20,11 @@ class UsuarioRepositorioJson {
   Future<List<Usuario>> cargarUsuarios() async {
     final archivo = File(rutaArchivo);
 
+    print('📂 [REPO] Cargando usuarios desde: $rutaArchivo');
+
     if (!await archivo.exists()) {
       // Si no existe, devolvemos lista vacía (o podés lanzar error si preferís)
+      print('⚠️ [REPO] Archivo no existe, retornando lista vacía.');
       return [];
     }
 
@@ -67,6 +70,16 @@ class UsuarioRepositorioJson {
   Future<Usuario?> buscarPorIdentificador(String identificador) async {
     final usuarios = await cargarUsuarios();
     return _buscarEnLista(usuarios, identificador);
+  }
+
+  /// Busca por id exacto
+  Future<Usuario?> buscarPorId(String id) async {
+    final usuarios = await cargarUsuarios();
+    try {
+      return usuarios.firstWhere((u) => u.id == id);
+    } catch (_) {
+      return null;
+    }
   }
 
   /// Igual que buscarPorIdentificador, pero usando una lista ya cargada (más eficiente).

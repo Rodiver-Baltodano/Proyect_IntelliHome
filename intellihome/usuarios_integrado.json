@@ -1,6 +1,6 @@
 [
   {
-    "id": "6e612f7f-bbde-43ab-8aa3-a13a66193706",
+    "id": "03fb4e0f-2580-4896-87e9-8d1e3f93a1a0",
     "username": "juanperez123",
     "nombreApellidos": "Juan Pérez",
     "correo": "juan@example.com",
@@ -17,6 +17,34 @@
     "estaBloqueado": false,
     "codigoRecuperacion": null,
     "codigoExpira": null,
-    "fechaRegistro": "2026-01-15T20:02:42.511209"
+    "fechaRegistro": "2026-01-15T23:36:19.972556",
+    "tema": "medio",
+    "estilo": "aventurero",
+    "colorPrimarioARGB": null,
+    "colorBackgroundARGB": null
+  },
+  {
+    "id": "77047b45-0e20-495e-8f8e-d438bffab504",
+    "username": "carlostema",
+    "nombreApellidos": "Carlos Tema",
+    "correo": "carlos@example.com",
+    "telefono": "87654325",
+    "contrasena": "password789",
+    "nacionalidad": "Costa Rica",
+    "numeroIBAN": "CR2400123456789012345681",
+    "fotoPerfil": "https://example.com/carlos.jpg",
+    "aceptaTerminos": true,
+    "datosTargeta": null,
+    "huellaBiometrica": null,
+    "intentosFallidos": 0,
+    "intentosFallidosCodigo": 0,
+    "estaBloqueado": false,
+    "codigoRecuperacion": null,
+    "codigoExpira": null,
+    "fechaRegistro": "2026-01-15T23:36:20.330513",
+    "tema": "claro",
+    "estilo": "contemporaneo",
+    "colorPrimarioARGB": 4284794930,
+    "colorBackgroundARGB": 4292654180
   }
 ]

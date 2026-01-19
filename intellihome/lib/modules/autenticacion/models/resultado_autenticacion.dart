@@ -73,6 +73,20 @@ class ResultadoAutenticacion {
     );
   }
 
+  factory ResultadoAutenticacion.usuarioNoExiste({
+    required String mensaje,
+  }) {
+    return ResultadoAutenticacion(
+      exito: false,
+      errorCredencialesInvalidas: true,
+      errorFormatoInvalido: false,
+      usuarioNoExiste: true,
+      usuarioBloqueado: false,
+      intentosRestantes: null,
+      mensaje: mensaje,
+    );
+  }
+
   /// Factory para error de formato (email/teléfono/usuario o contraseña inválidos).
   factory ResultadoAutenticacion.errorFormato({
     required String mensaje,
@@ -89,19 +103,7 @@ class ResultadoAutenticacion {
   }
 
   /// Factory para usuario no existe.
-  factory ResultadoAutenticacion.usuarioNoExiste({
-    required String mensaje,
-  }) {
-    return ResultadoAutenticacion(
-      exito: false,
-      errorCredencialesInvalidas: true,
-      errorFormatoInvalido: false,
-      usuarioNoExiste: true,
-      usuarioBloqueado: false,
-      intentosRestantes: null,
-      mensaje: mensaje,
-    );
-  }
+ 
 
   /// Factory para credenciales inválidas (usuario existe pero contraseña no coincide).
   factory ResultadoAutenticacion.credencialesInvalidas({
