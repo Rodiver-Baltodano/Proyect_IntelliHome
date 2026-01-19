@@ -99,6 +99,9 @@ class AppLocalizationsPt extends AppLocalizations {
   @override
   String get registrationSuccess => 'Registrado com sucesso';
   
+  @override
+  String get profilePhotoRequired => 'A foto de perfil é obrigatória';
+  
   // Recovery Screen
   @override
   String get recoveryTitle => 'Recupere Sua Conta';

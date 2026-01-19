@@ -146,6 +146,11 @@ class RegistroServicio {
       errores['aceptaTerminos'] = loc.mustAcceptTermsValidation;
     }
 
+    // Foto de perfil (OBLIGATORIA)
+    if (fotoPerfil.isEmpty || fotoPerfil.contains('placeholder')) {
+      errores['fotoPerfil'] = loc.profilePhotoRequired;
+    }
+
     // Si hay errores, retorna sin guardar
     if (errores.isNotEmpty) {
       return ResultadoRegistro.conErrores(errores);

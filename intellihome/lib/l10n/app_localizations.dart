@@ -55,6 +55,7 @@ abstract class AppLocalizations {
   String get passwordsDontMatch;
   String get mustAcceptTermsError;
   String get registrationSuccess;
+  String get profilePhotoRequired;
   
   // Recovery Screen
   String get recoveryTitle;
