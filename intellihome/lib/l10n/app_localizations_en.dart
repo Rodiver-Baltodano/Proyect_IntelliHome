@@ -131,7 +131,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get changePassword => 'Change My Password';
   
   @override
-  String get codeSent => 'Code sent to your phone!';
+  String get codeSent => 'Code sent to your email!';
   
   @override
   String get codeVerified => 'Code verified! Now enter your new password.';
@@ -147,7 +147,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get enterUserOrEmail => 'Enter username or email';
   
   @override
-  String get codeSentToPhone => 'Code sent to your phone';
+  String get codeSentToPhone => 'Code sent to your email';
   
   @override
   String get codeRequired => 'Code is required';

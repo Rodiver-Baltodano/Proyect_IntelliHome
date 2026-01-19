@@ -131,13 +131,13 @@ class AppLocalizationsEs extends AppLocalizations {
   String get changePassword => 'Cambiar mi Contraseña';
   
   @override
-  String get codeSent => '¡Código enviado a tu teléfono!';
+  String get codeSent => '¡Código enviado a su correo!';
   
   @override
   String get codeVerified => '¡Código verificado! Ahora ingresa tu nueva contraseña.';
   
   @override
-  String get passwordUpdated => '¡Contraseña actualizada! Regresa a login.';
+  String get passwordUpdated => '¡Contraseña actualizada! Regresa a inicio de sesión.';
   
   @override
   String get requestingCode => 'Solicitando código...';
@@ -147,7 +147,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get enterUserOrEmail => 'Ingrese usuario o correo electrónico';
   
   @override
-  String get codeSentToPhone => 'Código enviado a su teléfono';
+  String get codeSentToPhone => 'Código enviado a su correo';
   
   @override
   String get codeRequired => 'El código es requerido';
@@ -506,7 +506,7 @@ Gracias por elegir Intelihome. Disfrute de su experiencia en nuestra plataforma.
   String get userNotFoundRecovery => 'El usuario no existe. Verifique sus datos';
   
   @override
-  String get recoveryCodeSentToEmail => 'Código de recuperación enviado a tu email';
+  String get recoveryCodeSentToEmail => 'Código de recuperación enviado a su correo';
   
   @override
   String get recoveryCodeGenerated => 'Código generado';

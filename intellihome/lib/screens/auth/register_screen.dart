@@ -143,7 +143,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(AppLocalizations.of(context).mustAcceptTermsError),
+            content: Text(
+              AppLocalizations.of(context).mustAcceptTermsError,
+              style: const TextStyle(color: Colors.white),
+            ),
             backgroundColor: AppColors.errorColor,
           ),
         );
@@ -178,7 +181,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
           final username = resultado.usuario?.username ?? 'Usuario';
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('${AppLocalizations.of(context).registrationSuccess} $username'),
+              content: Text(
+                '${AppLocalizations.of(context).registrationSuccess} $username',
+                style: const TextStyle(color: Colors.white),
+              ),
               backgroundColor: AppColors.successColor,
               duration: const Duration(seconds: 2),
             ),
@@ -230,7 +236,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
           final primerError = resultado.errores.values.first;
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(primerError),
+              content: Text(
+                primerError, 
+                style: const TextStyle(color: Colors.white),
+              ),
               backgroundColor: AppColors.errorColor,
               duration: const Duration(seconds: 3),
             ),
@@ -241,7 +250,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error: $e'),
+            content: Text(
+              'Error: $e',
+              style: const TextStyle(color: Colors.white),
+            ),
             backgroundColor: AppColors.errorColor,
           ),
         );
@@ -465,7 +477,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error al guardar foto: $e'),
+            content: Text(
+              'Error al guardar foto: $e',
+              style: const TextStyle(color: Colors.white),
+            ),
             backgroundColor: Colors.red,
           ),
         );
