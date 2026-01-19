@@ -11,6 +11,32 @@ class TermsUI extends StatefulWidget {
 
 class _TermsUIState extends State<TermsUI> {
   bool _accepted = false;
+  final ScrollController _scrollController = ScrollController();
+  bool _atBottom = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_handleScroll);
+  }
+
+  void _handleScroll() {
+    if (!_scrollController.hasClients) return;
+    final position = _scrollController.position;
+    final bool isAtBottom = position.pixels >= (position.maxScrollExtent - 16);
+    if (isAtBottom != _atBottom) {
+      setState(() {
+        _atBottom = isAtBottom;
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_handleScroll);
+    _scrollController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -29,9 +55,9 @@ class _TermsUIState extends State<TermsUI> {
             Text(
               AppLocalizations.of(context).termsTitle,
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.primaryColor,
-                  ),
+                fontWeight: FontWeight.bold,
+                color: AppColors.primaryColor,
+              ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 20),
@@ -48,12 +74,13 @@ class _TermsUIState extends State<TermsUI> {
                 ),
                 padding: const EdgeInsets.all(16),
                 child: SingleChildScrollView(
+                  controller: _scrollController,
                   child: Text(
                     AppLocalizations.of(context).termsContent,
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: AppColors.textPrimaryColor,
-                          height: 1.5,
-                        ),
+                      color: AppColors.textPrimaryColor,
+                      height: 1.5,
+                    ),
                   ),
                 ),
               ),
@@ -78,47 +105,58 @@ class _TermsUIState extends State<TermsUI> {
                   Checkbox(
                     value: _accepted,
                     activeColor: AppColors.primaryColor,
-                    onChanged: (value) {
-                      setState(() {
-                        _accepted = value ?? false;
-                      });
-                    },
+                    onChanged: _atBottom
+                        ? (value) {
+                            setState(() {
+                              _accepted = value ?? false;
+                            });
+                          }
+                        : null,
                   ),
                   Expanded(
                     child: Text(
                       AppLocalizations.of(context).acceptTermsCheckbox,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: AppColors.textPrimaryColor,
-                            fontWeight: FontWeight.w500,
-                          ),
+                        color: AppColors.textPrimaryColor,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ),
                 ],
               ),
             ),
 
+            if (!_atBottom && !_accepted) ...[
+              const SizedBox(height: 8),
+              Text(
+                AppLocalizations.of(context).scrollToEndToAccept,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: AppColors.secondaryColor,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+
             const SizedBox(height: 20),
 
             // Botón de aceptar
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor:
-                    _accepted ? AppColors.primaryColor : Colors.grey,
+                backgroundColor: (_accepted && _atBottom)
+                    ? AppColors.primaryColor
+                    : Colors.grey,
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 minimumSize: const Size(double.infinity, 50),
               ),
-              onPressed: _accepted
+              onPressed: (_accepted && _atBottom)
                   ? () {
                       Navigator.pop(context, true);
                     }
                   : null,
               child: Text(
                 AppLocalizations.of(context).acceptAndContinue,
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
             ),
 
@@ -137,10 +175,7 @@ class _TermsUIState extends State<TermsUI> {
               },
               child: Text(
                 AppLocalizations.of(context).cancel,
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
             ),
           ],

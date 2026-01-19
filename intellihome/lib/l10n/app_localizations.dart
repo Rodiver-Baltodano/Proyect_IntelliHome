@@ -114,6 +114,7 @@ abstract class AppLocalizations {
   String get acceptTermsCheckbox;
   String get acceptAndContinue;
   String get cancel;
+  String get scrollToEndToAccept;
   
   // Home Screen
   String get welcome;
