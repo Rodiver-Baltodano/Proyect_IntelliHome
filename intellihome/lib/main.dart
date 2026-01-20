@@ -16,12 +16,20 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intellihome/l10n/app_localizations.dart';
 import 'dart:io';
 
+// ============================================
+// CONFIGURACIÓN DE MODO DE PRUEBA
+// ============================================
+const bool MODO_PRUEBA_LIMPIAR_DATOS = true;
+// ============================================
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   // Cargar variables de entorno
   await dotenv.load(fileName: ".env");
-  // Limpiar registros de usuario cada vez que se compila la app
-  await _limpiarDatosUsuarios();
+  // Limpiar registros de usuario cada vez que se compila la app (solo si está en modo prueba)
+  if (MODO_PRUEBA_LIMPIAR_DATOS) {
+    await _limpiarDatosUsuarios();
+  }
   runApp(const MainApp());
 }
 

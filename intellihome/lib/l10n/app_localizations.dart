@@ -55,6 +55,7 @@ abstract class AppLocalizations {
   String get passwordsDontMatch;
   String get mustAcceptTermsError;
   String get registrationSuccess;
+  String get profilePhotoRequired;
   
   // Recovery Screen
   String get recoveryTitle;
@@ -113,6 +114,7 @@ abstract class AppLocalizations {
   String get acceptTermsCheckbox;
   String get acceptAndContinue;
   String get cancel;
+  String get scrollToEndToAccept;
   
   // Home Screen
   String get welcome;

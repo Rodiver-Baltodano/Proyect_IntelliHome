@@ -104,7 +104,10 @@ class _RecoveryScreenState extends State<RecoveryScreen> {
 
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(loc.codeSentToPhone),
+              content: Text(
+                loc.codeSentToPhone,
+                style: const TextStyle(color: Colors.white),
+              ),
               backgroundColor: AppColors.successColor,
               duration: const Duration(seconds: 2),
             ),
@@ -133,7 +136,10 @@ class _RecoveryScreenState extends State<RecoveryScreen> {
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('${loc.error}: $e'),
+            content: Text(
+              '${loc.error}: $e',
+              style: const TextStyle(color: Colors.white),
+            ),
             backgroundColor: AppColors.errorColor,
           ),
         );
@@ -187,7 +193,10 @@ class _RecoveryScreenState extends State<RecoveryScreen> {
 
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(loc.codeVerifiedEnterPassword),
+              content: Text(
+                loc.codeVerifiedEnterPassword,
+                style: const TextStyle(color: Colors.white),
+              ),
               backgroundColor: AppColors.successColor,
               duration: const Duration(seconds: 2),
             ),
@@ -201,7 +210,10 @@ class _RecoveryScreenState extends State<RecoveryScreen> {
 
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(resultado.mensaje),
+              content: Text(
+                resultado.mensaje,
+                style: const TextStyle(color: Colors.white),
+              ),
               backgroundColor: AppColors.errorColor,
               duration: const Duration(seconds: 3),
             ),
@@ -216,7 +228,10 @@ class _RecoveryScreenState extends State<RecoveryScreen> {
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('${loc.error}: $e'),
+            content: Text(
+              '${loc.error}: $e',
+              style: const TextStyle(color: Colors.white),
+            ),
             backgroundColor: AppColors.errorColor,
           ),
         );
@@ -273,7 +288,10 @@ class _RecoveryScreenState extends State<RecoveryScreen> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(loc.passwordUpdatedBackToLogin),
+              content: Text(
+                loc.passwordUpdatedBackToLogin,
+                style: const TextStyle(color: Colors.white),
+              ),
               backgroundColor: AppColors.successColor,
               duration: const Duration(seconds: 2),
             ),
@@ -293,7 +311,10 @@ class _RecoveryScreenState extends State<RecoveryScreen> {
 
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(resultado.mensaje),
+              content: Text(
+                resultado.mensaje,
+                style: const TextStyle(color: Colors.white),
+              ),
               backgroundColor: AppColors.errorColor,
               duration: const Duration(seconds: 3),
             ),
@@ -308,7 +329,10 @@ class _RecoveryScreenState extends State<RecoveryScreen> {
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('${loc.error}: $e'),
+            content: Text(
+              '${loc.error}: $e',
+              style: const TextStyle(color: Colors.white),
+            ),
             backgroundColor: AppColors.errorColor,
           ),
         );

@@ -267,7 +267,10 @@ class _PersonalizationScreenState extends State<PersonalizationScreen> {
                   if (mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text('${AppLocalizations.of(context).personalizationSaved} ${widget.username}'),
+                        content: Text(
+                          '${AppLocalizations.of(context).personalizationSaved} ${widget.username}',
+                          style: const TextStyle(color: Colors.white),
+                        ),
                         backgroundColor: AppColors.successColor,
                       ),
                     );
@@ -286,7 +289,10 @@ class _PersonalizationScreenState extends State<PersonalizationScreen> {
                   if (mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text('${AppLocalizations.of(context).errorSaving} $e'),
+                        content: Text(
+                          '${AppLocalizations.of(context).errorSaving} $e',
+                          style: const TextStyle(color: Colors.white),
+                        ),
                         backgroundColor: AppColors.errorColor,
                       ),
                     );
@@ -305,7 +311,10 @@ class _PersonalizationScreenState extends State<PersonalizationScreen> {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('$msg guardado'),
+        content: Text(
+          '$msg guardado',
+          style: const TextStyle(color: Colors.white),
+        ),
         backgroundColor: AppColors.successColor,
         duration: const Duration(seconds: 1),
       ),

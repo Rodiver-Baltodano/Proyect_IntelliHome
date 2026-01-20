@@ -86,7 +86,10 @@ class _LoginScreenState extends State<LoginScreen> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(loc.loginSuccess),
+              content: Text(
+                loc.loginSuccess,
+                style: const TextStyle(color: Colors.white),
+              ),
               backgroundColor: AppColors.successColor,
               duration: const Duration(seconds: 2),
             ),
@@ -124,7 +127,10 @@ class _LoginScreenState extends State<LoginScreen> {
 
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(resultado.mensaje),
+              content: Text(
+                resultado.mensaje,
+                style: const TextStyle(color: Colors.white),
+              ),
               backgroundColor: AppColors.errorColor,
               duration: const Duration(seconds: 3),
             ),
@@ -139,7 +145,10 @@ class _LoginScreenState extends State<LoginScreen> {
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('${loc.error}: $e'),
+            content: Text(
+              '${loc.error}: $e',
+              style: const TextStyle(color: Colors.white),
+            ),
             backgroundColor: AppColors.errorColor,
           ),
         );
@@ -316,7 +325,10 @@ class _LoginScreenState extends State<LoginScreen> {
               if (mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text('${loc.language}: ${languageProvider.currentLanguageName}'),
+                    content: Text(
+                      '${loc.language}: ${languageProvider.currentLanguageName}',
+                      style: const TextStyle(color: Colors.white),
+                    ),
                     duration: const Duration(seconds: 1),
                     backgroundColor: AppColors.primaryColor,
                   ),
