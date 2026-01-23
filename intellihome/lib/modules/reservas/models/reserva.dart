@@ -5,6 +5,9 @@ class Reserva {
   /// ID único de la reserva
   final String reservationId;
 
+  /// ID del usuario que realiza la reserva
+  final String userId;
+
   /// Estado de la reserva: PENDING, CONFIRMED, CANCELLED, COMPLETED
   final String status;
 
@@ -23,6 +26,7 @@ class Reserva {
   /// Constructor
   Reserva({
     required this.reservationId,
+    required this.userId,
     required this.status,
     required this.startDate,
     required this.endDate,
@@ -34,6 +38,7 @@ class Reserva {
   factory Reserva.fromJson(Map<String, dynamic> json) {
     return Reserva(
       reservationId: json['reservationId'] as String,
+      userId: json['userId'] as String,
       status: json['status'] as String,
       startDate: DateTime.parse(json['startDate'] as String),
       endDate: DateTime.parse(json['endDate'] as String),
@@ -46,6 +51,7 @@ class Reserva {
   Map<String, dynamic> toJson() {
     return {
       'reservationId': reservationId,
+      'userId': userId,
       'status': status,
       'startDate': startDate.toIso8601String(),
       'endDate': endDate.toIso8601String(),
@@ -57,6 +63,7 @@ class Reserva {
   /// Copia de la reserva con campos modificados
   Reserva copyWith({
     String? reservationId,
+    String? userId,
     String? status,
     DateTime? startDate,
     DateTime? endDate,
@@ -65,6 +72,7 @@ class Reserva {
   }) {
     return Reserva(
       reservationId: reservationId ?? this.reservationId,
+      userId: userId ?? this.userId,
       status: status ?? this.status,
       startDate: startDate ?? this.startDate,
       endDate: endDate ?? this.endDate,

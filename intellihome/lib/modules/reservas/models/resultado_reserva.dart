@@ -1,3 +1,5 @@
+import 'package:intellihome/modules/reservas/models/reserva.dart';
+
 /// Resultado de una operación de reserva
 class ResultadoReserva {
   /// Indica si la operación fue exitosa
