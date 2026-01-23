@@ -17,7 +17,9 @@ class RegistroCasaServicio {
     required List<String> fotos,
     required String ubicacion,
     required List<String> reglasUso,
-    required List<String> amenidades,
+    required List<int> amenidades,
+    required List<DateTime> fechasNoDisponibles,
+
   }) async {
     // VALIDACIONES
     if (!ValidacionesCasa.nombreValido(nombre)) return false;
@@ -27,6 +29,12 @@ class RegistroCasaServicio {
     if (!ValidacionesCasa.descripcionValida(descripcion)) return false;
     if (!ValidacionesCasa.fotosValidas(fotos)) return false;
     if (!ValidacionesCasa.ubicacionValida(ubicacion)) return false;
+    if (!ValidacionesCasa.reglasUsoValidas(reglasUso)) return false;
+    if (!ValidacionesCasa.amenidadesValidas(amenidades)) return false;
+    if (!ValidacionesCasa.fechasNoDisponiblesValidas(fechasNoDisponibles)) {
+      return false;
+}
+
 
     final nuevaCasa = Casa(
       id: const Uuid().v4(),
@@ -40,9 +48,9 @@ class RegistroCasaServicio {
       reglasUso: reglasUso,
       amenidades: amenidades,
       fechaRegistro: DateTime.now(),
+      fechasNoDisponibles: fechasNoDisponibles,
     );
 
     await repositorio.guardarCasa(nuevaCasa);
     return true;
-  }
-}
+  }}

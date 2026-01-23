@@ -15,4 +15,21 @@ class ValidacionesCasa {
 
   static bool ubicacionValida(String ubicacion) =>
       ubicacion.trim().isNotEmpty;
+
+  static bool amenidadesValidas(List<int> amenidades) {
+    if (amenidades.isEmpty) return false;
+
+    return amenidades.every((id) => id >= 1 && id <= 32);
+}
+
+  static bool reglasUsoValidas(List<String> reglas) {
+    return reglas.isNotEmpty &&
+        reglas.every((r) => r.trim().isNotEmpty);
+}
+
+  static bool fechasNoDisponiblesValidas(List<DateTime> fechas) {
+    // Puede estar vacía, pero si viene debe ser futura o actual
+    return fechas.every((f) =>
+        !f.isBefore(DateTime.now().subtract(const Duration(days: 1))));
+}
 }
