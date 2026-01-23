@@ -62,6 +62,15 @@ class HomeScreen extends StatelessWidget {
               ),
             ),
             ListTile(
+              leading: const Icon(Icons.add_home_outlined),
+              title: const Text('Añadir casa'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.pushNamed(context, '/anadir_casa');
+              },
+            ),
+            const Divider(),
+            ListTile(
               leading: const Icon(Icons.palette),
               title: Text(AppLocalizations.of(context).customize),
               onTap: () {
@@ -76,7 +85,6 @@ class HomeScreen extends StatelessWidget {
                 );
               },
             ),
-            const Divider(),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
               child: ElevatedButton.icon(

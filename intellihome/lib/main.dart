@@ -5,6 +5,7 @@ import 'package:intellihome/screens/auth/register_screen.dart';
 import 'package:intellihome/screens/auth/recovery_screen.dart';
 import 'package:intellihome/screens/auth/terms_screen.dart';
 import 'package:intellihome/screens/home/home_screen.dart';
+import 'package:intellihome/screens/home/anadir_casa_screen.dart';
 import 'package:intellihome/screens/personalizacion/personalization_screen.dart';
 import 'package:intellihome/providers/theme_provider.dart';
 import 'package:intellihome/providers/language_provider.dart';
@@ -130,6 +131,7 @@ class _MainAppState extends State<MainApp> {
                 final username = ModalRoute.of(context)?.settings.arguments as String?;
                 return HomeScreen(username: username ?? 'Usuario');
               },
+              '/anadir_casa': (context) => const AnadirCasaScreen(),
             },
           );
         },
