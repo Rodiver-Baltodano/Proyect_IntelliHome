@@ -102,11 +102,13 @@ class Reserva {
 class ReservaStatus {
   static const String pending = 'PENDING';
   static const String confirmed = 'CONFIRMED';
+  static const String active = 'ACTIVE';
+  static const String finished = 'FINISHED';
   static const String cancelled = 'CANCELLED';
   static const String completed = 'COMPLETED';
 
   /// Verifica si un estado es válido
   static bool isValid(String status) {
-    return [pending, confirmed, cancelled, completed].contains(status);
+    return [pending, confirmed, active, finished, cancelled, completed].contains(status);
   }
 }

@@ -3,14 +3,7 @@ import 'dart:io';
 
 import 'package:intellihome/modules/reservas/models/reserva.dart';
 
-/// Repositorio que maneja la persistencia de reservas en un archivo JSON.
-///
-/// Formatos soportados:
-/// 1) Lista raíz:
-///    [ {reserva1}, {reserva2} ]
-///
-/// 2) Objeto con clave "reservas":
-///    { "reservas": [ {reserva1}, {reserva2} ] }
+/// Repositorio para gestionar reservas almacenadas en un archivo JSON
 class ReservaRepositorioJson {
   final String rutaArchivo;
 
