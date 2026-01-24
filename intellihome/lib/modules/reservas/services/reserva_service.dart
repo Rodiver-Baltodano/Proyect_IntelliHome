@@ -229,10 +229,13 @@ class ReservaService {
         // Si la fecha actual es mayor o igual a la fecha de inicio y está PENDING
         if (ahora.isAfter(reserva.startDate) || ahora.isAtSameMomentAs(reserva.startDate)) {
           if (reserva.status == ReservaStatus.pending) {
-            final reservaActualizada = reserva.copyWith(status: ReservaStatus.active);
+            final reservaActualizada = reserva.copyWith(
+              status: ReservaStatus.active,
+              accessDomotics: true, // Activar acceso domótico
+            );
             await _repositorio.actualizarReserva(reservaActualizada);
             reservasActivadas.add(reservaActualizada);
-            print('✅ Reserva ${reserva.reservationId} activada');
+            print('✅ [RESERVAS] Reserva ${reserva.reservationId} activada - Acceso domótico habilitado');
           }
         }
       }
@@ -244,7 +247,7 @@ class ReservaService {
     }
   }
 
-  /// 5. finishReservationsByDate - Finalizar reservas que ya terminaron
+
   /// Si currentDate > endDate & status == ACTIVE, entonces status = FINISHED
   Future<List<Reserva>> finishReservationsByDate() async {
     try {

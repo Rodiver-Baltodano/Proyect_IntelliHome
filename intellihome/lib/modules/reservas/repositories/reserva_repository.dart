@@ -91,7 +91,9 @@ class ReservaRepositorioJson {
     final reservas = await cargarReservas();
     return reservas.where((r) => 
       r.propertyId == propertyId && 
-      (r.status == ReservaStatus.pending || r.status == ReservaStatus.confirmed)
+      (r.status == ReservaStatus.pending || 
+       r.status == ReservaStatus.confirmed ||
+       r.status == ReservaStatus.active) 
     ).toList();
   }
 
