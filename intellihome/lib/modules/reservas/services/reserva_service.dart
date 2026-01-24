@@ -21,8 +21,7 @@ class ReservaService {
         _usuarioRepositorio = usuarioRepositorio,
         _whatsappService = whatsappService ?? WhatsAppService();
 
-  /// 1. createReservation - Crear una reserva válida según fechas
-  /// Valida que el usuario tenga método de pago registrado
+  ///  Crear una reserva válida según fechas
   Future<ResultadoReserva> createReservation({
     required String userId,
     required String propertyId,
@@ -152,7 +151,7 @@ class ReservaService {
     }
   }
 
-  /// 2. getReservationById - Obtener una reserva específica
+  /// Obtener una reserva específica
   Future<Reserva?> getReservationById(String reservationId) async {
     return await _repositorio.buscarPorId(reservationId);
   }
@@ -221,7 +220,7 @@ class ReservaService {
     return await _repositorio.cargarReservas();
   }
 
-  /// 4. activateReservationsByDate - Activar reservas cuando llega su fecha de inicio
+  /// Activar reservas cuando llega su fecha de inicio
   /// Si currentDate >= startDate & status == PENDING, entonces status = ACTIVE
   Future<List<Reserva>> activateReservationsByDate() async {
     try {
@@ -281,7 +280,7 @@ class ReservaService {
     }
   }
 
-  /// 6. sendWhatsapp - Envía mensaje de WhatsApp de confirmación usando Twilio API
+  /// Envía mensaje de WhatsApp de confirmación usando Twilio API
   Future<bool> sendWhatsapp({
     required String userId,
     required String reservationId,
@@ -331,7 +330,7 @@ class ReservaService {
     }
   }
 
-  /// 7. canAccessDomotics - Verifica si el status está ACTIVE y actualiza accessDomotics
+  ///  Verifica si el status está ACTIVE y actualiza accessDomotics
   Future<ResultadoReserva> canAccessDomotics(String reservationId) async {
     try {
       final reserva = await _repositorio.buscarPorId(reservationId);

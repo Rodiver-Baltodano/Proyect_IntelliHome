@@ -35,6 +35,11 @@ class WhatsAppService {
       // Formatear número de teléfono
       final telefonoFormateado = _formatearTelefono(telefono);
       
+      print('📱 [WhatsApp] Iniciando envío...');
+      print('   Account SID: ${_accountSid.substring(0, 6)}...');
+      print('   Desde: $_fromNumber');
+      print('   Para: whatsapp:$telefonoFormateado');
+      
       // URL de la API de Twilio
       final url = Uri.parse(
         'https://api.twilio.com/2010-04-01/Accounts/$_accountSid/Messages.json',
@@ -43,7 +48,7 @@ class WhatsAppService {
       // Credenciales en Base64
       final credentials = base64Encode(utf8.encode('$_accountSid:$_authToken'));
 
-      // Realizar petición HTTP
+      // Realizar petición HTTP con timeout
       final response = await http.post(
         url,
         headers: {
@@ -55,6 +60,11 @@ class WhatsAppService {
           'To': 'whatsapp:$telefonoFormateado',
           'Body': mensaje,
         },
+      ).timeout(
+        const Duration(seconds: 30),
+        onTimeout: () {
+          throw Exception('Timeout: La petición tardó más de 30 segundos');
+        },
       );
 
       // Procesar respuesta
@@ -63,24 +73,48 @@ class WhatsAppService {
         print('✅ [WhatsApp] Mensaje enviado exitosamente');
         print('📱 [WhatsApp] SID: ${data['sid']}');
         print('📊 [WhatsApp] Estado: ${data['status']}');
+        print('💰 [WhatsApp] Precio: ${data['price'] ?? 'N/A'} ${data['price_unit'] ?? ''}');
         
         return WhatsAppResult.success(
           'Mensaje enviado exitosamente',
           messageSid: data['sid'],
         );
       } else {
-        final errorData = jsonDecode(response.body);
-        final errorMessage = errorData['message'] ?? 'Error desconocido';
-        print('❌ [WhatsApp] Error ${response.statusCode}: $errorMessage');
+        // Intentar decodificar el error
+        String errorMessage = 'Error desconocido';
+        String? errorCode;
+        
+        try {
+          final errorData = jsonDecode(response.body);
+          errorMessage = errorData['message'] ?? errorMessage;
+          errorCode = errorData['code']?.toString();
+          
+          // Logs detallados del error
+          print('❌ [WhatsApp] Error ${response.statusCode}');
+          print('   Código: ${errorCode ?? 'N/A'}');
+          print('   Mensaje: $errorMessage');
+          
+          if (errorData['more_info'] != null) {
+            print('   Más info: ${errorData['more_info']}');
+          }
+        } catch (e) {
+          print('❌ [WhatsApp] Error ${response.statusCode}: No se pudo parsear respuesta');
+          print('   Respuesta raw: ${response.body}');
+        }
         
         return WhatsAppResult.error(
-          'Error al enviar mensaje: $errorMessage',
+          errorCode != null 
+            ? 'Error $errorCode: $errorMessage'
+            : 'Error al enviar mensaje: $errorMessage',
           statusCode: response.statusCode,
         );
       }
-    } catch (e) {
+    } on Exception catch (e) {
       print('❌ [WhatsApp] Excepción: $e');
       return WhatsAppResult.error('Error de conexión: ${e.toString()}');
+    } catch (e) {
+      print('❌ [WhatsApp] Error inesperado: $e');
+      return WhatsAppResult.error('Error inesperado: ${e.toString()}');
     }
   }
 
