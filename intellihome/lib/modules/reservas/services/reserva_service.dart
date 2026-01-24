@@ -2,6 +2,7 @@ import 'package:intellihome/modules/reservas/models/reserva.dart';
 import 'package:intellihome/modules/reservas/models/resultado_reserva.dart';
 import 'package:intellihome/modules/reservas/repositories/reserva_repository.dart';
 import 'package:intellihome/modules/autenticacion/repositories/usuario_repository.dart';
+import 'package:intellihome/modules/reservas/services/whatsapp_service.dart';
 import 'package:uuid/uuid.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
@@ -9,13 +10,16 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 class ReservaService {
   final ReservaRepositorioJson _repositorio;
   final UsuarioRepositorioJson? _usuarioRepositorio;
+  final WhatsAppService _whatsappService;
   final _uuid = const Uuid();
 
   ReservaService({
     required ReservaRepositorioJson repositorio,
     UsuarioRepositorioJson? usuarioRepositorio,
+    WhatsAppService? whatsappService,
   })  : _repositorio = repositorio,
-        _usuarioRepositorio = usuarioRepositorio;
+        _usuarioRepositorio = usuarioRepositorio,
+        _whatsappService = whatsappService ?? WhatsAppService();
 
   /// 1. createReservation - Crear una reserva válida según fechas
   /// Valida que el usuario tenga método de pago registrado
@@ -277,8 +281,8 @@ class ReservaService {
     }
   }
 
-  /// 6. sendWhatsapp - Envía mensaje de WhatsApp de confirmación
-  Future<void> sendWhatsapp({
+  /// 6. sendWhatsapp - Envía mensaje de WhatsApp de confirmación usando Twilio API
+  Future<bool> sendWhatsapp({
     required String userId,
     required String reservationId,
     required String propertyId,
@@ -293,37 +297,37 @@ class ReservaService {
           final telefono = usuario.telefono;
           final nombre = usuario.nombreApellidos;
           
-          // Formatear fechas
-          final inicio = '${startDate.day}/${startDate.month}/${startDate.year}';
-          final fin = '${endDate.day}/${endDate.month}/${endDate.year}';
+          print('📱 [WhatsApp] Enviando confirmación a +$telefono');
           
-          // Mensaje de confirmación
-          final mensaje = '''🏠 *IntelliHome - Confirmación de Reserva*
+          // Enviar mensaje usando Twilio API
+          final resultado = await _whatsappService.enviarConfirmacionReserva(
+            telefono: telefono,
+            nombreUsuario: nombre,
+            reservationId: reservationId,
+            propertyId: propertyId,
+            startDate: startDate,
+            endDate: endDate,
+          );
 
-Hola $nombre,
-
-✅ Tu reserva ha sido confirmada exitosamente.
-
-📋 *Detalles:*
-• Reserva ID: $reservationId
-• Propiedad: $propertyId
-• Check-in: $inicio
-• Check-out: $fin
-
-¡Esperamos que disfrutes tu estadía!
-
-_IntelliHome Team_''';
-
-          print('📱 [WhatsApp] Enviando mensaje a +$telefono');
-          print('📝 Mensaje: $mensaje');
-          
-          // Aquí iría la integración real con API de WhatsApp
-          // Por ahora solo simulamos el envío
-          print('✅ [WhatsApp] Mensaje enviado exitosamente');
+          if (resultado.success) {
+            print('✅ [WhatsApp] Mensaje enviado exitosamente');
+            print('📊 [WhatsApp] SID: ${resultado.messageSid}');
+            return true;
+          } else {
+            print('❌ [WhatsApp] Error: ${resultado.message}');
+            return false;
+          }
+        } else {
+          print('⚠️ [WhatsApp] Usuario no encontrado');
+          return false;
         }
+      } else {
+        print('⚠️ [WhatsApp] Repositorio de usuarios no disponible');
+        return false;
       }
     } catch (e) {
       print('❌ [WhatsApp] Error al enviar mensaje: $e');
+      return false;
     }
   }
 
