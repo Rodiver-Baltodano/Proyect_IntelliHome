@@ -87,6 +87,12 @@ class ReservaRepositorioJson {
     return reservas.where((r) => r.status == status).toList();
   }
 
+  /// Obtiene todas las reservas de un usuario específico
+  Future<List<Reserva>> obtenerPorUsuario(String userId) async {
+    final reservas = await cargarReservas();
+    return reservas.where((r) => r.userId == userId).toList();
+  }
+
   /// Obtiene reservas activas (PENDING o CONFIRMED) para una propiedad
   Future<List<Reserva>> obtenerReservasActivas(String propertyId) async {
     final reservas = await cargarReservas();

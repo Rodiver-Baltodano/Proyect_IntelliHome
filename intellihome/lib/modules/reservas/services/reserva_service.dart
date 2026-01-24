@@ -13,6 +13,7 @@ class ReservaService {
 
   /// Crea una nueva reserva
   Future<ResultadoReserva> crearReserva({
+    required String userId,
     required String propertyId,
     required DateTime startDate,
     required DateTime endDate,
@@ -51,6 +52,7 @@ class ReservaService {
       // Crear la reserva
       final nuevaReserva = Reserva(
         reservationId: _uuid.v4(),
+        userId: userId,
         status: ReservaStatus.pending,
         startDate: startDate,
         endDate: endDate,
@@ -121,6 +123,11 @@ class ReservaService {
   /// Obtiene las reservas activas de una propiedad
   Future<List<Reserva>> obtenerReservasActivas(String propertyId) async {
     return await _repositorio.obtenerReservasActivas(propertyId);
+  }
+
+  /// Obtiene todas las reservas de un usuario
+  Future<List<Reserva>> obtenerReservasPorUsuario(String userId) async {
+    return await _repositorio.obtenerPorUsuario(userId);
   }
 
   /// Verifica disponibilidad de una propiedad en un rango de fechas

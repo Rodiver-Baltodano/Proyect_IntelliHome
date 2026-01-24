@@ -27,6 +27,7 @@ Las reservas se guardan en formato JSON con la siguiente estructura:
 ```json
 {
   "reservationId": "uuid-v4",
+  "userId": "03fb4e0f-2580-4896-87e9-8d1e3f93a1a0",
   "status": "PENDING|CONFIRMED|CANCELLED|COMPLETED",
   "startDate": "2026-02-15T15:00:00.000Z",
   "endDate": "2026-02-20T11:00:00.000Z",
@@ -34,6 +35,8 @@ Las reservas se guardan en formato JSON con la siguiente estructura:
   "accessDomotics": false
 }
 ```
+
+**Nota:** El `userId` corresponde al campo `id` de los usuarios en `usuarios_integrado.json`
 
 ### Estados de Reserva
 
@@ -66,6 +69,7 @@ final reservaService = ReservaService(repositorio: repositorio);
 
 ```dart
 final resultado = await reservaService.crearReserva(
+  userId: '03fb4e0f-2580-4896-87e9-8d1e3f93a1a0', // ID del usuario autenticado
   propertyId: 'casa-playa-001',
   startDate: DateTime(2026, 3, 15, 15, 0),
   endDate: DateTime(2026, 3, 20, 11, 0),
@@ -115,7 +119,17 @@ for (var reserva in reservas) {
 }
 ```
 
-### 7. Cancelar una Reserva
+### 7. Obtener Reservas de un Usuario
+
+```dart
+final misReservas = await reservaService.obtenerReservasPorUsuario(userId);
+
+for (var reserva in misReservas) {
+  print('Mi reserva: ${reserva.propertyId} del ${reserva.startDate} al ${reserva.endDate}');
+}
+```
+
+### 8. Cancelar una Reserva
 
 ```dart
 final resultado = await reservaService.cancelarReserva(reservationId);
@@ -125,7 +139,7 @@ if (resultado.exitoso) {
 }
 ```
 
-### 8. Actualizar Acceso Domótico
+### 9. Actualizar Acceso Domótico
 
 ```dart
 final resultado = await reservaService.actualizarAccesoDomotico(
@@ -182,6 +196,9 @@ final reservasProp = await repositorio.obtenerPorPropiedad(propertyId);
 
 // Obtener por estado
 final reservasPendientes = await repositorio.obtenerPorEstado('PENDING');
+
+// Obtener por usuario
+final reservasUsuario = await repositorio.obtenerPorUsuario(userId);
 
 // Obtener reservas activas (PENDING o CONFIRMED)
 final activas = await repositorio.obtenerReservasActivas(propertyId);
