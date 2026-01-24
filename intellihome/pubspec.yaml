@@ -32,3 +32,5 @@ flutter:
   assets:
     - lib/assets/icons/
     - .env
+    - lib/assets/data/amenidades.json
+    
