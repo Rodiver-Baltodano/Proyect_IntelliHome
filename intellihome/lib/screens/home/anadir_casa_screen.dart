@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intellihome/config/app_colors.dart';
+import 'package:intellihome/screens/home/amenidades_data.dart';
+import 'package:intellihome/screens/home/amenidades_screen.dart';
 import 'package:intellihome/screens/home/map_picker_screen.dart';
 import 'package:latlong2/latlong.dart';
 
@@ -21,6 +23,11 @@ class _AnadirCasaScreenState extends State<AnadirCasaScreen> {
   final ImagePicker _imagePicker = ImagePicker();
   final List<File> _selectedImages = [];
   LatLng? _selectedLocation;
+  Set<int> _selectedAmenidades = {};
+
+  bool _mostrarReglas = false;
+  late final TextEditingController _reglasController;
+  late final FocusNode _reglasFocusNode;
 
   late final TextEditingController _personasController;
   late final TextEditingController _cuartosController;
@@ -30,12 +37,24 @@ class _AnadirCasaScreenState extends State<AnadirCasaScreen> {
     super.initState();
     _personasController = TextEditingController(text: _maxPersonas.toString());
     _cuartosController = TextEditingController(text: _cuartos.toString());
+    _reglasController = TextEditingController();
+    _reglasFocusNode = FocusNode();
+    _reglasFocusNode.addListener(() {
+      if (!_reglasFocusNode.hasFocus) {
+        final tieneTexto = _reglasController.text.trim().isNotEmpty;
+        setState(() {
+          _mostrarReglas = tieneTexto;
+        });
+      }
+    });
   }
 
   @override
   void dispose() {
     _personasController.dispose();
     _cuartosController.dispose();
+    _reglasController.dispose();
+    _reglasFocusNode.dispose();
     super.dispose();
   }
 
@@ -89,6 +108,27 @@ class _AnadirCasaScreenState extends State<AnadirCasaScreen> {
       for (final image in picked) {
         _selectedImages.add(File(image.path));
       }
+    });
+  }
+
+  void _onReglasPressed() {
+    setState(() {
+      _mostrarReglas = true;
+    });
+    _reglasFocusNode.requestFocus();
+  }
+
+  Future<void> _pickAmenidades() async {
+    final result = await Navigator.push<Set<int>>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => AmenidadesScreen(initialSelected: _selectedAmenidades),
+      ),
+    );
+
+    if (result == null) return;
+    setState(() {
+      _selectedAmenidades = result;
     });
   }
 
@@ -462,14 +502,65 @@ class _AnadirCasaScreenState extends State<AnadirCasaScreen> {
             _DetalleItem(
               icon: Icons.schedule,
               label: 'Reglas de uso',
-              onPressed: () {},
+              buttonLabel:
+                  _reglasController.text.trim().isEmpty ? 'Añadir' : 'Editar',
+              buttonIcon:
+                  _reglasController.text.trim().isEmpty ? Icons.add : Icons.edit,
+              onPressed: _onReglasPressed,
             ),
+            if (_mostrarReglas || _reglasController.text.trim().isNotEmpty) ...[
+              const SizedBox(height: 8),
+              TextField(
+                controller: _reglasController,
+                focusNode: _reglasFocusNode,
+                maxLines: 3,
+                style: const TextStyle(fontSize: 12),
+                decoration: InputDecoration(
+                  hintText: 'Escriba las reglas de uso...',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  contentPadding: const EdgeInsets.all(10),
+                ),
+              ),
+            ],
             const SizedBox(height: 12),
             _DetalleItem(
               icon: Icons.list_alt,
               label: 'Amenidades',
-              onPressed: () {},
+              buttonLabel: _selectedAmenidades.isEmpty ? 'Añadir' : 'Editar',
+              buttonIcon: _selectedAmenidades.isEmpty ? Icons.add : Icons.edit,
+              onPressed: _pickAmenidades,
             ),
+            if (_selectedAmenidades.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              SizedBox(
+                height: 36,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: amenidadesCatalogo
+                      .where((item) => _selectedAmenidades.contains(item.id))
+                      .length,
+                  separatorBuilder: (_, __) => const SizedBox(width: 8),
+                  itemBuilder: (context, index) {
+                    final selectedItems = amenidadesCatalogo
+                        .where((item) => _selectedAmenidades.contains(item.id))
+                        .toList();
+                    final item = selectedItems[index];
+                    return Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: AppColors.primaryColor.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: AppColors.primaryColor),
+                      ),
+                      child: Icon(item.icono, size: 18, color: AppColors.primaryColor),
+                    );
+                  },
+                ),
+              ),
+            ],
             const SizedBox(height: 12),
             _DetalleItem(
               icon: Icons.calendar_today,
