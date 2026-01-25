@@ -1,8 +1,64 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intellihome/config/app_colors.dart';
 
-class AnadirCasaScreen extends StatelessWidget {
+class AnadirCasaScreen extends StatefulWidget {
   const AnadirCasaScreen({super.key});
+
+  @override
+  State<AnadirCasaScreen> createState() => _AnadirCasaScreenState();
+}
+
+class _AnadirCasaScreenState extends State<AnadirCasaScreen> {
+  int _maxPersonas = 1;
+  int _cuartos = 1;
+
+  late final TextEditingController _personasController;
+  late final TextEditingController _cuartosController;
+
+  @override
+  void initState() {
+    super.initState();
+    _personasController = TextEditingController(text: _maxPersonas.toString());
+    _cuartosController = TextEditingController(text: _cuartos.toString());
+  }
+
+  @override
+  void dispose() {
+    _personasController.dispose();
+    _cuartosController.dispose();
+    super.dispose();
+  }
+
+  void _incrementPersonas() {
+    setState(() {
+      _maxPersonas++;
+      _personasController.text = _maxPersonas.toString();
+    });
+  }
+
+  void _decrementPersonas() {
+    if (_maxPersonas <= 1) return;
+    setState(() {
+      _maxPersonas--;
+      _personasController.text = _maxPersonas.toString();
+    });
+  }
+
+  void _incrementCuartos() {
+    setState(() {
+      _cuartos++;
+      _cuartosController.text = _cuartos.toString();
+    });
+  }
+
+  void _decrementCuartos() {
+    if (_cuartos <= 1) return;
+    setState(() {
+      _cuartos--;
+      _cuartosController.text = _cuartos.toString();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -68,152 +124,191 @@ class AnadirCasaScreen extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                       // 1. Nombre de la casa
-                      Row(
-                        children: [
-                          const Expanded(
-                            child: Text(
-                              'Nombre de la casa',
-                              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
-                            ),
+                      TextField(
+                        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, height: 1.05),
+                        minLines: 4,
+                        maxLines: 4,
+                        decoration: InputDecoration(
+                          isDense: true,
+                          hintText: 'Nombre su casa...',
+                          hintStyle: const TextStyle(
+                            fontSize: 12,
+                            fontStyle: FontStyle.italic,
+                            color: Colors.black54,
+                            height: 1.05,
                           ),
-                          Icon(Icons.edit, size: 16, color: AppColors.primaryColor),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-                      
-                      // 2. Precio por noche
-                      const Text(
-                        'Precio por noche',
-                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
-                      ),
-                      const SizedBox(height: 0),
-                      Row(
-                        children: [
-                          const Text('🇨🇷', style: TextStyle(fontSize: 18)),
-                          const SizedBox(width: 6),
-                          Expanded(
-                            child: TextField(
-                              style: const TextStyle(fontSize: 11),
-                              decoration: InputDecoration(
-                                isDense: true,
-                                prefixText: '₵ ',
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                              ),
-                              keyboardType: TextInputType.number,
-                            ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
                           ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      
-                      // 3. Máximo de personas
-                      const Text(
-                        'Máximo de personas permitidas',
-                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
-                      ),
-                      const SizedBox(height: 0),
-                      Row(
-                        children: [
-                          const Icon(Icons.people, size: 16),
-                          const SizedBox(width: 4),
-                          Expanded(
-                            child: TextField(
-                              style: const TextStyle(fontSize: 11),
-                              decoration: InputDecoration(
-                                isDense: true,
-                                hintText: '1',
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                              ),
-                              keyboardType: TextInputType.number,
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Container(
-                            padding: EdgeInsets.zero,
-                            decoration: BoxDecoration(
-                              border: Border.all(color: AppColors.primaryColor),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Column(
-                              children: [
-                                IconButton(
-                                  icon: const Icon(Icons.arrow_drop_up, size: 14),
-                                  onPressed: () {},
-                                  padding: EdgeInsets.zero,
-                                  constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
-                                  visualDensity: VisualDensity.compact,
-                                ),
-                                IconButton(
-                                  icon: const Icon(Icons.arrow_drop_down, size: 14),
-                                  onPressed: () {},
-                                  padding: EdgeInsets.zero,
-                                  constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
-                                  visualDensity: VisualDensity.compact,
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        ),
                       ),
                       const SizedBox(height: 2),
-                      
-                      // 4. Cuartos disponibles
-                      const Text(
-                        'Cuartos disponibles',
-                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
-                      ),
-                      const SizedBox(height: 0),
-                      Row(
-                        children: [
-                          const Icon(Icons.meeting_room, size: 16),
-                          const SizedBox(width: 4),
-                          Expanded(
-                            child: TextField(
-                              style: const TextStyle(fontSize: 11),
-                              decoration: InputDecoration(
-                                isDense: true,
-                                hintText: '1',
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                              ),
-                              keyboardType: TextInputType.number,
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Container(
-                            padding: EdgeInsets.zero,
-                            decoration: BoxDecoration(
-                              border: Border.all(color: AppColors.primaryColor),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Column(
+                      SizedBox(
+                        height: fotoBoxHeight,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // 2. Precio por noche
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                IconButton(
-                                  icon: const Icon(Icons.arrow_drop_up, size: 14),
-                                  onPressed: () {},
-                                  padding: EdgeInsets.zero,
-                                  constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
-                                  visualDensity: VisualDensity.compact,
+                                const Text(
+                                  'Precio por noche',
+                                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
                                 ),
-                                IconButton(
-                                  icon: const Icon(Icons.arrow_drop_down, size: 14),
-                                  onPressed: () {},
-                                  padding: EdgeInsets.zero,
-                                  constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
-                                  visualDensity: VisualDensity.compact,
+                                const SizedBox(height: 0),
+                                Row(
+                                  children: [
+                                    const Text('🇨🇷', style: TextStyle(fontSize: 18)),
+                                    const SizedBox(width: 6),
+                                    Expanded(
+                                      child: TextField(
+                                        style: const TextStyle(fontSize: 13),
+                                        decoration: InputDecoration(
+                                          isDense: true,
+                                          prefixText: '₵ ',
+                                          border: OutlineInputBorder(
+                                            borderRadius: BorderRadius.circular(8),
+                                          ),
+                                          contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                        ),
+                                        keyboardType: TextInputType.number,
+                                        inputFormatters: [
+                                          FilteringTextInputFormatter.digitsOnly,
+                                          ThousandsSeparatorInputFormatter(),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ],
                             ),
-                          ),
-                        ],
+                            // 3. Máximo de personas
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Máximo de personas permitidas',
+                                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                                ),
+                                const SizedBox(height: 0),
+                                Row(
+                                  children: [
+                                    const Icon(Icons.people, size: 16),
+                                    const SizedBox(width: 4),
+                                    Expanded(
+                                      child: TextField(
+                                        controller: _personasController,
+                                        readOnly: true,
+                                        showCursor: false,
+                                        enableInteractiveSelection: false,
+                                        focusNode: FocusNode(canRequestFocus: false),
+                                        style: const TextStyle(fontSize: 13),
+                                        decoration: InputDecoration(
+                                          isDense: true,
+                                          border: OutlineInputBorder(
+                                            borderRadius: BorderRadius.circular(8),
+                                          ),
+                                          contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Container(
+                                      padding: EdgeInsets.zero,
+                                      decoration: BoxDecoration(
+                                        border: Border.all(color: AppColors.primaryColor),
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: Column(
+                                        children: [
+                                          IconButton(
+                                            icon: const Icon(Icons.arrow_drop_up, size: 14),
+                                            onPressed: _incrementPersonas,
+                                            padding: EdgeInsets.zero,
+                                            constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
+                                            visualDensity: VisualDensity.compact,
+                                          ),
+                                          IconButton(
+                                            icon: const Icon(Icons.arrow_drop_down, size: 14),
+                                            onPressed: _maxPersonas <= 1 ? null : _decrementPersonas,
+                                            color: _maxPersonas <= 1 ? Colors.grey : null,
+                                            padding: EdgeInsets.zero,
+                                            constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
+                                            visualDensity: VisualDensity.compact,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                            // 4. Cuartos disponibles
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Cuartos disponibles',
+                                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                                ),
+                                const SizedBox(height: 0),
+                                Row(
+                                  children: [
+                                    const Icon(Icons.meeting_room, size: 16),
+                                    const SizedBox(width: 4),
+                                    Expanded(
+                                      child: TextField(
+                                        controller: _cuartosController,
+                                        readOnly: true,
+                                        showCursor: false,
+                                        enableInteractiveSelection: false,
+                                        focusNode: FocusNode(canRequestFocus: false),
+                                        style: const TextStyle(fontSize: 13),
+                                        decoration: InputDecoration(
+                                          isDense: true,
+                                          border: OutlineInputBorder(
+                                            borderRadius: BorderRadius.circular(8),
+                                          ),
+                                          contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Container(
+                                      padding: EdgeInsets.zero,
+                                      decoration: BoxDecoration(
+                                        border: Border.all(color: AppColors.primaryColor),
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: Column(
+                                        children: [
+                                          IconButton(
+                                            icon: const Icon(Icons.arrow_drop_up, size: 14),
+                                            onPressed: _incrementCuartos,
+                                            padding: EdgeInsets.zero,
+                                            constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
+                                            visualDensity: VisualDensity.compact,
+                                          ),
+                                          IconButton(
+                                            icon: const Icon(Icons.arrow_drop_down, size: 14),
+                                            onPressed: _cuartos <= 1 ? null : _decrementCuartos,
+                                            color: _cuartos <= 1 ? Colors.grey : null,
+                                            padding: EdgeInsets.zero,
+                                            constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
+                                            visualDensity: VisualDensity.compact,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
                     ],
                   ),
@@ -321,6 +416,34 @@ class _DetalleItem extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+class ThousandsSeparatorInputFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    final digitsOnly = newValue.text.replaceAll(RegExp(r'\D'), '');
+    if (digitsOnly.isEmpty) {
+      return const TextEditingValue(text: '');
+    }
+
+    final buffer = StringBuffer();
+    for (int i = 0; i < digitsOnly.length; i++) {
+      final indexFromRight = digitsOnly.length - i;
+      buffer.write(digitsOnly[i]);
+      if (indexFromRight > 1 && indexFromRight % 3 == 1) {
+        buffer.write(',');
+      }
+    }
+
+    final formatted = buffer.toString();
+    return TextEditingValue(
+      text: formatted,
+      selection: TextSelection.collapsed(offset: formatted.length),
     );
   }
 }
