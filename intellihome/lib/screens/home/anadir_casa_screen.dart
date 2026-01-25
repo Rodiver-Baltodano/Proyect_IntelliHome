@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intellihome/config/app_colors.dart';
+import 'package:intellihome/screens/home/map_picker_screen.dart';
+import 'package:latlong2/latlong.dart';
 
 class AnadirCasaScreen extends StatefulWidget {
   const AnadirCasaScreen({super.key});
@@ -18,6 +20,7 @@ class _AnadirCasaScreenState extends State<AnadirCasaScreen> {
 
   final ImagePicker _imagePicker = ImagePicker();
   final List<File> _selectedImages = [];
+  LatLng? _selectedLocation;
 
   late final TextEditingController _personasController;
   late final TextEditingController _cuartosController;
@@ -86,6 +89,20 @@ class _AnadirCasaScreenState extends State<AnadirCasaScreen> {
       for (final image in picked) {
         _selectedImages.add(File(image.path));
       }
+    });
+  }
+
+  Future<void> _pickLocation() async {
+    final result = await Navigator.push<LatLng>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => MapPickerScreen(initialLocation: _selectedLocation),
+      ),
+    );
+
+    if (result == null) return;
+    setState(() {
+      _selectedLocation = result;
     });
   }
 
@@ -434,24 +451,30 @@ class _AnadirCasaScreenState extends State<AnadirCasaScreen> {
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: 16),
-            const _DetalleItem(
+            _DetalleItem(
               icon: Icons.public,
               label: 'Ubicación',
+              buttonLabel: _selectedLocation == null ? 'Añadir' : 'Editar',
+              buttonIcon: _selectedLocation == null ? Icons.add : Icons.edit,
+              onPressed: _pickLocation,
             ),
             const SizedBox(height: 12),
-            const _DetalleItem(
+            _DetalleItem(
               icon: Icons.schedule,
               label: 'Reglas de uso',
+              onPressed: () {},
             ),
             const SizedBox(height: 12),
-            const _DetalleItem(
+            _DetalleItem(
               icon: Icons.list_alt,
               label: 'Amenidades',
+              onPressed: () {},
             ),
             const SizedBox(height: 12),
-            const _DetalleItem(
+            _DetalleItem(
               icon: Icons.calendar_today,
               label: 'Fechas',
+              onPressed: () {},
             ),
           ],
         ),
@@ -463,8 +486,17 @@ class _AnadirCasaScreenState extends State<AnadirCasaScreen> {
 class _DetalleItem extends StatelessWidget {
   final IconData icon;
   final String label;
+  final String buttonLabel;
+  final IconData buttonIcon;
+  final VoidCallback? onPressed;
 
-  const _DetalleItem({required this.icon, required this.label});
+  const _DetalleItem({
+    required this.icon,
+    required this.label,
+    this.buttonLabel = 'Añadir',
+    this.buttonIcon = Icons.add,
+    this.onPressed,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -486,9 +518,9 @@ class _DetalleItem extends StatelessWidget {
         SizedBox(
           width: 140,
           child: OutlinedButton.icon(
-            onPressed: () {},
-            icon: const Icon(Icons.add),
-            label: const Text('Añadir'),
+            onPressed: onPressed,
+            icon: Icon(buttonIcon),
+            label: Text(buttonLabel),
             style: OutlinedButton.styleFrom(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               side: BorderSide(color: AppColors.primaryColor),

@@ -21,6 +21,9 @@ dependencies:
   path: ^1.8.0
   flutter_dotenv: ^5.1.0
   mailer: ^6.1.0
+  flutter_map: ^6.1.0
+  latlong2: ^0.9.1
+  geolocator: ^10.1.0
 
 dev_dependencies:
   flutter_test:

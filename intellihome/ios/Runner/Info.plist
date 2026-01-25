@@ -12,6 +12,8 @@
 	</array>
 	<key>CFBundleDisplayName</key>
 	<string>Intellihome</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Necesitamos tu ubicación para seleccionar la casa en el mapa.</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
