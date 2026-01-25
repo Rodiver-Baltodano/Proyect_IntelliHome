@@ -244,6 +244,22 @@ abstract class AppLocalizations {
   String get operationFailed;
   String get pleaseWait;
   String get processing;
+
+  // Domótica
+
+  String get domoticControl;
+  String get connectedToRaspberry;
+  String get reconnect;
+  String get garage;
+  String get livingRoom;
+  String get kitchen;
+  String get bathroom1;
+  String get bathroom2;
+  String get bedroom1;
+  String get bedroom2;
+  String get bedroom3;
+  String get turnedOn;
+  String get turnedOff;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

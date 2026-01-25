@@ -62,6 +62,20 @@ class HomeScreen extends StatelessWidget {
                 ],
               ),
             ),
+            // Opción de Control Domótico
+            ListTile(
+              leading: const Icon(Icons.home_outlined),
+              title: Text(AppLocalizations.of(context).domoticControl),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const DomoticScreen(),
+                  ),
+                );
+              },
+            ),
             ListTile(
               leading: const Icon(Icons.palette),
               title: Text(AppLocalizations.of(context).customize),
@@ -154,29 +168,6 @@ class HomeScreen extends StatelessWidget {
                   ],
                 ),
               ),
-            const SizedBox(height: 32),
-            // Botón para acceder al control domótico
-            ElevatedButton.icon(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const DomoticScreen(),
-                  ),
-                );
-              },
-              icon: const Icon(Icons.home_outlined, size: 24),
-              label: const Text('Control Domótico'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primaryColor,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                textStyle: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
           ],
         ),
       ),

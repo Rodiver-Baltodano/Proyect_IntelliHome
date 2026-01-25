@@ -41,29 +41,55 @@ class _DomoticScreenState extends State<DomoticScreen> {
   @override
   void initState() {
     super.initState();
+    _setupTcpCallbacks();
     _connectToRaspberryPi();
+  }
+
+  void _setupTcpCallbacks() {
+    // Configurar callbacks del TCP client
+    _tcpClient.onDisconnected = () {
+      if (mounted) {
+        setState(() {
+          _isConnected = false;
+        });
+        // Notificación de desconexión removida
+      }
+    };
+
+    _tcpClient.onError = (error) {
+      // Errores de socket no muestran notificación
+      if (mounted) {
+        setState(() {
+          _isConnected = false;
+        });
+      }
+    };
   }
 
   Future<void> _connectToRaspberryPi() async {
     try {
       // Intenta conectar al servidor TCP en la Raspberry Pi Pico W
-      // Cambia esta IP por la IP de tu Raspberry Pi Pico W
       final connected = await _tcpClient.connect('10.243.100.158', 8080);
       
-      setState(() {
-        _isConnected = connected;
-      });
+      if (mounted) {
+        setState(() {
+          _isConnected = connected;
+        });
 
-      if (connected) {
-        _showMessage('Conectado a Raspberry Pi Pico W');
-      } else {
-        _showMessage('No se pudo conectar al dispositivo');
+        // Solo muestra mensaje si conecta exitosamente
+        if (connected) {
+          final l10n = AppLocalizations.of(context);
+          _showMessage(l10n.connectedToRaspberry);
+        }
+        // No muestra mensaje de error si no conecta
       }
     } catch (e) {
-      setState(() {
-        _isConnected = false;
-      });
-      _showMessage('Error al conectar: $e');
+      if (mounted) {
+        setState(() {
+          _isConnected = false;
+        });
+        // Error de conexión silencioso - solo actualiza el estado
+      }
     }
   }
 
@@ -81,18 +107,49 @@ class _DomoticScreenState extends State<DomoticScreen> {
         final command = '$pin:${newState ? 'ON' : 'OFF'}\n';
         await _tcpClient.sendMessage(command);
         
-        setState(() {
-          lightStates[room] = newState;
-        });
-        
-        _showMessage('${room.toUpperCase()}: ${newState ? 'Encendido' : 'Apagado'}');
+        if (mounted) {
+          setState(() {
+            lightStates[room] = newState;
+          });
+          final l10n = AppLocalizations.of(context);
+          final roomName = _getRoomName(room, l10n);
+          final status = newState ? l10n.turnedOn : l10n.turnedOff;
+          _showMessage('$roomName: $status');
+        }
       } catch (e) {
-        _showMessage('Error al enviar comando: $e');
+        // Error al enviar comando - silencioso
+        if (mounted) {
+          setState(() {
+            _isConnected = false;
+          });
+        }
       }
     } else {
-      _showMessage('No hay conexión con el dispositivo');
-      // Intenta reconectar
+      // Sin conexión - intenta reconectar silenciosamente
       await _connectToRaspberryPi();
+    }
+  }
+  
+  String _getRoomName(String roomKey, AppLocalizations l10n) {
+    switch (roomKey) {
+      case 'garaje':
+        return l10n.garage;
+      case 'sala':
+        return l10n.livingRoom;
+      case 'cocina':
+        return l10n.kitchen;
+      case 'bano1':
+        return l10n.bathroom1;
+      case 'bano2':
+        return l10n.bathroom2;
+      case 'cuarto1':
+        return l10n.bedroom1;
+      case 'cuarto2':
+        return l10n.bedroom2;
+      case 'cuarto3':
+        return l10n.bedroom3;
+      default:
+        return roomKey.toUpperCase();
     }
   }
 
@@ -108,121 +165,144 @@ class _DomoticScreenState extends State<DomoticScreen> {
 
   @override
   void dispose() {
+    // Limpiar callbacks antes de desconectar
+    _tcpClient.onDisconnected = null;
+    _tcpClient.onError = null;
+    _tcpClient.onMessageReceived = null;
     _tcpClient.disconnect();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Control Domótico'),
-        centerTitle: true,
-        elevation: 0,
-        actions: [
-          // Indicador de conexión
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Center(
-              child: Container(
-                width: 12,
-                height: 12,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: _isConnected ? Colors.green : Colors.red,
+    final l10n = AppLocalizations.of(context);
+    
+    return WillPopScope(
+      onWillPop: () async {
+        // Desconectar antes de volver
+        await _tcpClient.disconnect();
+        return true;
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(l10n.domoticControl),
+          centerTitle: true,
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () async {
+              // Desconectar antes de volver
+              await _tcpClient.disconnect();
+              if (mounted) {
+                Navigator.pop(context);
+              }
+            },
+          ),
+          actions: [
+            // Indicador de conexión
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Center(
+                child: Container(
+                  width: 12,
+                  height: 12,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: _isConnected ? Colors.green : Colors.red,
+                  ),
                 ),
               ),
             ),
-          ),
-          // Botón de reconexión
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: _connectToRaspberryPi,
-            tooltip: 'Reconectar',
-          ),
-        ],
-      ),
-      body: SafeArea(
-        child: Container(
-          padding: const EdgeInsets.all(16.0),
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              return Stack(
-                children: [
-                  // Imagen del plano de la casa
-                  Positioned.fill(
-                    child: Image.asset(
-                      'lib/assets/icons/house_plan.png', 
-                      fit: BoxFit.contain,
+            // Botón de reconexión
+            IconButton(
+              icon: const Icon(Icons.refresh),
+              onPressed: _connectToRaspberryPi,
+              tooltip: l10n.reconnect,
+            ),
+          ],
+        ),
+        body: SafeArea(
+          child: Container(
+            padding: const EdgeInsets.all(16.0),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                return Stack(
+                  children: [
+                    // Imagen del plano de la casa
+                    Positioned.fill(
+                      child: Image.asset(
+                        'lib/assets/icons/house_plan.png', 
+                        fit: BoxFit.contain,
+                      ),
                     ),
-                  ),
-                  
-                  // Garaje - GP1
-                  _buildLightButton(
-                    'garaje',
-                    'Garaje',
-                    left: constraints.maxWidth * 0.50,
-                    top: constraints.maxHeight * 0.68,
-                  ),
-                  
-                  // Sala - GP2
-                  _buildLightButton(
-                    'sala',
-                    'Sala',
-                    left: constraints.maxWidth * 0.50,
-                    top: constraints.maxHeight * 0.49,
-                  ),
-                  
-                  // Cocina - GP3
-                  _buildLightButton(
-                    'cocina',
-                    'Cocina',
-                    left: constraints.maxWidth * 0.16,
-                    top: constraints.maxHeight * 0.49,
-                  ),
-                  
-                  // Baño 1 - GP4
-                  _buildLightButton(
-                    'bano1',
-                    'Baño 1',
-                    left: constraints.maxWidth * 0.16,
-                    top: constraints.maxHeight * 0.32,
-                  ),
-                  
-                  // Baño 2 - GP5
-                  _buildLightButton(
-                    'bano2',
-                    'Baño 2',
-                    left: constraints.maxWidth * 0.60,
-                    top: constraints.maxHeight * 0.32,
-                  ),
-                  
-                  // Cuarto 1 - GP6
-                  _buildLightButton(
-                    'cuarto1',
-                    'Cuarto 1',
-                    left: constraints.maxWidth * 0.15,
-                    top: constraints.maxHeight * 0.18,
-                  ),
-                  
-                  // Cuarto 2 - GP7
-                  _buildLightButton(
-                    'cuarto2',
-                    'Cuarto 2',
-                    left: constraints.maxWidth * 0.35,
-                    top: constraints.maxHeight * 0.18,
-                  ),
-                  
-                  // Cuarto 3 - GP8
-                  _buildLightButton(
-                    'cuarto3',
-                    'Cuarto 3',
-                    left: constraints.maxWidth * 0.60,
-                    top: constraints.maxHeight * 0.18,
-                  ),
-                ],
-              );
-            },
+                    
+                    // Garaje - GP1
+                    _buildLightButton(
+                      'garaje',
+                      l10n.garage,
+                      left: constraints.maxWidth * 0.50,
+                      top: constraints.maxHeight * 0.68,
+                    ),
+                    
+                    // Sala - GP2
+                    _buildLightButton(
+                      'sala',
+                      l10n.livingRoom,
+                      left: constraints.maxWidth * 0.50,
+                      top: constraints.maxHeight * 0.49,
+                    ),
+                    
+                    // Cocina - GP3
+                    _buildLightButton(
+                      'cocina',
+                      l10n.kitchen,
+                      left: constraints.maxWidth * 0.16,
+                      top: constraints.maxHeight * 0.49,
+                    ),
+                    
+                    // Baño 1 - GP4
+                    _buildLightButton(
+                      'bano1',
+                      l10n.bathroom1,
+                      left: constraints.maxWidth * 0.16,
+                      top: constraints.maxHeight * 0.32,
+                    ),
+                    
+                    // Baño 2 - GP5
+                    _buildLightButton(
+                      'bano2',
+                      l10n.bathroom2,
+                      left: constraints.maxWidth * 0.60,
+                      top: constraints.maxHeight * 0.32,
+                    ),
+                    
+                    // Cuarto 1 - GP6
+                    _buildLightButton(
+                      'cuarto1',
+                      l10n.bedroom1,
+                      left: constraints.maxWidth * 0.15,
+                      top: constraints.maxHeight * 0.18,
+                    ),
+                    
+                    // Cuarto 2 - GP7
+                    _buildLightButton(
+                      'cuarto2',
+                      l10n.bedroom2,
+                      left: constraints.maxWidth * 0.35,
+                      top: constraints.maxHeight * 0.18,
+                    ),
+                    
+                    // Cuarto 3 - GP8
+                    _buildLightButton(
+                      'cuarto3',
+                      l10n.bedroom3,
+                      left: constraints.maxWidth * 0.60,
+                      top: constraints.maxHeight * 0.18,
+                    ),
+                  ],
+                );
+              },
+            ),
           ),
         ),
       ),

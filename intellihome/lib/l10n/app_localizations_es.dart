@@ -610,4 +610,45 @@ Gracias por elegir Intelihome. Disfrute de su experiencia en nuestra plataforma.
 
   @override
   String get processing => 'Procesando...';
+
+  //  Domótica
+
+  @override
+  String get domoticControl => 'Control Domótico';
+  
+  @override
+  String get connectedToRaspberry => 'Conectado a Raspberry Pi Pico W';
+  
+  @override
+  String get reconnect => 'Reconectar';
+  
+  @override
+  String get garage => 'Garaje';
+  
+  @override
+  String get livingRoom => 'Sala';
+  
+  @override
+  String get kitchen => 'Cocina';
+  
+  @override
+  String get bathroom1 => 'Baño 1';
+  
+  @override
+  String get bathroom2 => 'Baño 2';
+  
+  @override
+  String get bedroom1 => 'Cuarto 1';
+  
+  @override
+  String get bedroom2 => 'Cuarto 2';
+  
+  @override
+  String get bedroom3 => 'Cuarto 3';
+  
+  @override
+  String get turnedOn => 'Encendido';
+  
+  @override
+  String get turnedOff => 'Apagado';
 }
