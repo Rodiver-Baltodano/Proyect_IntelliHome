@@ -646,4 +646,29 @@ Obrigado por escolher o Intelihome. Aproveite sua experiência em nossa platafor
   
   @override
   String get turnedOff => 'Desligado';
+
+  //Huella
+
+  @override
+  String get enterUsername => 'Por favor, insira seu nome de usuário';
+
+  @override
+  String get biometricNotSupported =>
+      'Este dispositivo não suporta autenticação biométrica';
+
+  @override
+  String get biometricReason =>
+      'Autentique-se para acessar o IntelliHome';
+
+  @override
+  String get userNotFound => 'O usuário não existe';
+
+  @override
+  String get userBlocked =>
+      'Usuário bloqueado. Use a recuperação de senha.';
+
+  @override
+  String get biometricAuthError =>
+      'Erro na autenticação biométrica';
+
 }

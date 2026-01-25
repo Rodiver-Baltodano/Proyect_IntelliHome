@@ -165,155 +165,155 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _handleFingerprintLogin() async {
-    final loc = AppLocalizations.of(context);
-    final username = _usernameController.text.trim();
+  final loc = AppLocalizations.of(context);
+  final username = _usernameController.text.trim();
 
-    // Validar que haya un usuario ingresado
-    if (username.isEmpty) {
-      setState(() {
-        _errorUsername = '${loc.username} requerido';
-      });
+  // Validar que haya un usuario ingresado
+  if (username.isEmpty) {
+    setState(() {
+      _errorUsername = loc.usernameRequired;
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          loc.enterUsername,
+          style: const TextStyle(color: Colors.white),
+        ),
+        backgroundColor: AppColors.errorColor,
+        duration: const Duration(seconds: 2),
+      ),
+    );
+    return;
+  }
+
+  try {
+    final canAuthenticateWithBiometrics =
+        await _localAuth.canCheckBiometrics;
+    final canAuthenticate =
+        canAuthenticateWithBiometrics ||
+        await _localAuth.isDeviceSupported();
+
+    if (!canAuthenticate && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'Por favor ingrese su nombre de usuario',
+            loc.biometricNotSupported,
             style: const TextStyle(color: Colors.white),
           ),
           backgroundColor: AppColors.errorColor,
-          duration: const Duration(seconds: 2),
+          duration: const Duration(seconds: 3),
         ),
       );
       return;
     }
 
-    // Verificar disponibilidad de autenticación biométrica
-    try {
-      final canAuthenticateWithBiometrics = await _localAuth.canCheckBiometrics;
-      final canAuthenticate = canAuthenticateWithBiometrics || await _localAuth.isDeviceSupported();
+    final authenticated = await _localAuth.authenticate(
+      localizedReason: loc.biometricReason,
+      options: const AuthenticationOptions(
+        stickyAuth: true,
+        biometricOnly: true,
+      ),
+    );
 
-      if (!canAuthenticate) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: const Text(
-                'Este dispositivo no soporta autenticación biométrica',
-                style: TextStyle(color: Colors.white),
-              ),
-              backgroundColor: AppColors.errorColor,
-              duration: const Duration(seconds: 3),
-            ),
-          );
-        }
-        return;
-      }
+    if (authenticated && mounted) {
+      setState(() {
+        _cargando = true;
+        _errorUsername = null;
+        _errorPassword = null;
+      });
 
-      // Intentar autenticación biométrica
-      final authenticated = await _localAuth.authenticate(
-        localizedReason: 'Autentíquese para acceder a IntelliHome',
-        options: const AuthenticationOptions(
-          stickyAuth: true,
-          biometricOnly: true,
-        ),
-      );
+      final usuario =
+          await _repositorio?.buscarPorIdentificador(username);
 
-      if (authenticated && mounted) {
-        // Autenticación biométrica exitosa - ahora validar con el servicio
+      if (usuario == null) {
         setState(() {
-          _cargando = true;
-          _errorUsername = null;
-          _errorPassword = null;
+          _errorUsername = loc.userNotFound;
         });
 
-        // Verificar que el usuario existe en el repositorio
-        final usuario = await _repositorio?.buscarPorIdentificador(username);
-
-        if (usuario == null) {
-          setState(() {
-            _errorUsername = 'El usuario no existe';
-          });
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: const Text(
-                'El usuario no existe',
-                style: TextStyle(color: Colors.white),
-              ),
-              backgroundColor: AppColors.errorColor,
-              duration: const Duration(seconds: 2),
-            ),
-          );
-          return;
-        }
-
-        // Verificar si el usuario está bloqueado
-        if (usuario.estaBloqueado) {
-          setState(() {
-            _errorUsername = 'Usuario bloqueado. Use recuperación de contraseña.';
-          });
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: const Text(
-                'Usuario bloqueado. Use recuperación de contraseña.',
-                style: TextStyle(color: Colors.white),
-              ),
-              backgroundColor: AppColors.errorColor,
-              duration: const Duration(seconds: 3),
-            ),
-          );
-          return;
-        }
-
-        // Inicio de sesión exitoso
-        SessionManager.setCurrentUserId(usuario.id);
-        
-        if (mounted) {
-          context.read<ThemeProvider>().inicializarConUsuario(
-            usuario,
-            repositorio: _repositorio,
-          );
-
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                loc.loginSuccess,
-                style: const TextStyle(color: Colors.white),
-              ),
-              backgroundColor: AppColors.successColor,
-              duration: const Duration(seconds: 2),
-            ),
-          );
-
-          Future.delayed(const Duration(milliseconds: 500), () {
-            if (mounted) {
-              Navigator.pushReplacementNamed(
-                context,
-                '/home',
-                arguments: usuario.username,
-              );
-            }
-          });
-        }
-      }
-    } catch (e) {
-      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              'Error en autenticación: $e',
+              loc.userNotFound,
+              style: const TextStyle(color: Colors.white),
+            ),
+            backgroundColor: AppColors.errorColor,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+        return;
+      }
+
+      if (usuario.estaBloqueado) {
+        setState(() {
+          _errorUsername = loc.userBlocked;
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              loc.userBlocked,
               style: const TextStyle(color: Colors.white),
             ),
             backgroundColor: AppColors.errorColor,
             duration: const Duration(seconds: 3),
           ),
         );
+        return;
       }
-    } finally {
+
+      SessionManager.setCurrentUserId(usuario.id);
+
       if (mounted) {
-        setState(() {
-          _cargando = false;
+        context.read<ThemeProvider>().inicializarConUsuario(
+          usuario,
+          repositorio: _repositorio,
+        );
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              loc.loginSuccess,
+              style: const TextStyle(color: Colors.white),
+            ),
+            backgroundColor: AppColors.successColor,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+
+        Future.delayed(const Duration(milliseconds: 500), () {
+          if (mounted) {
+            Navigator.pushReplacementNamed(
+              context,
+              '/home',
+              arguments: usuario.username,
+            );
+          }
         });
       }
     }
+  } catch (e) {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            loc.biometricAuthError,
+            style: const TextStyle(color: Colors.white),
+          ),
+          backgroundColor: AppColors.errorColor,
+          duration: const Duration(seconds: 3),
+        ),
+      );
+    }
+  } finally {
+    if (mounted) {
+      setState(() {
+        _cargando = false;
+      });
+    }
   }
+}
+
 
   Widget _buildPasswordField({
     required TextEditingController controller,

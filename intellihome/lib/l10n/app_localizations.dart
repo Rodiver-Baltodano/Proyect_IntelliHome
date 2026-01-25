@@ -260,6 +260,16 @@ abstract class AppLocalizations {
   String get bedroom3;
   String get turnedOn;
   String get turnedOff;
+
+  // Huella avisos
+
+  String get enterUsername;
+  String get biometricNotSupported;
+  String get biometricReason;
+  String get userNotFound;
+  String get userBlocked;
+  String get biometricAuthError;
+
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
