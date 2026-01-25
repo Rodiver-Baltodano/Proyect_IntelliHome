@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:intellihome/config/app_colors.dart';
 import 'package:intellihome/screens/home/amenidades_data.dart';
 import 'package:intellihome/screens/home/amenidades_screen.dart';
+import 'package:intellihome/screens/home/fechas_no_disponibles_screen.dart';
 import 'package:intellihome/screens/home/map_picker_screen.dart';
 import 'package:latlong2/latlong.dart';
 
@@ -24,6 +25,7 @@ class _AnadirCasaScreenState extends State<AnadirCasaScreen> {
   final List<File> _selectedImages = [];
   LatLng? _selectedLocation;
   Set<int> _selectedAmenidades = {};
+  Set<DateTime> _blockedDates = {};
 
   bool _mostrarReglas = false;
   late final TextEditingController _reglasController;
@@ -118,6 +120,26 @@ class _AnadirCasaScreenState extends State<AnadirCasaScreen> {
     _reglasFocusNode.requestFocus();
   }
 
+  Future<void> _pickBlockedDates() async {
+    final result = await Navigator.push<Set<DateTime>>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => FechasNoDisponiblesScreen(
+          initialSelected: _blockedDates,
+        ),
+      ),
+    );
+
+    if (result == null) return;
+    setState(() {
+      _blockedDates
+        ..clear()
+        ..addAll(
+          result.map((d) => DateTime(d.year, d.month, d.day)),
+        );
+    });
+  }
+
   Future<void> _pickAmenidades() async {
     final result = await Navigator.push<Set<int>>(
       context,
@@ -130,6 +152,13 @@ class _AnadirCasaScreenState extends State<AnadirCasaScreen> {
     setState(() {
       _selectedAmenidades = result;
     });
+  }
+
+  String _formatDate(DateTime date) {
+    final day = date.day.toString().padLeft(2, '0');
+    final month = date.month.toString().padLeft(2, '0');
+    final year = date.year.toString();
+    return '$day/$month/$year';
   }
 
   Future<void> _pickLocation() async {
@@ -564,9 +593,42 @@ class _AnadirCasaScreenState extends State<AnadirCasaScreen> {
             const SizedBox(height: 12),
             _DetalleItem(
               icon: Icons.calendar_today,
-              label: 'Fechas',
-              onPressed: () {},
+              label: 'Disponibilidad',
+              buttonLabel: _blockedDates.isEmpty ? 'Añadir' : 'Editar',
+              buttonIcon: _blockedDates.isEmpty ? Icons.add : Icons.edit,
+              onPressed: _pickBlockedDates,
             ),
+            if (_blockedDates.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 8,
+                runSpacing: 6,
+                children: (() {
+                  final dates = _blockedDates.toList()
+                    ..sort((a, b) => a.compareTo(b));
+                  return dates
+                      .map(
+                        (date) => Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: AppColors.primaryColor.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: AppColors.primaryColor),
+                          ),
+                          child: Text(
+                            _formatDate(date),
+                            style: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                      )
+                      .toList();
+                })(),
+              ),
+            ],
           ],
         ),
       ),
