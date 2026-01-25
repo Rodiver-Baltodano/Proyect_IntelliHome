@@ -171,7 +171,7 @@ class _LoginScreenState extends State<LoginScreen> {
     // Validar que haya un usuario ingresado
     if (username.isEmpty) {
       setState(() {
-        _errorUsername = loc.username + ' requerido';
+        _errorUsername = '${loc.username} requerido';
       });
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
