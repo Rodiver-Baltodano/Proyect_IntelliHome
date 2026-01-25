@@ -9,6 +9,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  mqtt_client: ^10.2.0
   uuid: ^4.0.0
   flutter_localizations:
     sdk: flutter
