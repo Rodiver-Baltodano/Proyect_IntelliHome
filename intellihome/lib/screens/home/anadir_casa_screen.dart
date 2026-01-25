@@ -1,5 +1,8 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:intellihome/config/app_colors.dart';
 
 class AnadirCasaScreen extends StatefulWidget {
@@ -12,6 +15,9 @@ class AnadirCasaScreen extends StatefulWidget {
 class _AnadirCasaScreenState extends State<AnadirCasaScreen> {
   int _maxPersonas = 1;
   int _cuartos = 1;
+
+  final ImagePicker _imagePicker = ImagePicker();
+  final List<File> _selectedImages = [];
 
   late final TextEditingController _personasController;
   late final TextEditingController _cuartosController;
@@ -60,6 +66,29 @@ class _AnadirCasaScreenState extends State<AnadirCasaScreen> {
     });
   }
 
+  Future<void> _pickImages() async {
+    final picked = await _imagePicker.pickMultiImage();
+    if (picked.isEmpty) return;
+
+    if (picked.length > 10) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Máximo 10 imágenes'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    setState(() {
+      _selectedImages.clear();
+      for (final image in picked) {
+        _selectedImages.add(File(image.path));
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
@@ -90,25 +119,77 @@ class _AnadirCasaScreenState extends State<AnadirCasaScreen> {
                         style: TextStyle(fontWeight: FontWeight.w600),
                       ),
                       const SizedBox(height: 2),
-                      Container(
+                      SizedBox(
                         height: fotoBoxHeight,
                         width: double.infinity,
-                        decoration: BoxDecoration(
-                          color: Colors.grey.shade100,
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: AppColors.primaryColor, width: 1.5),
-                        ),
-                        child: Center(
-                          child: ElevatedButton.icon(
-                            icon: const Icon(Icons.cloud_upload_outlined),
-                            label: const Text('Subir imágenes'),
-                            onPressed: () {},
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.primaryColor,
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                        child: Stack(
+                          children: [
+                            Container(
+                              height: fotoBoxHeight,
+                              width: double.infinity,
+                              decoration: BoxDecoration(
+                                color: Colors.grey.shade100,
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(color: AppColors.primaryColor, width: 1.5),
+                                image: _selectedImages.isEmpty
+                                    ? null
+                                    : DecorationImage(
+                                        image: FileImage(_selectedImages.first),
+                                        fit: BoxFit.cover,
+                                        colorFilter: ColorFilter.mode(
+                                          Colors.black.withOpacity(0.35),
+                                          BlendMode.darken,
+                                        ),
+                                      ),
+                              ),
+                              child: Center(
+                                child: ElevatedButton.icon(
+                                  icon: const Icon(Icons.cloud_upload_outlined),
+                                  label: const Text('Subir imágenes'),
+                                  onPressed: _pickImages,
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: AppColors.primaryColor,
+                                    foregroundColor: Colors.white,
+                                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                                  ),
+                                ),
+                              ),
                             ),
-                          ),
+                            if (_selectedImages.length > 1)
+                              Positioned(
+                                left: 12,
+                                right: 12,
+                                bottom: 8,
+                                child: SizedBox(
+                                  height: 56,
+                                  child: ListView.separated(
+                                    scrollDirection: Axis.horizontal,
+                                    itemCount: _selectedImages.length - 1,
+                                    separatorBuilder: (_, __) => const SizedBox(width: 8),
+                                    itemBuilder: (context, index) {
+                                      final image = _selectedImages[index + 1];
+                                      return ClipRRect(
+                                        borderRadius: BorderRadius.circular(8),
+                                        child: Container(
+                                          width: 56,
+                                          height: 56,
+                                          decoration: BoxDecoration(
+                                            border: Border.all(
+                                              color: Colors.white.withOpacity(0.8),
+                                              width: 1,
+                                            ),
+                                          ),
+                                          child: Image.file(
+                                            image,
+                                            fit: BoxFit.cover,
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ),
+                              ),
+                          ],
                         ),
                       ),
                     ],
