@@ -7,6 +7,7 @@ import 'package:intellihome/modules/autenticacion/models/casa.dart';
 import 'package:intellihome/modules/autenticacion/repositories/casa_repositorio_json.dart';
 import 'package:intellihome/providers/theme_provider.dart';
 import 'package:intellihome/screens/home/domotic_screen.dart';
+import 'package:intellihome/screens/home/mis_casas_screen.dart';
 import 'package:intellihome/screens/home/reservar_casa_screen.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
@@ -111,6 +112,9 @@ class _HomeScreenState extends State<HomeScreen> {
             DrawerHeader(
               decoration: BoxDecoration(
                 color: AppColors.primaryColor,
+                border: const Border(
+                  bottom: BorderSide(color: Colors.transparent, width: 0),
+                ),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -128,11 +132,11 @@ class _HomeScreenState extends State<HomeScreen> {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       CircleAvatar(
-                        radius: 36,
+                        radius: 44,
                         backgroundColor: Colors.white.withOpacity(0.3),
                         backgroundImage: _buildImageProvider(fotoPerfil),
                         child: (fotoPerfil == null || fotoPerfil.isEmpty)
-                            ? const Icon(Icons.person, size: 34, color: Colors.white)
+                            ? const Icon(Icons.person, size: 40, color: Colors.white)
                             : null,
                       ),
                       const SizedBox(width: 12),
@@ -144,7 +148,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               nombreUsuario,
                               style: const TextStyle(
                                 color: Colors.white,
-                                fontSize: 18,
+                                fontSize: 20,
                                 fontWeight: FontWeight.bold,
                               ),
                               overflow: TextOverflow.ellipsis,
@@ -155,7 +159,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 '${estiloDisplay.emoji} ${estiloDisplay.label}',
                                 style: const TextStyle(
                                   color: Colors.white,
-                                  fontSize: 12,
+                                  fontSize: 13,
                                 ),
                                 overflow: TextOverflow.ellipsis,
                               ),
@@ -178,6 +182,19 @@ class _HomeScreenState extends State<HomeScreen> {
                   context,
                   MaterialPageRoute(
                     builder: (context) => const DomoticScreen(),
+                  ),
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.home_work_outlined),
+              title: const Text('Mis casas'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const MisCasasScreen(),
                   ),
                 );
               },
@@ -206,7 +223,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 }
               },
             ),
-            const Divider(),
             ListTile(
               leading: const Icon(Icons.palette),
               title: Text(AppLocalizations.of(context).customize),
