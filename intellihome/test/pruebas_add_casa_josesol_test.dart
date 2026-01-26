@@ -11,7 +11,7 @@ class _FakeWhatsAppService extends WhatsAppService {
       : super(
           accountSid: 'TEST',
           authToken: 'TEST',
-          fromNumber: 'whatsapp:+10000000000',
+          fromNumber: 'whatsapp:+14155238886',
           countryCode: '+506',
         );
 
@@ -56,7 +56,7 @@ void main() {
     // 4) Registrar 3 casas
     final casasOk = <bool>[];
     for (int i = 1; i <= 3; i++) {
-      final ok = await servicio.registrarCasa(
+      final resultado = await servicio.registrarCasa(
         nombre: 'Casa de prueba $i de juanperez123',
         precioPorNoche: 45000 + (i * 1000),
         maxPersonas: 4 + i,
@@ -68,7 +68,10 @@ void main() {
         amenidades: [1, 2, 4, 7, 10],
         fechasNoDisponibles: fechasNoDisponibles,
       );
-      casasOk.add(ok);
+      if (!resultado.exitoso) {
+        print('❌ Registro fallido: ${resultado.mensaje} (${resultado.campo ?? 'sin campo'})');
+      }
+      casasOk.add(resultado.exitoso);
     }
 
     if (casasOk.every((e) => e)) {

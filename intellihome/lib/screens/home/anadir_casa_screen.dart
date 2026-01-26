@@ -4,11 +4,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intellihome/config/app_colors.dart';
+import 'package:intellihome/modules/autenticacion/repositories/casa_repositorio_json.dart';
+import 'package:intellihome/modules/autenticacion/services/registro_casa_service.dart';
 import 'package:intellihome/screens/home/amenidades_data.dart';
 import 'package:intellihome/screens/home/amenidades_screen.dart';
 import 'package:intellihome/screens/home/fechas_no_disponibles_screen.dart';
 import 'package:intellihome/screens/home/map_picker_screen.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
 
 class AnadirCasaScreen extends StatefulWidget {
   const AnadirCasaScreen({super.key});
@@ -33,6 +37,9 @@ class _AnadirCasaScreenState extends State<AnadirCasaScreen> {
 
   late final TextEditingController _personasController;
   late final TextEditingController _cuartosController;
+  late final TextEditingController _nombreController;
+  late final TextEditingController _precioController;
+  late final TextEditingController _descripcionController;
 
   @override
   void initState() {
@@ -40,6 +47,9 @@ class _AnadirCasaScreenState extends State<AnadirCasaScreen> {
     _personasController = TextEditingController(text: _maxPersonas.toString());
     _cuartosController = TextEditingController(text: _cuartos.toString());
     _reglasController = TextEditingController();
+    _nombreController = TextEditingController();
+    _precioController = TextEditingController();
+    _descripcionController = TextEditingController();
     _reglasFocusNode = FocusNode();
     _reglasFocusNode.addListener(() {
       if (!_reglasFocusNode.hasFocus) {
@@ -56,6 +66,9 @@ class _AnadirCasaScreenState extends State<AnadirCasaScreen> {
     _personasController.dispose();
     _cuartosController.dispose();
     _reglasController.dispose();
+    _nombreController.dispose();
+    _precioController.dispose();
+    _descripcionController.dispose();
     _reglasFocusNode.dispose();
     super.dispose();
   }
@@ -175,6 +188,104 @@ class _AnadirCasaScreenState extends State<AnadirCasaScreen> {
     });
   }
 
+  Future<List<String>> _guardarFotosCasa(List<File> fotos) async {
+    final appDir = await getApplicationDocumentsDirectory();
+    final carpetaCasas = Directory(p.join(appDir.path, 'casas'));
+    if (!await carpetaCasas.exists()) {
+      await carpetaCasas.create(recursive: true);
+    }
+
+    final timestamp = DateTime.now().millisecondsSinceEpoch;
+    final rutas = <String>[];
+    for (int i = 0; i < fotos.length; i++) {
+      final archivo = fotos[i];
+      final extension = p.extension(archivo.path).isNotEmpty
+          ? p.extension(archivo.path)
+          : '.jpg';
+      final nombre = 'casa_${timestamp}_$i$extension';
+      final rutaDestino = p.join(carpetaCasas.path, nombre);
+      final copia = await archivo.copy(rutaDestino);
+      rutas.add(copia.path);
+    }
+
+    return rutas;
+  }
+
+  Future<void> _registrarCasa() async {
+    final nombre = _nombreController.text.trim();
+    final descripcion = _descripcionController.text.trim();
+    final reglasUso = _reglasController.text.trim();
+    final precioTexto = _precioController.text.replaceAll(',', '').trim();
+    final precio = double.tryParse(precioTexto) ?? 0;
+    final ubicacion = _selectedLocation == null
+        ? ''
+        : '${_selectedLocation!.latitude},${_selectedLocation!.longitude}';
+
+    final fechasNoDisponibles = _blockedDates.toList();
+    final amenidades = _selectedAmenidades.toList();
+
+    List<String> rutasFotos = [];
+    try {
+      if (_selectedImages.isNotEmpty) {
+        rutasFotos = await _guardarFotosCasa(_selectedImages);
+      }
+
+      final appDir = await getApplicationDocumentsDirectory();
+      final rutaJson = p.join(appDir.path, 'casas_integrado.json');
+      final casasRepo = CasaRepositorioJson(rutaArchivo: rutaJson);
+      final servicio = RegistroCasaServicio(repositorio: casasRepo);
+
+      final resultado = await servicio.registrarCasa(
+        nombre: nombre,
+        precioPorNoche: precio,
+        maxPersonas: _maxPersonas,
+        habitaciones: _cuartos,
+        descripcion: descripcion,
+        fotos: rutasFotos,
+        ubicacion: ubicacion,
+        reglasUso: reglasUso,
+        amenidades: amenidades,
+        fechasNoDisponibles: fechasNoDisponibles,
+      );
+
+      if (!mounted) return;
+
+      if (!resultado.exitoso) {
+        for (final ruta in rutasFotos) {
+          try {
+            final archivo = File(ruta);
+            if (await archivo.exists()) {
+              await archivo.delete();
+            }
+          } catch (_) {}
+        }
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              resultado.mensaje,
+              style: const TextStyle(color: Colors.white),
+            ),
+            backgroundColor: AppColors.errorColor,
+          ),
+        );
+        return;
+      }
+
+      Navigator.pop(context, '¡Casa añadida!');
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Error al registrar casa: $e',
+            style: const TextStyle(color: Colors.white),
+          ),
+          backgroundColor: AppColors.errorColor,
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
@@ -292,6 +403,7 @@ class _AnadirCasaScreenState extends State<AnadirCasaScreen> {
                       children: [
                       // 1. Nombre de la casa
                       TextField(
+                        controller: _nombreController,
                         style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, height: 1.05),
                         minLines: 4,
                         maxLines: 4,
@@ -332,6 +444,7 @@ class _AnadirCasaScreenState extends State<AnadirCasaScreen> {
                                     const SizedBox(width: 6),
                                     Expanded(
                                       child: TextField(
+                                        controller: _precioController,
                                         style: const TextStyle(fontSize: 13),
                                         decoration: InputDecoration(
                                           isDense: true,
@@ -491,6 +604,7 @@ class _AnadirCasaScreenState extends State<AnadirCasaScreen> {
             ),
             const SizedBox(height: 6),
             TextField(
+              controller: _descripcionController,
               maxLines: 4,
               style: const TextStyle(fontSize: 12),
               decoration: InputDecoration(
@@ -505,7 +619,7 @@ class _AnadirCasaScreenState extends State<AnadirCasaScreen> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: () {},
+                onPressed: _registrarCasa,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primaryColor,
                   foregroundColor: Colors.white,
