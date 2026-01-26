@@ -9,6 +9,7 @@ import 'package:intellihome/providers/theme_provider.dart';
 import 'package:intellihome/screens/home/domotic_screen.dart';
 import 'package:intellihome/screens/home/mis_casas_screen.dart';
 import 'package:intellihome/screens/home/reservar_casa_screen.dart';
+import 'package:intl/intl.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
@@ -74,6 +75,11 @@ class _HomeScreenState extends State<HomeScreen> {
       return FileImage(file);
     }
     return null;
+  }
+
+  String _formatPrecio(double precio) {
+    final formatter = NumberFormat('#,##0', 'en_US');
+    return formatter.format(precio);
   }
 
   _EstiloDisplay? _estiloConEmoji(String estilo, BuildContext context) {
@@ -390,13 +396,27 @@ class _HomeScreenState extends State<HomeScreen> {
                                         color: Colors.black.withOpacity(0.45),
                                         borderRadius: BorderRadius.circular(12),
                                       ),
-                                      child: Text(
-                                        casa.nombre,
-                                        style: const TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.w600,
-                                        ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Text(
+                                            casa.nombre,
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 8),
+                                          Text(
+                                            '₵ ${_formatPrecio(casa.precioPorNoche)}',
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ),
                                   ),
@@ -406,7 +426,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             Padding(
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 12,
-                                vertical: 8,
+                                vertical: 4,
                               ),
                               child: Row(
                                 children: [
@@ -423,13 +443,18 @@ class _HomeScreenState extends State<HomeScreen> {
                                     },
                                     icon: const Icon(Icons.remove_red_eye_outlined),
                                     color: AppColors.primaryColor,
+                                    padding: EdgeInsets.zero,
+                                    constraints: const BoxConstraints(
+                                      minWidth: 36,
+                                      minHeight: 36,
+                                    ),
                                   ),
                                   const SizedBox(width: 4),
                                   Text(
                                     'Ver detalles',
                                     style: TextStyle(
                                       color: AppColors.textSecondaryColor,
-                                      fontSize: 12,
+                                      fontSize: 11,
                                     ),
                                   ),
                                 ],

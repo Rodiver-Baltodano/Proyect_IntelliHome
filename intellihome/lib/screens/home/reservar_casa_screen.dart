@@ -6,6 +6,7 @@ import 'package:intellihome/config/app_colors.dart';
 import 'package:intellihome/modules/autenticacion/models/casa.dart';
 import 'package:intellihome/providers/theme_provider.dart';
 import 'package:intellihome/screens/home/amenidades_data.dart';
+import 'package:intl/intl.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:provider/provider.dart';
@@ -24,6 +25,7 @@ class ReservarCasaScreen extends StatefulWidget {
 
 class _ReservarCasaScreenState extends State<ReservarCasaScreen> {
   DateTimeRange? _rangoSeleccionado;
+  int _selectedImageIndex = 0;
 
   ImageProvider? _buildImageProvider(String? ruta) {
     if (ruta == null || ruta.isEmpty) return null;
@@ -38,6 +40,11 @@ class _ReservarCasaScreenState extends State<ReservarCasaScreen> {
     final month = date.month.toString().padLeft(2, '0');
     final year = date.year.toString();
     return '$day/$month/$year';
+  }
+
+  String _formatPrecio(double precio) {
+    final formatter = NumberFormat('#,##0', 'en_US');
+    return formatter.format(precio);
   }
 
   LatLng? _parseUbicacion(String raw) {
@@ -266,7 +273,9 @@ class _ReservarCasaScreenState extends State<ReservarCasaScreen> {
   Widget build(BuildContext context) {
     final usuario = context.watch<ThemeProvider>().usuarioActual;
     final casa = widget.casa;
-    final portada = casa.fotos.isNotEmpty ? casa.fotos.first : null;
+    final portada = casa.fotos.isNotEmpty
+      ? casa.fotos[_selectedImageIndex.clamp(0, casa.fotos.length - 1)]
+      : null;
     final portadaProvider = _buildImageProvider(portada);
     final ubicacion = _parseUbicacion(casa.ubicacion);
     final esDueno = usuario != null && casa.ownerId == usuario.id;
@@ -314,18 +323,34 @@ class _ReservarCasaScreenState extends State<ReservarCasaScreen> {
                   itemBuilder: (context, index) {
                     final ruta = casa.fotos[index];
                     final provider = _buildImageProvider(ruta);
-                    return ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
-                      child: Container(
-                        width: 64,
-                        height: 64,
-                        color: AppColors.backgroundColor,
-                        child: provider != null
-                            ? Image(image: provider, fit: BoxFit.cover)
-                            : Icon(
-                                Icons.image_not_supported,
-                                color: AppColors.textSecondaryColor,
-                              ),
+                    final isSelected = index == _selectedImageIndex;
+                    return GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          _selectedImageIndex = index;
+                        });
+                      },
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: Container(
+                          width: 64,
+                          height: 64,
+                          decoration: BoxDecoration(
+                            color: AppColors.backgroundColor,
+                            border: Border.all(
+                              color: isSelected
+                                  ? AppColors.primaryColor
+                                  : Colors.transparent,
+                              width: 2,
+                            ),
+                          ),
+                          child: provider != null
+                              ? Image(image: provider, fit: BoxFit.cover)
+                              : Icon(
+                                  Icons.image_not_supported,
+                                  color: AppColors.textSecondaryColor,
+                                ),
+                        ),
                       ),
                     );
                   },
@@ -344,7 +369,7 @@ class _ReservarCasaScreenState extends State<ReservarCasaScreen> {
                 const Text('🇨🇷', style: TextStyle(fontSize: 18)),
                 const SizedBox(width: 6),
                 Text(
-                  '₵ ${casa.precioPorNoche.toStringAsFixed(0)} / noche',
+                  '₵ ${_formatPrecio(casa.precioPorNoche)} / noche',
                   style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
                 ),
               ],
