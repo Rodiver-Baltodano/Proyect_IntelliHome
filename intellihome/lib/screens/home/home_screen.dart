@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:intellihome/config/app_colors.dart';
 import 'package:intellihome/providers/theme_provider.dart';
 import 'package:intellihome/l10n/app_localizations.dart';
+import 'package:intellihome/screens/home/domotic_screen.dart';
 import 'package:provider/provider.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -60,6 +61,20 @@ class HomeScreen extends StatelessWidget {
                   ),
                 ],
               ),
+            ),
+            // Opción de Control Domótico
+            ListTile(
+              leading: const Icon(Icons.home_outlined),
+              title: Text(AppLocalizations.of(context).domoticControl),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const DomoticScreen(),
+                  ),
+                );
+              },
             ),
             ListTile(
               leading: const Icon(Icons.palette),
