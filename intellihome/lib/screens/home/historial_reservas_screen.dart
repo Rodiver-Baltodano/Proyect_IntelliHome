@@ -214,12 +214,10 @@ class _ReservaItem {
 class _MarqueeText extends StatefulWidget {
   final String text;
   final TextStyle style;
-  final Duration pause;
 
   const _MarqueeText({
     required this.text,
     required this.style,
-    this.pause = const Duration(milliseconds: 800),
   });
 
   @override
@@ -266,16 +264,22 @@ class _MarqueeTextState extends State<_MarqueeText> {
     }
 
     while (mounted && _controller.hasClients) {
+      if (!_controller.hasClients) break;
       final duration = Duration(milliseconds: (maxScroll * 20).toInt().clamp(800, 8000));
-      await _controller.animateTo(
-        maxScroll,
-        duration: duration,
-        curve: Curves.linear,
-      );
+      try {
+        await _controller.animateTo(
+          maxScroll,
+          duration: duration,
+          curve: Curves.linear,
+        );
+      } catch (_) {
+        break;
+      }
       if (!mounted || !_controller.hasClients) break;
-      await Future.delayed(widget.pause);
+      await Future.delayed(const Duration(milliseconds: 800));
+      if (!_controller.hasClients) break;
       _controller.jumpTo(0);
-      await Future.delayed(widget.pause);
+      await Future.delayed(const Duration(milliseconds: 800));
     }
 
     _running = false;
