@@ -6,6 +6,7 @@ import 'package:intellihome/l10n/app_localizations.dart';
 import 'package:intellihome/modules/autenticacion/models/casa.dart';
 import 'package:intellihome/modules/autenticacion/repositories/casa_repositorio_json.dart';
 import 'package:intellihome/screens/home/domotic_screen.dart';
+import 'package:intellihome/screens/home/reservar_casa_screen.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
@@ -318,7 +319,16 @@ class _HomeScreenState extends State<HomeScreen> {
                               child: Row(
                                 children: [
                                   IconButton(
-                                    onPressed: () {},
+                                    onPressed: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (_) => ReservarCasaScreen(
+                                            casa: casa,
+                                          ),
+                                        ),
+                                      );
+                                    },
                                     icon: const Icon(Icons.remove_red_eye_outlined),
                                     color: AppColors.primaryColor,
                                   ),
