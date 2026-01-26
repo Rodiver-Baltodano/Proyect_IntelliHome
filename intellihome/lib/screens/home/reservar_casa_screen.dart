@@ -1,9 +1,12 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
 import 'package:intellihome/config/app_colors.dart';
 import 'package:intellihome/modules/autenticacion/models/casa.dart';
 import 'package:intellihome/screens/home/amenidades_data.dart';
+import 'package:latlong2/latlong.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class ReservarCasaScreen extends StatelessWidget {
   final Casa casa;
@@ -28,10 +31,58 @@ class ReservarCasaScreen extends StatelessWidget {
     return '$day/$month/$year';
   }
 
+  LatLng? _parseUbicacion(String raw) {
+    final trimmed = raw.trim();
+    if (trimmed.isEmpty) return null;
+    final parts = trimmed.split(',');
+    if (parts.length != 2) return null;
+    final lat = double.tryParse(parts[0].trim());
+    final lng = double.tryParse(parts[1].trim());
+    if (lat == null || lng == null) return null;
+    return LatLng(lat, lng);
+  }
+
+  Future<void> _abrirEnMapas(BuildContext context, LatLng ubicacion) async {
+    final url = Uri.parse(
+      'https://www.google.com/maps/search/?api=1&query=${ubicacion.latitude},${ubicacion.longitude}',
+    );
+
+    final abrir = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Abrir en mapas'),
+        content: const Text('¿Desea abrir esta ubicación en una app de mapas?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancelar'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Abrir'),
+          ),
+        ],
+      ),
+    );
+
+    if (abrir != true) return;
+
+    if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No se pudo abrir la ubicación'),
+          backgroundColor: AppColors.errorColor,
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final portada = casa.fotos.isNotEmpty ? casa.fotos.first : null;
     final portadaProvider = _buildImageProvider(portada);
+    final ubicacion = _parseUbicacion(casa.ubicacion);
 
     return Scaffold(
       appBar: AppBar(
@@ -142,8 +193,75 @@ class ReservarCasaScreen extends StatelessWidget {
             _detalleItem(
               icon: Icons.public,
               label: 'Ubicación',
-              value: casa.ubicacion.isEmpty ? 'Sin ubicación' : casa.ubicacion,
+              value: ubicacion == null ? 'Sin ubicación' : '',
             ),
+            if (ubicacion != null) ...[
+              const SizedBox(height: 8),
+              GestureDetector(
+                onTap: () => _abrirEnMapas(context, ubicacion),
+                child: Container(
+                  height: 140,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppColors.primaryColor.withOpacity(0.3)),
+                  ),
+                  clipBehavior: Clip.antiAlias,
+                  child: Stack(
+                    children: [
+                      AbsorbPointer(
+                        child: FlutterMap(
+                          options: MapOptions(
+                            initialCenter: ubicacion,
+                            initialZoom: 15,
+                            interactionOptions: const InteractionOptions(
+                              flags: InteractiveFlag.none,
+                            ),
+                          ),
+                          children: [
+                            TileLayer(
+                              urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                              userAgentPackageName: 'com.example.intellihome',
+                            ),
+                            MarkerLayer(
+                              markers: [
+                                Marker(
+                                  point: ubicacion,
+                                  width: 40,
+                                  height: 40,
+                                  child: Icon(
+                                    Icons.location_pin,
+                                    color: AppColors.primaryColor,
+                                    size: 36,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      Positioned(
+                        right: 8,
+                        bottom: 8,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withOpacity(0.5),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: const Text(
+                            'Abrir en mapas',
+                            style: TextStyle(color: Colors.white, fontSize: 11),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
             const SizedBox(height: 10),
             _detalleItem(
               icon: Icons.schedule,
