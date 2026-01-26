@@ -4,10 +4,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:intellihome/config/app_colors.dart';
 import 'package:intellihome/modules/autenticacion/models/casa.dart';
+import 'package:intellihome/modules/autenticacion/models/usuario.dart';
+import 'package:intellihome/modules/autenticacion/repositories/usuario_repository.dart';
+import 'package:intellihome/modules/reservas/repositories/reserva_repository.dart';
+import 'package:intellihome/modules/reservas/services/reserva_service.dart';
 import 'package:intellihome/providers/theme_provider.dart';
 import 'package:intellihome/screens/home/amenidades_data.dart';
 import 'package:intl/intl.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:provider/provider.dart';
 
@@ -45,6 +51,16 @@ class _ReservarCasaScreenState extends State<ReservarCasaScreen> {
   String _formatPrecio(double precio) {
     final formatter = NumberFormat('#,##0', 'en_US');
     return formatter.format(precio);
+  }
+
+  String _formatearDatosTarjeta(String numeroTarjeta, String fechaExpiracion) {
+    final limpia = numeroTarjeta.replaceAll(RegExp(r'\s+'), '');
+    final ultimos4 = limpia.length >= 4 ? limpia.substring(limpia.length - 4) : limpia;
+    final mascara = '**** **** **** $ultimos4';
+    if (fechaExpiracion.trim().isNotEmpty) {
+      return '$mascara (exp $fechaExpiracion)';
+    }
+    return mascara;
   }
 
   LatLng? _parseUbicacion(String raw) {
@@ -185,6 +201,193 @@ class _ReservarCasaScreenState extends State<ReservarCasaScreen> {
         ),
       ),
     );
+  }
+
+  Future<bool> _solicitarMetodoPago() async {
+    final usuario = context.read<ThemeProvider>().usuarioActual;
+    if (usuario == null) return false;
+
+    final numeroController = TextEditingController();
+    final expiracionController = TextEditingController();
+    final cvvController = TextEditingController();
+
+    final data = await showDialog<Map<String, String>>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Agregar tarjeta'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: numeroController,
+                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(
+                  labelText: 'Número de tarjeta',
+                ),
+              ),
+              const SizedBox(height: 8),
+              TextField(
+                controller: expiracionController,
+                keyboardType: TextInputType.datetime,
+                decoration: const InputDecoration(
+                  labelText: 'Expiración (MM/AA)',
+                ),
+              ),
+              const SizedBox(height: 8),
+              TextField(
+                controller: cvvController,
+                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(
+                  labelText: 'CVV',
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancelar'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              final numero = numeroController.text.trim();
+              final exp = expiracionController.text.trim();
+              final cvv = cvvController.text.trim();
+              if (numero.isEmpty || exp.isEmpty || cvv.isEmpty) {
+                return;
+              }
+              Navigator.pop(context, {
+                'numero': numero,
+                'exp': exp,
+                'cvv': cvv,
+              });
+            },
+            child: const Text('Guardar'),
+          ),
+        ],
+      ),
+    );
+
+    if (data == null) return false;
+
+    final datosTargeta = _formatearDatosTarjeta(
+      data['numero']!,
+      data['exp']!,
+    );
+
+    final appDir = await getApplicationDocumentsDirectory();
+    final rutaJson = p.join(appDir.path, 'usuarios_integrado.json');
+    final repo = UsuarioRepositorioJson(rutaArchivo: rutaJson);
+
+    final actualizado = Usuario(
+      id: usuario.id,
+      username: usuario.username,
+      nombreApellidos: usuario.nombreApellidos,
+      correo: usuario.correo,
+      telefono: usuario.telefono,
+      contrasena: usuario.contrasena,
+      nacionalidad: usuario.nacionalidad,
+      numeroIBAN: usuario.numeroIBAN,
+      fotoPerfil: usuario.fotoPerfil,
+      aceptaTerminos: usuario.aceptaTerminos,
+      cedula: usuario.cedula,
+      datosTargeta: datosTargeta,
+      huellaBiometrica: usuario.huellaBiometrica,
+      intentosFallidos: usuario.intentosFallidos,
+      intentosFallidosCodigo: usuario.intentosFallidosCodigo,
+      estaBloqueado: usuario.estaBloqueado,
+      codigoRecuperacion: usuario.codigoRecuperacion,
+      codigoExpira: usuario.codigoExpira,
+      fechaRegistro: usuario.fechaRegistro,
+      fechaNacimiento: usuario.fechaNacimiento,
+      tema: usuario.tema,
+      estilo: usuario.estilo,
+      colorPrimarioARGB: usuario.colorPrimarioARGB,
+      colorBackgroundARGB: usuario.colorBackgroundARGB,
+      casas: usuario.casas,
+      reservas: usuario.reservas,
+    );
+
+    await repo.actualizarUsuario(actualizado);
+    if (mounted) {
+      context.read<ThemeProvider>().inicializarConUsuario(actualizado, repositorio: repo);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Tarjeta guardada correctamente.',
+            style: TextStyle(color: Colors.white),
+          ),
+          backgroundColor: AppColors.successColor,
+        ),
+      );
+    }
+
+    return true;
+  }
+
+  Future<void> _reservarCasa() async {
+    final usuario = context.read<ThemeProvider>().usuarioActual;
+    if (usuario == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Debe iniciar sesión para reservar.'),
+          backgroundColor: AppColors.errorColor,
+        ),
+      );
+      return;
+    }
+
+    if (_rangoSeleccionado == null) return;
+
+    if (usuario.datosTargeta == null || usuario.datosTargeta!.isEmpty) {
+      final guardado = await _solicitarMetodoPago();
+      if (!guardado) return;
+      return;
+    }
+
+    final appDir = await getApplicationDocumentsDirectory();
+    final reservasPath = p.join(appDir.path, 'reservas_integrado.json');
+    final usuariosPath = p.join(appDir.path, 'usuarios_integrado.json');
+
+    final reservasRepo = ReservaRepositorioJson(rutaArchivo: reservasPath);
+    final usuariosRepo = UsuarioRepositorioJson(rutaArchivo: usuariosPath);
+    final service = ReservaService(
+      repositorio: reservasRepo,
+      usuarioRepositorio: usuariosRepo,
+    );
+
+    final resultado = await service.createReservation(
+      userId: usuario.id,
+      propertyId: widget.casa.id,
+      startDate: _rangoSeleccionado!.start,
+      endDate: _rangoSeleccionado!.end,
+    );
+
+    if (!mounted) return;
+
+    if (resultado.exitoso) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            resultado.mensaje,
+            style: const TextStyle(color: Colors.white),
+          ),
+          backgroundColor: AppColors.successColor,
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            resultado.mensaje,
+            style: const TextStyle(color: Colors.white),
+          ),
+          backgroundColor: AppColors.errorColor,
+        ),
+      );
+    }
   }
 
   Future<void> _seleccionarRangoFechas() async {
@@ -580,7 +783,9 @@ class _ReservarCasaScreenState extends State<ReservarCasaScreen> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: (esDueno || _rangoSeleccionado == null) ? null : () {},
+                onPressed: (esDueno || _rangoSeleccionado == null)
+                    ? null
+                    : _reservarCasa,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primaryColor,
                   foregroundColor: Colors.white,

@@ -7,6 +7,7 @@ import 'package:intellihome/modules/autenticacion/models/casa.dart';
 import 'package:intellihome/modules/autenticacion/repositories/casa_repositorio_json.dart';
 import 'package:intellihome/providers/theme_provider.dart';
 import 'package:intellihome/screens/home/domotic_screen.dart';
+import 'package:intellihome/screens/home/historial_reservas_screen.dart';
 import 'package:intellihome/screens/home/mis_casas_screen.dart';
 import 'package:intellihome/screens/home/reservar_casa_screen.dart';
 import 'package:intl/intl.dart';
@@ -201,6 +202,19 @@ class _HomeScreenState extends State<HomeScreen> {
                   context,
                   MaterialPageRoute(
                     builder: (_) => const MisCasasScreen(),
+                  ),
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.history),
+              title: const Text('Historial de reservas'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const HistorialReservasScreen(),
                   ),
                 );
               },

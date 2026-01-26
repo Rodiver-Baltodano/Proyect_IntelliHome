@@ -39,9 +39,8 @@ class ReservaService {
           );
         }
 
-        // Validar que tenga método de pago (tarjeta o IBAN)
-        final tieneMetodoPago = usuario.datosTargeta != null || 
-                                usuario.numeroIBAN.isNotEmpty;
+        // Validar que tenga método de pago (solo tarjeta)
+        final tieneMetodoPago = usuario.datosTargeta != null;
         
         if (!tieneMetodoPago) {
           return ResultadoReserva.fallo(
