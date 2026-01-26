@@ -9,6 +9,7 @@ import 'package:intellihome/session/session_manager.dart';
 import 'package:provider/provider.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
+import 'package:local_auth/local_auth.dart';
 import 'help_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -21,6 +22,7 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
+  final LocalAuthentication _localAuth = LocalAuthentication();
 
   late AutenticacionServicio _autenticacionServicio;
   UsuarioRepositorioJson? _repositorio;
@@ -162,6 +164,157 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  void _handleFingerprintLogin() async {
+  final loc = AppLocalizations.of(context);
+  final username = _usernameController.text.trim();
+
+  // Validar que haya un usuario ingresado
+  if (username.isEmpty) {
+    setState(() {
+      _errorUsername = loc.usernameRequired;
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          loc.enterUsername,
+          style: const TextStyle(color: Colors.white),
+        ),
+        backgroundColor: AppColors.errorColor,
+        duration: const Duration(seconds: 2),
+      ),
+    );
+    return;
+  }
+
+  try {
+    final canAuthenticateWithBiometrics =
+        await _localAuth.canCheckBiometrics;
+    final canAuthenticate =
+        canAuthenticateWithBiometrics ||
+        await _localAuth.isDeviceSupported();
+
+    if (!canAuthenticate && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            loc.biometricNotSupported,
+            style: const TextStyle(color: Colors.white),
+          ),
+          backgroundColor: AppColors.errorColor,
+          duration: const Duration(seconds: 3),
+        ),
+      );
+      return;
+    }
+
+    final authenticated = await _localAuth.authenticate(
+      localizedReason: loc.biometricReason,
+      options: const AuthenticationOptions(
+        stickyAuth: true,
+        biometricOnly: true,
+      ),
+    );
+
+    if (authenticated && mounted) {
+      setState(() {
+        _cargando = true;
+        _errorUsername = null;
+        _errorPassword = null;
+      });
+
+      final usuario =
+          await _repositorio?.buscarPorIdentificador(username);
+
+      if (usuario == null) {
+        setState(() {
+          _errorUsername = loc.userNotFound;
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              loc.userNotFound,
+              style: const TextStyle(color: Colors.white),
+            ),
+            backgroundColor: AppColors.errorColor,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+        return;
+      }
+
+      if (usuario.estaBloqueado) {
+        setState(() {
+          _errorUsername = loc.userBlocked;
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              loc.userBlocked,
+              style: const TextStyle(color: Colors.white),
+            ),
+            backgroundColor: AppColors.errorColor,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+        return;
+      }
+
+      SessionManager.setCurrentUserId(usuario.id);
+
+      if (mounted) {
+        context.read<ThemeProvider>().inicializarConUsuario(
+          usuario,
+          repositorio: _repositorio,
+        );
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              loc.loginSuccess,
+              style: const TextStyle(color: Colors.white),
+            ),
+            backgroundColor: AppColors.successColor,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+
+        Future.delayed(const Duration(milliseconds: 500), () {
+          if (mounted) {
+            Navigator.pushReplacementNamed(
+              context,
+              '/home',
+              arguments: usuario.username,
+            );
+          }
+        });
+      }
+    }
+  } catch (e) {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            loc.biometricAuthError,
+            style: const TextStyle(color: Colors.white),
+          ),
+          backgroundColor: AppColors.errorColor,
+          duration: const Duration(seconds: 3),
+        ),
+      );
+    }
+  } finally {
+    if (mounted) {
+      setState(() {
+        _cargando = false;
+      });
+    }
+  }
+}
+
+
   Widget _buildPasswordField({
     required TextEditingController controller,
     required String label,
@@ -175,42 +328,46 @@ class _LoginScreenState extends State<LoginScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        TextField(
-          controller: controller,
-          obscureText: obscureText,
-          keyboardType: TextInputType.visiblePassword,
-          decoration: InputDecoration(
-            labelText: label,
-            labelStyle: TextStyle(
-              color: tieneError ? AppColors.errorColor : AppColors.secondaryColor,
-            ),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(
-                color: tieneError ? AppColors.errorColor : AppColors.primaryColor,
-                width: 2,
+        SizedBox(
+          height: 48,
+          child: TextField(
+            controller: controller,
+            obscureText: obscureText,
+            keyboardType: TextInputType.visiblePassword,
+            decoration: InputDecoration(
+              labelText: label,
+              labelStyle: TextStyle(
+                color: tieneError ? AppColors.errorColor : AppColors.secondaryColor,
               ),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(
-                color: tieneError ? AppColors.errorColor : Colors.grey,
-                width: tieneError ? 2 : 1,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
               ),
-            ),
-            prefixIcon: Icon(
-              icon,
-              color: tieneError ? AppColors.errorColor : AppColors.secondaryColor,
-            ),
-            suffixIcon: IconButton(
-              icon: Icon(
-                obscureText ? Icons.visibility_off : Icons.visibility,
-                color: AppColors.secondaryColor,
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide(
+                  color: tieneError ? AppColors.errorColor : AppColors.primaryColor,
+                  width: 2,
+                ),
               ),
-              onPressed: onToggleVisibility,
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide(
+                  color: tieneError ? AppColors.errorColor : Colors.grey,
+                  width: tieneError ? 2 : 1,
+                ),
+              ),
+              prefixIcon: Icon(
+                icon,
+                color: tieneError ? AppColors.errorColor : AppColors.secondaryColor,
+              ),
+              suffixIcon: IconButton(
+                icon: Icon(
+                  obscureText ? Icons.visibility_off : Icons.visibility,
+                  color: AppColors.secondaryColor,
+                ),
+                onPressed: onToggleVisibility,
+              ),
+              contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
             ),
           ),
         ),
@@ -240,34 +397,38 @@ class _LoginScreenState extends State<LoginScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        TextField(
-          controller: controller,
-          obscureText: obscureText,
-          decoration: InputDecoration(
-            labelText: label,
-            labelStyle: TextStyle(
-              color: tieneError ? AppColors.errorColor : AppColors.secondaryColor,
-            ),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(
-                color: tieneError ? AppColors.errorColor : AppColors.primaryColor,
-                width: 2,
+        SizedBox(
+          height: 48,
+          child: TextField(
+            controller: controller,
+            obscureText: obscureText,
+            decoration: InputDecoration(
+              labelText: label,
+              labelStyle: TextStyle(
+                color: tieneError ? AppColors.errorColor : AppColors.secondaryColor,
               ),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(
-                color: tieneError ? AppColors.errorColor : Colors.grey,
-                width: tieneError ? 2 : 1,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
               ),
-            ),
-            prefixIcon: Icon(
-              icon,
-              color: tieneError ? AppColors.errorColor : AppColors.secondaryColor,
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide(
+                  color: tieneError ? AppColors.errorColor : AppColors.primaryColor,
+                  width: 2,
+                ),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide(
+                  color: tieneError ? AppColors.errorColor : Colors.grey,
+                  width: tieneError ? 2 : 1,
+                ),
+              ),
+              prefixIcon: Icon(
+                icon,
+                color: tieneError ? AppColors.errorColor : AppColors.secondaryColor,
+              ),
+              contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
             ),
           ),
         ),
@@ -350,127 +511,145 @@ class _LoginScreenState extends State<LoginScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-                  // Logo
-                  Center(
-                    child: Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.15),
-                            blurRadius: 12,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(20),
-                        child: Image.asset(
-                          'lib/assets/icons/IntelliHomeLogo.png',
-                          height: 160,
-                          width: 160,
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-
-                  // Título
-                  Text(
-                    loc.loginTitle,
-                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.primaryColor,
-                        ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 20),
-
-                  // Campo de usuario
-                  _buildTextField(
-                    controller: _usernameController,
-                    label: loc.username,
-                    error: _errorUsername,
-                    icon: Icons.person,
-                  ),
-                  const SizedBox(height: 15),
-
-                  // Campo de contraseña
-                  _buildPasswordField(
-                    controller: _passwordController,
-                    label: loc.password,
-                    error: _errorPassword,
-                    obscureText: !_mostrarPassword,
-                    onToggleVisibility: () => setState(() => _mostrarPassword = !_mostrarPassword),
-                    icon: Icons.lock,
-                  ),
-                  const SizedBox(height: 15),
-
-                  // Botones de login y registrarse
-                  Row(
-                    children: [
-                      Expanded(
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.primaryColor,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(vertical: 14),
-                          ),
-                          onPressed: _cargando ? null : _handleLogin,
-                          child: _cargando
-                              ? const SizedBox(
-                                  height: 20,
-                                  width: 20,
-                                  child: CircularProgressIndicator(
-                                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                                    strokeWidth: 2,
-                                  ),
-                                )
-                              : Text(loc.loginButton),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: OutlinedButton(
-                          style: OutlinedButton.styleFrom(
-                            backgroundColor: AppColors.primaryColor,  
-                            foregroundColor: Colors.white,
-                            side: BorderSide(color: AppColors.tertiaryColor, width: 2),
-                            padding: const EdgeInsets.symmetric(vertical: 14),
-                          ),
-                          onPressed: () {
-                            Navigator.pushNamed(context, '/register');
-                          },
-                          child: Text(loc.registerButton),
-                        ),
+              // Logo
+              Center(
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.15),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 16),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(20),
+                    child: Image.asset(
+                      'lib/assets/icons/IntelliHomeLogo.png',
+                      height: 130,
+                      width: 130,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
 
-                  // Botón Olvidé la contraseña
-                  TextButton(
-                    onPressed: () {
-                      Navigator.pushNamed(
-                        context,
-                        '/recovery',
-                        arguments: _usernameController.text.trim(),
-                      );
-                    },
-                    child: Text(
-                      loc.forgotPassword,
-                      style: TextStyle(
-                        color: AppColors.primaryColor,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
+              // Título
+              Text(
+                loc.loginTitle,
+                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.primaryColor,
+                    ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 16),
+
+              // Campo de usuario
+              _buildTextField(
+                controller: _usernameController,
+                label: loc.username,
+                error: _errorUsername,
+                icon: Icons.person,
+              ),
+              const SizedBox(height: 10),
+
+              // Campo de contraseña
+              _buildPasswordField(
+                controller: _passwordController,
+                label: loc.password,
+                error: _errorPassword,
+                obscureText: !_mostrarPassword,
+                onToggleVisibility: () => setState(() => _mostrarPassword = !_mostrarPassword),
+                icon: Icons.lock,
+              ),
+              const SizedBox(height: 8),
+
+              // Botón Olvidé la contraseña
+              Align(
+                alignment: Alignment.center,
+                child: TextButton(
+                  onPressed: () {
+                    Navigator.pushNamed(
+                      context,
+                      '/recovery',
+                      arguments: _usernameController.text.trim(),
+                    );
+                  },
+                  style: TextButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 4),
+                  ),
+                  child: Text(
+                    loc.forgotPassword,
+                    style: TextStyle(
+                      color: AppColors.primaryColor,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 0),
+
+              // Botón de huella digital
+              Center(
+                child: IconButton(
+                  icon: const Icon(Icons.fingerprint),
+                  iconSize: 64,
+                  color: AppColors.primaryColor,
+                  onPressed: _handleFingerprintLogin,
+                  tooltip: 'Autenticación biométrica',
+                ),
+              ),
+              const SizedBox(height: 8),
+
+              // Botones de login y registrarse
+              Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primaryColor,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
                       ),
+                      onPressed: _cargando ? null : _handleLogin,
+                      child: _cargando
+                          ? const SizedBox(
+                              height: 18,
+                              width: 18,
+                              child: CircularProgressIndicator(
+                                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                strokeWidth: 2,
+                              ),
+                            )
+                          : Text(loc.loginButton),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: OutlinedButton(
+                      style: OutlinedButton.styleFrom(
+                        backgroundColor: AppColors.primaryColor,  
+                        foregroundColor: Colors.white,
+                        side: BorderSide(color: AppColors.tertiaryColor, width: 2),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                      ),
+                      onPressed: () {
+                        Navigator.pushNamed(context, '/register');
+                      },
+                      child: Text(loc.registerButton),
                     ),
                   ),
                 ],
               ),
-            ),
+            ],
           ),
+        ),
+      ),
     );
   }
 }

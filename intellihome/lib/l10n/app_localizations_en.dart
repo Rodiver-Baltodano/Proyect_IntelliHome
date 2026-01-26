@@ -603,4 +603,70 @@ Thank you for choosing Intelihome. Enjoy your experience on our platform.''';
 
   @override
   String get processing => 'Processing...';
+
+  // Domótica
+
+  @override
+  String get domoticControl => 'Domotics Control';
+  
+  @override
+  String get connectedToRaspberry => 'Connected to Raspberry Pi Pico W';
+  
+  @override
+  String get reconnect => 'Reconnect';
+  
+  @override
+  String get garage => 'Garage';
+  
+  @override
+  String get livingRoom => 'Living Room';
+  
+  @override
+  String get kitchen => 'Kitchen';
+  
+  @override
+  String get bathroom1 => 'Bathroom 1';
+  
+  @override
+  String get bathroom2 => 'Bathroom 2';
+  
+  @override
+  String get bedroom1 => 'Bedroom 1';
+  
+  @override
+  String get bedroom2 => 'Bedroom 2';
+  
+  @override
+  String get bedroom3 => 'Bedroom 3';
+  
+  @override
+  String get turnedOn => 'On';
+  
+  @override
+  String get turnedOff => 'Off';
+
+  //Huella
+
+  @override
+  String get enterUsername => 'Please enter your username';
+
+  @override
+  String get biometricNotSupported =>
+      'This device does not support biometric authentication';
+
+  @override
+  String get biometricReason =>
+      'Authenticate to access IntelliHome';
+
+  @override
+  String get userNotFound => 'User does not exist';
+
+  @override
+  String get userBlocked =>
+      'User is blocked. Please use password recovery.';
+
+  @override
+  String get biometricAuthError =>
+      'Biometric authentication error';
+
 }
