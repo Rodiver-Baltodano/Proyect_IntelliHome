@@ -8,6 +8,7 @@ class Casa {
   final List<String> fotos;
   final String ubicacion;
   final String reglasUso;
+  final String? ownerId;
   final DateTime fechaRegistro;
   final List<int> amenidades; // IDs 1-32
   final List<DateTime> fechasNoDisponibles;
@@ -22,6 +23,7 @@ class Casa {
     required this.fotos,
     required this.ubicacion,
     required this.reglasUso,
+    this.ownerId,
     required this.fechaRegistro,
     required this.amenidades,
     required this.fechasNoDisponibles,
@@ -45,6 +47,7 @@ class Casa {
         }
         return '';
       }(),
+      ownerId: json['ownerId'],
       amenidades: List<int>.from(json['amenidades']),
       fechasNoDisponibles: (json['fechasNoDisponibles'] as List<dynamic>)
           .map((f) => DateTime.parse(f))
@@ -64,6 +67,7 @@ class Casa {
       'fotos': fotos,
       'ubicacion': ubicacion,
       'reglasUso': reglasUso,
+      'ownerId': ownerId,
       'amenidades': amenidades,
       'fechasNoDisponibles':
           fechasNoDisponibles.map((f) => f.toIso8601String()).toList(),

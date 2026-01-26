@@ -20,6 +20,7 @@ class RegistroCasaServicio {
     required String reglasUso,
     required List<int> amenidades,
     required List<DateTime> fechasNoDisponibles,
+    String? ownerId,
 
   }) async {
     // VALIDACIONES
@@ -95,6 +96,7 @@ class RegistroCasaServicio {
       fotos: fotos,
       ubicacion: ubicacion,
       reglasUso: reglasUso,
+      ownerId: ownerId,
       amenidades: amenidades,
       fechaRegistro: DateTime.now(),
       fechasNoDisponibles: fechasNoDisponibles,

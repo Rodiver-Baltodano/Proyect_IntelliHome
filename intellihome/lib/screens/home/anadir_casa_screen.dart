@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:intellihome/config/app_colors.dart';
 import 'package:intellihome/modules/autenticacion/repositories/casa_repositorio_json.dart';
 import 'package:intellihome/modules/autenticacion/services/registro_casa_service.dart';
+import 'package:intellihome/providers/theme_provider.dart';
 import 'package:intellihome/screens/home/amenidades_data.dart';
 import 'package:intellihome/screens/home/amenidades_screen.dart';
 import 'package:intellihome/screens/home/fechas_no_disponibles_screen.dart';
@@ -13,6 +14,7 @@ import 'package:intellihome/screens/home/map_picker_screen.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
+import 'package:provider/provider.dart';
 
 class AnadirCasaScreen extends StatefulWidget {
   const AnadirCasaScreen({super.key});
@@ -212,6 +214,7 @@ class _AnadirCasaScreenState extends State<AnadirCasaScreen> {
   }
 
   Future<void> _registrarCasa() async {
+    final usuario = context.read<ThemeProvider>().usuarioActual;
     final nombre = _nombreController.text.trim();
     final descripcion = _descripcionController.text.trim();
     final reglasUso = _reglasController.text.trim();
@@ -246,6 +249,7 @@ class _AnadirCasaScreenState extends State<AnadirCasaScreen> {
         reglasUso: reglasUso,
         amenidades: amenidades,
         fechasNoDisponibles: fechasNoDisponibles,
+        ownerId: usuario?.id,
       );
 
       if (!mounted) return;

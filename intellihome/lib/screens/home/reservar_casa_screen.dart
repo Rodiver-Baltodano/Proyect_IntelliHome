@@ -4,9 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:intellihome/config/app_colors.dart';
 import 'package:intellihome/modules/autenticacion/models/casa.dart';
+import 'package:intellihome/providers/theme_provider.dart';
 import 'package:intellihome/screens/home/amenidades_data.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:provider/provider.dart';
 
 class ReservarCasaScreen extends StatefulWidget {
   final Casa casa;
@@ -262,10 +264,12 @@ class _ReservarCasaScreenState extends State<ReservarCasaScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final usuario = context.watch<ThemeProvider>().usuarioActual;
     final casa = widget.casa;
     final portada = casa.fotos.isNotEmpty ? casa.fotos.first : null;
     final portadaProvider = _buildImageProvider(portada);
     final ubicacion = _parseUbicacion(casa.ubicacion);
+    final esDueno = usuario != null && casa.ownerId == usuario.id;
 
     return Scaffold(
       appBar: AppBar(
@@ -551,13 +555,15 @@ class _ReservarCasaScreenState extends State<ReservarCasaScreen> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: _rangoSeleccionado == null ? null : () {},
+                onPressed: (esDueno || _rangoSeleccionado == null) ? null : () {},
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primaryColor,
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 14),
                 ),
-                child: const Text('Reservar casa'),
+                child: Text(
+                  esDueno ? 'Eres el dueño de esta casa' : 'Reservar casa',
+                ),
               ),
             ),
           ],

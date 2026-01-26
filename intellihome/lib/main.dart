@@ -38,16 +38,33 @@ void main() async {
 Future<void> _limpiarDatosUsuarios() async {
   try {
     final appDir = await getApplicationDocumentsDirectory();
-    final rutaJson = p.join(appDir.path, 'usuarios_integrado.json');
-    final archivo = File(rutaJson);
+    final rutas = [
+      p.join(appDir.path, 'usuarios_integrado.json'),
+      p.join(appDir.path, 'casas_integrado.json'),
+      p.join(appDir.path, 'reservas_integrado.json'),
+    ];
 
-    print('🔍 [LIMPIEZA] Buscando archivo en: $rutaJson');
+    for (final ruta in rutas) {
+      final archivo = File(ruta);
+      print('🔍 [LIMPIEZA] Buscando archivo en: $ruta');
+      if (await archivo.exists()) {
+        await archivo.delete();
+        print('✅ [LIMPIEZA] Archivo eliminado: $ruta');
+      } else {
+        print('ℹ️ [LIMPIEZA] No existe: $ruta');
+      }
+    }
 
-    if (await archivo.exists()) {
-      await archivo.delete();
-      print('✅ [LIMPIEZA] Archivo de usuarios eliminado exitosamente.');
-    } else {
-      print('ℹ️ [LIMPIEZA] No hay archivo previo de usuarios.');
+    final carpetas = [
+      Directory(p.join(appDir.path, 'profiles')),
+      Directory(p.join(appDir.path, 'casas')),
+    ];
+
+    for (final carpeta in carpetas) {
+      if (await carpeta.exists()) {
+        await carpeta.delete(recursive: true);
+        print('✅ [LIMPIEZA] Carpeta eliminada: ${carpeta.path}');
+      }
     }
   } catch (e) {
     print('❌ [LIMPIEZA] Error al limpiar datos: $e');

@@ -5,10 +5,12 @@ import 'package:intellihome/config/app_colors.dart';
 import 'package:intellihome/l10n/app_localizations.dart';
 import 'package:intellihome/modules/autenticacion/models/casa.dart';
 import 'package:intellihome/modules/autenticacion/repositories/casa_repositorio_json.dart';
+import 'package:intellihome/providers/theme_provider.dart';
 import 'package:intellihome/screens/home/domotic_screen.dart';
 import 'package:intellihome/screens/home/reservar_casa_screen.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
+import 'package:provider/provider.dart';
 
 class HomeScreen extends StatefulWidget {
   final String username;
@@ -61,8 +63,41 @@ class _HomeScreenState extends State<HomeScreen> {
     return null;
   }
 
+  ImageProvider? _buildImageProvider(String? ruta) {
+    if (ruta == null || ruta.isEmpty) return null;
+    if (ruta.startsWith('http')) {
+      return NetworkImage(ruta);
+    }
+    final file = File(ruta);
+    if (file.existsSync()) {
+      return FileImage(file);
+    }
+    return null;
+  }
+
+  _EstiloDisplay? _estiloConEmoji(String estilo, BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    switch (estilo) {
+      case 'aventurero':
+        return _EstiloDisplay(label: l10n.adventurous, emoji: '🚀');
+      case 'minimalista':
+        return _EstiloDisplay(label: l10n.minimalist, emoji: '✨');
+      case 'contemporaneo':
+        return _EstiloDisplay(label: l10n.contemporary, emoji: '🖼️');
+      default:
+        return null;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final themeProvider = context.watch<ThemeProvider>();
+    final usuario = themeProvider.usuarioActual;
+    final nombreUsuario = usuario?.username ?? widget.username;
+    final fotoPerfil = usuario?.fotoPerfil;
+    final estilo = usuario?.estilo ?? themeProvider.currentStyle.name;
+    final estiloDisplay = _estiloConEmoji(estilo, context);
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('IntelliHome'),
@@ -79,7 +114,6 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   Text(
                     'IntelliHome',
@@ -89,10 +123,52 @@ class _HomeScreenState extends State<HomeScreen> {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
+                  const SizedBox(height: 12),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      CircleAvatar(
+                        radius: 36,
+                        backgroundColor: Colors.white.withOpacity(0.3),
+                        backgroundImage: _buildImageProvider(fotoPerfil),
+                        child: (fotoPerfil == null || fotoPerfil.isEmpty)
+                            ? const Icon(Icons.person, size: 34, color: Colors.white)
+                            : null,
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              nombreUsuario,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 4),
+                            if (estiloDisplay != null)
+                              Text(
+                                '${estiloDisplay.emoji} ${estiloDisplay.label}',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 12,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ],
               ),
             ),
             // Opción de Control Domótico
+
             ListTile(
               leading: const Icon(Icons.home_outlined),
               title: Text(AppLocalizations.of(context).domoticControl),
@@ -356,4 +432,11 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
+}
+
+class _EstiloDisplay {
+  final String label;
+  final String emoji;
+
+  _EstiloDisplay({required this.label, required this.emoji});
 }
