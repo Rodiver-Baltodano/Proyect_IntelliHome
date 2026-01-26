@@ -150,6 +150,7 @@ class _ReservarConfirmacionScreenState
     final service = ReservaService(
       repositorio: reservasRepo,
       usuarioRepositorio: usuariosRepo,
+      casaRepositorio: casasRepo,
     );
 
     final resultado = await service.createReservation(

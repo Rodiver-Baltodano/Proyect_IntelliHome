@@ -142,7 +142,7 @@ class WhatsAppService {
     required String telefono,
     required String nombreUsuario,
     required String reservationId,
-    required String propertyId,
+    required String propertyName,
     required DateTime startDate,
     required DateTime endDate,
   }) async {
@@ -156,10 +156,10 @@ Hola $nombreUsuario,
 ✅ Tu reserva ha sido confirmada exitosamente.
 
 📋 *Detalles:*
-• Reserva ID: $reservationId
-• Propiedad: $propertyId
-• Check-in: $inicio
-• Check-out: $fin
+• Número de Reserva: $reservationId
+• Propiedad: $propertyName
+• Check-in: $inicio a las 3:00 PM
+• Check-out: $fin a las 11:00 AM
 
 ¡Esperamos que disfrutes tu estadía!
 

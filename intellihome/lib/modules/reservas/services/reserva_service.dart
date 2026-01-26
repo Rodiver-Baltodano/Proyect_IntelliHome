@@ -2,6 +2,7 @@ import 'package:intellihome/modules/reservas/models/reserva.dart';
 import 'package:intellihome/modules/reservas/models/resultado_reserva.dart';
 import 'package:intellihome/modules/reservas/repositories/reserva_repository.dart';
 import 'package:intellihome/modules/autenticacion/repositories/usuario_repository.dart';
+import 'package:intellihome/modules/autenticacion/repositories/casa_repositorio_json.dart';
 import 'package:intellihome/modules/reservas/services/whatsapp_service.dart';
 import 'package:uuid/uuid.dart';
 
@@ -9,15 +10,18 @@ import 'package:uuid/uuid.dart';
 class ReservaService {
   final ReservaRepositorioJson _repositorio;
   final UsuarioRepositorioJson? _usuarioRepositorio;
+  final CasaRepositorioJson? _casaRepositorio;
   final WhatsAppService _whatsappService;
   final _uuid = const Uuid();
 
   ReservaService({
     required ReservaRepositorioJson repositorio,
     UsuarioRepositorioJson? usuarioRepositorio,
+    CasaRepositorioJson? casaRepositorio,
     WhatsAppService? whatsappService,
   })  : _repositorio = repositorio,
         _usuarioRepositorio = usuarioRepositorio,
+        _casaRepositorio = casaRepositorio,
         _whatsappService = whatsappService ?? WhatsAppService();
 
   ///  Crear una reserva válida según fechas
@@ -297,11 +301,14 @@ class ReservaService {
           print('📱 [WhatsApp] Enviando confirmación a +$telefono');
           
           // Enviar mensaje usando Twilio API
+          final casaNombre = await _casaRepositorio?.buscarPorId(propertyId);
+          final nombrePropiedad = casaNombre?.nombre ?? propertyId;
+
           final resultado = await _whatsappService.enviarConfirmacionReserva(
             telefono: telefono,
             nombreUsuario: nombre,
             reservationId: reservationId,
-            propertyId: propertyId,
+            propertyName: nombrePropiedad,
             startDate: startDate,
             endDate: endDate,
           );

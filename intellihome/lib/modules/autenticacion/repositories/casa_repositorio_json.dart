@@ -18,6 +18,15 @@ class CasaRepositorioJson {
     return data.map((e) => Casa.fromJson(e)).toList();
   }
 
+  Future<Casa?> buscarPorId(String casaId) async {
+    final casas = await cargarCasas();
+    try {
+      return casas.firstWhere((c) => c.id == casaId);
+    } catch (_) {
+      return null;
+    }
+  }
+
   Future<void> guardarCasa(Casa casa) async {
     final casas = await cargarCasas();
     casas.add(casa);
