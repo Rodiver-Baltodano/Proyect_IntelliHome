@@ -7,7 +7,7 @@ class Casa {
   final String descripcion;
   final List<String> fotos;
   final String ubicacion;
-  final List<String> reglasUso;
+  final String reglasUso;
   final DateTime fechaRegistro;
   final List<int> amenidades; // IDs 1-32
   final List<DateTime> fechasNoDisponibles;
@@ -37,7 +37,14 @@ class Casa {
       descripcion: json['descripcion'],
       fotos: List<String>.from(json['fotos']),
       ubicacion: json['ubicacion'],
-      reglasUso: List<String>.from(json['reglasUso']),
+      reglasUso: () {
+        final raw = json['reglasUso'];
+        if (raw is String) return raw;
+        if (raw is List) {
+          return raw.map((e) => e.toString()).join('\n');
+        }
+        return '';
+      }(),
       amenidades: List<int>.from(json['amenidades']),
       fechasNoDisponibles: (json['fechasNoDisponibles'] as List<dynamic>)
           .map((f) => DateTime.parse(f))

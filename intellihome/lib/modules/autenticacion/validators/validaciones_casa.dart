@@ -22,10 +22,9 @@ class ValidacionesCasa {
     return amenidades.every((id) => id >= 1 && id <= 32);
 }
 
-  static bool reglasUsoValidas(List<String> reglas) {
-    return reglas.isNotEmpty &&
-        reglas.every((r) => r.trim().isNotEmpty);
-}
+  static bool reglasUsoValidas(String reglas) {
+    return reglas.trim().isNotEmpty;
+  }
 
   static bool fechasNoDisponiblesValidas(List<DateTime> fechas) {
     // Puede estar vacía, pero si viene debe ser futura o actual

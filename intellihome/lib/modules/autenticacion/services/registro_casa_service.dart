@@ -16,7 +16,7 @@ class RegistroCasaServicio {
     required String descripcion,
     required List<String> fotos,
     required String ubicacion,
-    required List<String> reglasUso,
+    required String reglasUso,
     required List<int> amenidades,
     required List<DateTime> fechasNoDisponibles,
 
