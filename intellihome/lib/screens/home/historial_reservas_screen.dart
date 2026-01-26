@@ -60,6 +60,13 @@ class _HistorialReservasScreenState extends State<HistorialReservasScreen> {
     return status == ReservaStatus.active;
   }
 
+  String _formatDate(DateTime date) {
+    final day = date.day.toString().padLeft(2, '0');
+    final month = date.month.toString().padLeft(2, '0');
+    final year = date.year.toString();
+    return '$day/$month/$year';
+  }
+
   ImageProvider? _buildImageProvider(String? ruta) {
     if (ruta == null || ruta.isEmpty) return null;
     if (ruta.startsWith('http')) return NetworkImage(ruta);
@@ -141,13 +148,12 @@ class _HistorialReservasScreenState extends State<HistorialReservasScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            casa?.nombre ?? 'Casa desconocida',
+                          _MarqueeText(
+                            text: casa?.nombre ?? 'Casa desconocida',
                             style: const TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w600,
                             ),
-                            overflow: TextOverflow.ellipsis,
                           ),
                           const SizedBox(height: 6),
                           Text(
@@ -155,6 +161,14 @@ class _HistorialReservasScreenState extends State<HistorialReservasScreen> {
                             style: const TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            '${_formatDate(item.reserva.startDate)} - ${_formatDate(item.reserva.endDate)}',
+                            style: const TextStyle(
+                              fontSize: 11,
+                              color: AppColors.textSecondaryColor,
                             ),
                           ),
                         ],
@@ -195,4 +209,99 @@ class _ReservaItem {
     required this.reserva,
     required this.casa,
   });
+}
+
+class _MarqueeText extends StatefulWidget {
+  final String text;
+  final TextStyle style;
+  final Duration pause;
+
+  const _MarqueeText({
+    required this.text,
+    required this.style,
+    this.pause = const Duration(milliseconds: 800),
+  });
+
+  @override
+  State<_MarqueeText> createState() => _MarqueeTextState();
+}
+
+class _MarqueeTextState extends State<_MarqueeText> {
+  final ScrollController _controller = ScrollController();
+  bool _running = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _start());
+  }
+
+  @override
+  void didUpdateWidget(covariant _MarqueeText oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.text != widget.text) {
+      _start(reset: true);
+    }
+  }
+
+  Future<void> _start({bool reset = false}) async {
+    if (!mounted) return;
+    if (_running) return;
+    _running = true;
+
+    if (reset && _controller.hasClients) {
+      _controller.jumpTo(0);
+    }
+
+    await Future.delayed(const Duration(milliseconds: 200));
+    if (!mounted || !_controller.hasClients) {
+      _running = false;
+      return;
+    }
+
+    final maxScroll = _controller.position.maxScrollExtent;
+    if (maxScroll <= 0) {
+      _running = false;
+      return;
+    }
+
+    while (mounted && _controller.hasClients) {
+      final duration = Duration(milliseconds: (maxScroll * 20).toInt().clamp(800, 8000));
+      await _controller.animateTo(
+        maxScroll,
+        duration: duration,
+        curve: Curves.linear,
+      );
+      if (!mounted || !_controller.hasClients) break;
+      await Future.delayed(widget.pause);
+      _controller.jumpTo(0);
+      await Future.delayed(widget.pause);
+    }
+
+    _running = false;
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: widget.style.fontSize != null ? widget.style.fontSize! + 4 : 18,
+      child: SingleChildScrollView(
+        controller: _controller,
+        scrollDirection: Axis.horizontal,
+        physics: const NeverScrollableScrollPhysics(),
+        child: Text(
+          widget.text,
+          style: widget.style,
+          maxLines: 1,
+          overflow: TextOverflow.visible,
+        ),
+      ),
+    );
+  }
 }
