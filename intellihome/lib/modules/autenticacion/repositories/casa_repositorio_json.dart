@@ -30,4 +30,22 @@ class CasaRepositorioJson {
 
     await archivo.writeAsString(contenido);
   }
+
+  Future<void> actualizarCasa(Casa casaActualizada) async {
+    final casas = await cargarCasas();
+    final index = casas.indexWhere((c) => c.id == casaActualizada.id);
+    if (index == -1) {
+      throw StateError('No se encontró la casa con id=${casaActualizada.id}');
+    }
+
+    casas[index] = casaActualizada;
+
+    final archivo = File(rutaArchivo);
+    await archivo.parent.create(recursive: true);
+
+    final contenido =
+        const JsonEncoder.withIndent('  ').convert(casas.map((c) => c.toJson()).toList());
+
+    await archivo.writeAsString(contenido);
+  }
 }

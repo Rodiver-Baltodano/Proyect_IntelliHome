@@ -52,6 +52,31 @@ class _ReservarCasaScreenState extends State<ReservarCasaScreen> {
     return formatter.format(precio);
   }
 
+  String _mesAbreviado(DateTime date) {
+    final label = DateFormat('MMM', 'es').format(date).toLowerCase();
+    return label.endsWith('.') ? label : '$label.';
+  }
+
+  List<MapEntry<DateTime, List<int>>> _agruparFechasNoDisponibles(
+    List<DateTime> fechas,
+  ) {
+    final normalizadas = fechas
+        .map((d) => DateTime(d.year, d.month, d.day))
+        .toList()
+      ..sort();
+
+    final agrupadas = <DateTime, List<int>>{};
+    for (final fecha in normalizadas) {
+      final key = DateTime(fecha.year, fecha.month);
+      final dias = agrupadas.putIfAbsent(key, () => []);
+      if (!dias.contains(fecha.day)) {
+        dias.add(fecha.day);
+      }
+    }
+
+    return agrupadas.entries.toList();
+  }
+
   LatLng? _parseUbicacion(String raw) {
     final trimmed = raw.trim();
     if (trimmed.isEmpty) return null;
@@ -594,27 +619,57 @@ class _ReservarCasaScreenState extends State<ReservarCasaScreen> {
             ),
             if (casa.fechasNoDisponibles.isNotEmpty) ...[
               const SizedBox(height: 8),
-              Wrap(
-                spacing: 8,
-                runSpacing: 6,
-                children: casa.fechasNoDisponibles
+              Column(
+                children: _agruparFechasNoDisponibles(casa.fechasNoDisponibles)
                     .map(
-                      (date) => Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.primaryColor.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: AppColors.primaryColor),
-                        ),
-                        child: Text(
-                          _formatDate(date),
-                          style: const TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500,
-                          ),
+                      (entry) => Padding(
+                        padding: const EdgeInsets.only(bottom: 6),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            SizedBox(
+                              width: 48,
+                              child: Text(
+                                _mesAbreviado(entry.key),
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                            Expanded(
+                              child: Wrap(
+                                spacing: 6,
+                                runSpacing: 4,
+                                children: entry.value
+                                    .map(
+                                      (day) => Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 8,
+                                          vertical: 3,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: AppColors.primaryColor
+                                              .withOpacity(0.1),
+                                          borderRadius:
+                                              BorderRadius.circular(8),
+                                          border: Border.all(
+                                            color: AppColors.primaryColor,
+                                          ),
+                                        ),
+                                        child: Text(
+                                          day.toString(),
+                                          style: const TextStyle(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                      ),
+                                    )
+                                    .toList(),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     )

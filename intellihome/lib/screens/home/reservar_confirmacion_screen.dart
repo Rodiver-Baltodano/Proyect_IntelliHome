@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:intellihome/config/app_colors.dart';
 import 'package:intellihome/modules/autenticacion/models/casa.dart';
 import 'package:intellihome/modules/autenticacion/models/usuario.dart';
+import 'package:intellihome/modules/autenticacion/repositories/casa_repositorio_json.dart';
 import 'package:intellihome/modules/autenticacion/repositories/usuario_repository.dart';
 import 'package:intellihome/modules/reservas/repositories/reserva_repository.dart';
 import 'package:intellihome/modules/reservas/services/reserva_service.dart';
@@ -141,9 +142,11 @@ class _ReservarConfirmacionScreenState
     final appDir = await getApplicationDocumentsDirectory();
     final reservasPath = p.join(appDir.path, 'reservas_integrado.json');
     final usuariosPath = p.join(appDir.path, 'usuarios_integrado.json');
+    final casasPath = p.join(appDir.path, 'casas_integrado.json');
 
     final reservasRepo = ReservaRepositorioJson(rutaArchivo: reservasPath);
     final usuariosRepo = UsuarioRepositorioJson(rutaArchivo: usuariosPath);
+    final casasRepo = CasaRepositorioJson(rutaArchivo: casasPath);
     final service = ReservaService(
       repositorio: reservasRepo,
       usuarioRepositorio: usuariosRepo,
@@ -159,6 +162,30 @@ class _ReservarConfirmacionScreenState
     if (!mounted) return;
 
     if (resultado.exitoso) {
+      final fechasActualizadas = _buildFechasNoDisponibles(
+        widget.casa.fechasNoDisponibles,
+        widget.rango.start,
+        widget.rango.end,
+      );
+
+      await casasRepo.actualizarCasa(
+        Casa(
+          id: widget.casa.id,
+          nombre: widget.casa.nombre,
+          precioPorNoche: widget.casa.precioPorNoche,
+          maxPersonas: widget.casa.maxPersonas,
+          habitaciones: widget.casa.habitaciones,
+          descripcion: widget.casa.descripcion,
+          fotos: widget.casa.fotos,
+          ubicacion: widget.casa.ubicacion,
+          reglasUso: widget.casa.reglasUso,
+          ownerId: widget.casa.ownerId,
+          fechaRegistro: widget.casa.fechaRegistro,
+          amenidades: widget.casa.amenidades,
+          fechasNoDisponibles: fechasActualizadas,
+        ),
+      );
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
@@ -168,7 +195,7 @@ class _ReservarConfirmacionScreenState
           backgroundColor: AppColors.successColor,
         ),
       );
-      Navigator.pop(context, true);
+      Navigator.of(context).popUntil((route) => route.isFirst);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -180,6 +207,27 @@ class _ReservarConfirmacionScreenState
         ),
       );
     }
+  }
+
+  List<DateTime> _buildFechasNoDisponibles(
+    List<DateTime> existentes,
+    DateTime inicio,
+    DateTime fin,
+  ) {
+    final set = <String>{
+      for (final fecha in existentes)
+        DateTime(fecha.year, fecha.month, fecha.day).toIso8601String(),
+    };
+
+    for (DateTime d = DateTime(inicio.year, inicio.month, inicio.day);
+        !d.isAfter(fin);
+        d = d.add(const Duration(days: 1))) {
+      set.add(d.toIso8601String());
+    }
+
+    final result = set.map(DateTime.parse).toList();
+    result.sort();
+    return result;
   }
 
   @override
