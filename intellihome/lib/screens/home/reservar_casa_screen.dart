@@ -8,13 +8,20 @@ import 'package:intellihome/screens/home/amenidades_data.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-class ReservarCasaScreen extends StatelessWidget {
+class ReservarCasaScreen extends StatefulWidget {
   final Casa casa;
 
   const ReservarCasaScreen({
     super.key,
     required this.casa,
   });
+
+  @override
+  State<ReservarCasaScreen> createState() => _ReservarCasaScreenState();
+}
+
+class _ReservarCasaScreenState extends State<ReservarCasaScreen> {
+  DateTimeRange? _rangoSeleccionado;
 
   ImageProvider? _buildImageProvider(String? ruta) {
     if (ruta == null || ruta.isEmpty) return null;
@@ -171,8 +178,91 @@ class ReservarCasaScreen extends StatelessWidget {
     );
   }
 
+  Future<void> _seleccionarRangoFechas() async {
+    final bloqueadas = widget.casa.fechasNoDisponibles
+        .map((d) => DateTime(d.year, d.month, d.day))
+        .toSet();
+
+    final hoy = DateTime.now();
+    final inicio = DateTime(hoy.year, hoy.month, hoy.day);
+
+    final seleccionado = await showDateRangePicker(
+      context: context,
+      firstDate: inicio,
+      lastDate: inicio.add(const Duration(days: 365)),
+      saveText: 'Seleccionar',
+      helpText: 'Seleccionar fechas',
+      builder: (context, child) {
+        final theme = Theme.of(context);
+        return Theme(
+          data: theme.copyWith(
+            datePickerTheme: DatePickerThemeData(
+              dayForegroundColor: WidgetStateProperty.resolveWith((states) {
+                if (states.contains(WidgetState.disabled)) {
+                  return AppColors.errorColor;
+                }
+                return null;
+              }),
+              dayBackgroundColor: WidgetStateProperty.resolveWith((states) {
+                if (states.contains(WidgetState.disabled)) {
+                  return AppColors.errorColor.withOpacity(0.08);
+                }
+                return null;
+              }),
+            ),
+          ),
+          child: child!,
+        );
+      },
+      selectableDayPredicate: (day, _, __) {
+        final normalized = DateTime(day.year, day.month, day.day);
+        return !bloqueadas.contains(normalized);
+      },
+    );
+
+    if (seleccionado == null) return;
+    final inicioSel = DateTime(
+      seleccionado.start.year,
+      seleccionado.start.month,
+      seleccionado.start.day,
+    );
+    final finSel = DateTime(
+      seleccionado.end.year,
+      seleccionado.end.month,
+      seleccionado.end.day,
+    );
+
+    bool hayBloqueadas = false;
+    for (DateTime d = inicioSel;
+        !d.isAfter(finSel);
+        d = d.add(const Duration(days: 1))) {
+      if (bloqueadas.contains(d)) {
+        hayBloqueadas = true;
+        break;
+      }
+    }
+
+    if (hayBloqueadas) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'El rango seleccionado incluye fechas no disponibles.',
+            style: TextStyle(color: Colors.white),
+          ),
+          backgroundColor: AppColors.errorColor,
+        ),
+      );
+      return;
+    }
+    setState(() {
+      _rangoSeleccionado = seleccionado;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    final casa = widget.casa;
     final portada = casa.fotos.isNotEmpty ? casa.fotos.first : null;
     final portadaProvider = _buildImageProvider(portada);
     final ubicacion = _parseUbicacion(casa.ubicacion);
@@ -402,7 +492,7 @@ class ReservarCasaScreen extends StatelessWidget {
             const SizedBox(height: 10),
             _detalleItem(
               icon: Icons.calendar_today,
-              label: 'Disponibilidad',
+              label: 'No disponible estos días',
               value: casa.fechasNoDisponibles.isEmpty
                   ? 'Sin fechas bloqueadas'
                   : '',
@@ -436,11 +526,32 @@ class ReservarCasaScreen extends StatelessWidget {
                     .toList(),
               ),
             ],
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: _seleccionarRangoFechas,
+                icon: const Icon(Icons.date_range),
+                label: const Text('Seleccionar fechas'),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: AppColors.primaryColor,
+                  side: BorderSide(color: AppColors.primaryColor),
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                ),
+              ),
+            ),
+            if (_rangoSeleccionado != null) ...[
+              const SizedBox(height: 8),
+              Text(
+                'Estadía: ${_formatDate(_rangoSeleccionado!.start)} - ${_formatDate(_rangoSeleccionado!.end)}',
+                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+              ),
+            ],
             const SizedBox(height: 20),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: () {},
+                onPressed: _rangoSeleccionado == null ? null : () {},
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primaryColor,
                   foregroundColor: Colors.white,
