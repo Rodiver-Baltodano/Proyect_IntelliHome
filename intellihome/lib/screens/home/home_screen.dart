@@ -31,6 +31,11 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final TextEditingController _searchController = TextEditingController();
   final Map<String, int> _imageIndexByCasa = {};
+  bool _mostrarFiltros = false;
+  bool _cercaDeMi = false;
+  double _cuartos = 1;
+  double _personas = 1;
+  RangeValues _precioRango = const RangeValues(0, 100000);
 
   @override
   void initState() {
@@ -370,7 +375,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   height: 48,
                   width: 48,
                   child: OutlinedButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      setState(() {
+                        _mostrarFiltros = !_mostrarFiltros;
+                      });
+                    },
                     style: OutlinedButton.styleFrom(
                       padding: EdgeInsets.zero,
                       side: BorderSide(color: AppColors.primaryColor),
@@ -381,6 +390,170 @@ class _HomeScreenState extends State<HomeScreen> {
               ],
             ),
           ),
+          if (_mostrarFiltros)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.06),
+                      blurRadius: 8,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Personaliza tu búsqueda',
+                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+                    ),
+                    const SizedBox(height: 10),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.place_outlined,
+                          size: 16,
+                          color: AppColors.primaryColor,
+                        ),
+                        const SizedBox(width: 6),
+                        const Text(
+                          'Ubicación',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                    CheckboxListTile(
+                      contentPadding: EdgeInsets.zero,
+                      dense: true,
+                      value: _cercaDeMi,
+                      onChanged: (value) {
+                        setState(() {
+                          _cercaDeMi = value ?? false;
+                        });
+                      },
+                      title: const Text('Lugares cercanos a mi'),
+                      controlAffinity: ListTileControlAffinity.leading,
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.bed_outlined,
+                          size: 16,
+                          color: AppColors.primaryColor,
+                        ),
+                        const SizedBox(width: 6),
+                        const Text(
+                          'Cantidad de cuartos',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                    Slider(
+                      value: _cuartos,
+                      min: 1,
+                      max: 8,
+                      divisions: 7,
+                      label: _cuartos.round().toString(),
+                      onChanged: (value) {
+                        setState(() {
+                          _cuartos = value;
+                        });
+                      },
+                    ),
+                    Text(
+                      '${_cuartos.round()} cuartos',
+                      style: const TextStyle(fontSize: 12),
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.people_outline,
+                          size: 16,
+                          color: AppColors.primaryColor,
+                        ),
+                        const SizedBox(width: 6),
+                        const Text(
+                          'Cantidad de personas',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                    Slider(
+                      value: _personas,
+                      min: 1,
+                      max: 16,
+                      divisions: 15,
+                      label: _personas.round().toString(),
+                      onChanged: (value) {
+                        setState(() {
+                          _personas = value;
+                        });
+                      },
+                    ),
+                    Text(
+                      '${_personas.round()} personas',
+                      style: const TextStyle(fontSize: 12),
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.attach_money,
+                          size: 16,
+                          color: AppColors.primaryColor,
+                        ),
+                        const SizedBox(width: 6),
+                        const Text(
+                          'Precio por noche',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                    RangeSlider(
+                      values: _precioRango,
+                      min: 0,
+                      max: 100000,
+                      divisions: 20,
+                      labels: RangeLabels(
+                        '₵ ${_formatPrecio(_precioRango.start)}',
+                        '₵ ${_formatPrecio(_precioRango.end)}',
+                      ),
+                      onChanged: (values) {
+                        setState(() {
+                          _precioRango = values;
+                        });
+                      },
+                    ),
+                    Text(
+                      '₵ ${_formatPrecio(_precioRango.start)} - ₵ ${_formatPrecio(_precioRango.end)}',
+                      style: const TextStyle(fontSize: 12),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           Expanded(
             child: FutureBuilder<List<Casa>>(
               future: _cargarCasas(),
