@@ -5,6 +5,7 @@ import 'package:intellihome/config/app_colors.dart';
 import 'package:intellihome/l10n/app_localizations.dart';
 import 'package:intellihome/modules/autenticacion/models/casa.dart';
 import 'package:intellihome/modules/autenticacion/repositories/casa_repositorio_json.dart';
+import 'package:intellihome/modules/reservas/services/reserva_sync_service.dart';
 import 'package:intellihome/providers/theme_provider.dart';
 import 'package:intellihome/screens/home/domotic_screen.dart';
 import 'package:intellihome/screens/home/historial_reservas_screen.dart';
@@ -32,6 +33,12 @@ class _HomeScreenState extends State<HomeScreen> {
   final Map<String, int> _imageIndexByCasa = {};
 
   @override
+  void initState() {
+    super.initState();
+    _activarReservasPendientes();
+  }
+
+  @override
   void dispose() {
     _searchController.dispose();
     super.dispose();
@@ -42,6 +49,10 @@ class _HomeScreenState extends State<HomeScreen> {
     final rutaJson = p.join(appDir.path, 'casas_integrado.json');
     final repo = CasaRepositorioJson(rutaArchivo: rutaJson);
     return repo.cargarCasas();
+  }
+
+  Future<void> _activarReservasPendientes() async {
+    await ReservaSyncService().activarReservasPendientesHoy();
   }
 
   void _toggleImage(Casa casa) {

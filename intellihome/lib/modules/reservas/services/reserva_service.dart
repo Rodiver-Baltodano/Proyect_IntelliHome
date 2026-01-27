@@ -62,7 +62,10 @@ class ReservaService {
         );
       }
 
-      if (startDate.isBefore(DateTime.now())) {
+      final hoy = DateTime.now();
+      final hoySinHora = DateTime(hoy.year, hoy.month, hoy.day);
+      final inicioSinHora = DateTime(startDate.year, startDate.month, startDate.day);
+      if (inicioSinHora.isBefore(hoySinHora)) {
         return ResultadoReserva.fallo(
           mensaje: 'La fecha de inicio no puede ser en el pasado',
           codigoError: 'PAST_DATE',
