@@ -2,12 +2,21 @@ import 'package:flutter/material.dart';
 import 'dart:io';
 
 import 'package:intellihome/config/app_colors.dart';
-import 'package:intellihome/providers/theme_provider.dart';
 import 'package:intellihome/l10n/app_localizations.dart';
+import 'package:intellihome/modules/autenticacion/models/casa.dart';
+import 'package:intellihome/modules/autenticacion/repositories/casa_repositorio_json.dart';
+import 'package:intellihome/modules/reservas/services/reserva_sync_service.dart';
+import 'package:intellihome/providers/theme_provider.dart';
 import 'package:intellihome/screens/home/domotic_screen.dart';
+import 'package:intellihome/screens/home/historial_reservas_screen.dart';
+import 'package:intellihome/screens/home/mis_casas_screen.dart';
+import 'package:intellihome/screens/home/reservar_casa_screen.dart';
+import 'package:intl/intl.dart';
+import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   final String username;
 
   const HomeScreen({
@@ -16,10 +25,153 @@ class HomeScreen extends StatelessWidget {
   });
 
   @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  final TextEditingController _searchController = TextEditingController();
+  final Map<String, int> _imageIndexByCasa = {};
+  bool _mostrarFiltros = false;
+  bool _cercaDeMi = false;
+  double _cuartos = 1;
+  double _personas = 1;
+  RangeValues _precioRango = const RangeValues(0, 100000);
+
+  @override
+  void initState() {
+    super.initState();
+    _activarReservasPendientes();
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  Future<List<Casa>> _cargarCasas() async {
+    final appDir = await getApplicationDocumentsDirectory();
+    final rutaJson = p.join(appDir.path, 'casas_integrado.json');
+    final repo = CasaRepositorioJson(rutaArchivo: rutaJson);
+    return repo.cargarCasas();
+  }
+
+  Future<void> _activarReservasPendientes() async {
+    await ReservaSyncService().activarReservasPendientesHoy();
+  }
+
+  void _toggleImage(Casa casa) {
+    final total = casa.fotos.length;
+    if (total <= 1) return;
+    final current = _imageIndexByCasa[casa.id] ?? 0;
+    final next = (current + 1) % total;
+    setState(() {
+      _imageIndexByCasa[casa.id] = next;
+    });
+  }
+
+  ImageProvider? _buildCasaImage(String? ruta) {
+    if (ruta == null || ruta.isEmpty) return null;
+    if (ruta.startsWith('http')) {
+      return NetworkImage(ruta);
+    }
+    final file = File(ruta);
+    if (file.existsSync()) {
+      return FileImage(file);
+    }
+    return null;
+  }
+
+  ImageProvider? _buildImageProvider(String? ruta) {
+    if (ruta == null || ruta.isEmpty) return null;
+    if (ruta.startsWith('http')) {
+      return NetworkImage(ruta);
+    }
+    final file = File(ruta);
+    if (file.existsSync()) {
+      return FileImage(file);
+    }
+    return null;
+  }
+
+  String _formatPrecio(double precio) {
+    final formatter = NumberFormat('#,##0', 'en_US');
+    return formatter.format(precio);
+  }
+
+  String _normalizeText(String value) {
+    final lower = value.toLowerCase().trim();
+    const accents = 'áéíóúüñ';
+    const replacements = 'aeiouun';
+    final buffer = StringBuffer();
+    for (final rune in lower.runes) {
+      final char = String.fromCharCode(rune);
+      final idx = accents.indexOf(char);
+      buffer.write(idx >= 0 ? replacements[idx] : char);
+    }
+    return buffer.toString();
+  }
+
+  bool _matchesQuery(String titulo, String query) {
+    final normalizedTitle = _normalizeText(titulo);
+    final normalizedQuery = _normalizeText(query);
+
+    if (normalizedQuery.isEmpty) return true;
+    if (normalizedTitle.contains(normalizedQuery)) return true;
+
+    final titleTokens = normalizedTitle.split(RegExp(r'\s+'));
+    final queryTokens = normalizedQuery.split(RegExp(r'\s+'));
+
+    final allTokensMatch = queryTokens.every(
+      (token) => titleTokens.any((t) => t.startsWith(token)),
+    );
+    if (allTokensMatch) return true;
+
+    return _levenshteinDistance(normalizedTitle, normalizedQuery) <= 2;
+  }
+
+  int _levenshteinDistance(String s, String t) {
+    if (s == t) return 0;
+    if (s.isEmpty) return t.length;
+    if (t.isEmpty) return s.length;
+
+    final rows = List<int>.generate(t.length + 1, (i) => i);
+    for (var i = 0; i < s.length; i++) {
+      var prev = i + 1;
+      for (var j = 0; j < t.length; j++) {
+        final current = rows[j + 1];
+        final cost = s[i] == t[j] ? 0 : 1;
+        rows[j + 1] = [
+          rows[j + 1] + 1,
+          prev + 1,
+          rows[j] + cost,
+        ].reduce((a, b) => a < b ? a : b);
+        prev = current;
+      }
+      rows[0] = i + 1;
+    }
+    return rows[t.length];
+  }
+
+  _EstiloDisplay? _estiloConEmoji(String estilo, BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    switch (estilo) {
+      case 'aventurero':
+        return _EstiloDisplay(label: l10n.adventurous, emoji: '🚀');
+      case 'minimalista':
+        return _EstiloDisplay(label: l10n.minimalist, emoji: '✨');
+      case 'contemporaneo':
+        return _EstiloDisplay(label: l10n.contemporary, emoji: '🖼️');
+      default:
+        return null;
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final themeProvider = context.watch<ThemeProvider>();
     final usuario = themeProvider.usuarioActual;
-    final nombreUsuario = usuario?.username ?? username;
+    final nombreUsuario = usuario?.username ?? widget.username;
     final fotoPerfil = usuario?.fotoPerfil;
     final estilo = usuario?.estilo ?? themeProvider.currentStyle.name;
     final estiloDisplay = _estiloConEmoji(estilo, context);
@@ -37,32 +189,67 @@ class HomeScreen extends StatelessWidget {
             DrawerHeader(
               decoration: BoxDecoration(
                 color: AppColors.primaryColor,
+                border: const Border(
+                  bottom: BorderSide(color: Colors.transparent, width: 0),
+                ),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  CircleAvatar(
-                    radius: 32,
-                    backgroundColor: Colors.white.withOpacity(0.3),
-                    backgroundImage: _buildImageProvider(fotoPerfil),
-                    child: (fotoPerfil == null || fotoPerfil.isEmpty)
-                        ? const Icon(Icons.person, size: 32, color: Colors.white)
-                        : null,
-                  ),
-                  const SizedBox(height: 12),
                   Text(
-                    nombreUsuario,
+                    'IntelliHome',
                     style: const TextStyle(
                       color: Colors.white,
-                      fontSize: 18,
+                      fontSize: 20,
                       fontWeight: FontWeight.bold,
                     ),
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      CircleAvatar(
+                        radius: 44,
+                        backgroundColor: Colors.white.withOpacity(0.3),
+                        backgroundImage: _buildImageProvider(fotoPerfil),
+                        child: (fotoPerfil == null || fotoPerfil.isEmpty)
+                            ? const Icon(Icons.person, size: 40, color: Colors.white)
+                            : null,
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              nombreUsuario,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 4),
+                            if (estiloDisplay != null)
+                              Text(
+                                '${estiloDisplay.emoji} ${estiloDisplay.label}',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 13,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
             ),
             // Opción de Control Domótico
+
             ListTile(
               leading: const Icon(Icons.home_outlined),
               title: Text(AppLocalizations.of(context).domoticControl),
@@ -77,6 +264,56 @@ class HomeScreen extends StatelessWidget {
               },
             ),
             ListTile(
+              leading: const Icon(Icons.home_work_outlined),
+              title: const Text('Mis casas'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const MisCasasScreen(),
+                  ),
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.history),
+              title: const Text('Historial de reservas'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const HistorialReservasScreen(),
+                  ),
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.add_home_outlined),
+              title: const Text('Añadir casa'),
+              onTap: () async {
+                Navigator.pop(context);
+                final resultado = await Navigator.pushNamed(
+                  context,
+                  '/anadir_casa',
+                );
+                if (!mounted) return;
+                if (resultado == '¡Casa añadida!') {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text(
+                        '¡Casa añadida!',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                      backgroundColor: AppColors.successColor,
+                    ),
+                  );
+                  setState(() {});
+                }
+              },
+            ),
+            ListTile(
               leading: const Icon(Icons.palette),
               title: Text(AppLocalizations.of(context).customize),
               onTap: () {
@@ -85,13 +322,12 @@ class HomeScreen extends StatelessWidget {
                   context,
                   '/personalizacion',
                   arguments: {
-                    'username': nombreUsuario,
+                    'username': widget.username,
                     'fromRegister': false,
                   },
                 );
               },
             ),
-            const Divider(),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
               child: ElevatedButton.icon(
@@ -110,99 +346,388 @@ class HomeScreen extends StatelessWidget {
           ],
         ),
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // Avatar de perfil
-            CircleAvatar(
-              radius: 48,
-              backgroundColor: AppColors.secondaryColor.withOpacity(0.2),
-              backgroundImage: _buildImageProvider(fotoPerfil),
-              child: (fotoPerfil == null || fotoPerfil.isEmpty)
-                  ? Icon(
-                      Icons.person,
-                      size: 48,
-                      color: AppColors.secondaryColor,
-                    )
-                  : null,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              AppLocalizations.of(context).welcome,
-              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                    color: AppColors.primaryColor,
-                  ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              nombreUsuario,
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    color: AppColors.tertiaryColor,
-                    fontWeight: FontWeight.bold,
-                  ),
-            ),
-            const SizedBox(height: 8),
-            if (estiloDisplay != null)
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: AppColors.secondaryColor.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      estiloDisplay.emoji,
-                      style: const TextStyle(fontSize: 16),
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _searchController,
+                    onChanged: (_) => setState(() {}),
+                    decoration: InputDecoration(
+                      hintText: 'Buscar casas...',
+                      prefixIcon: const Icon(Icons.search),
+                      isDense: true,
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 12,
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
                     ),
-                    const SizedBox(width: 6),
-                    Text(
-                      estiloDisplay.label,
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: AppColors.textPrimaryColor,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                SizedBox(
+                  height: 48,
+                  width: 48,
+                  child: OutlinedButton(
+                    onPressed: () {
+                      setState(() {
+                        _mostrarFiltros = !_mostrarFiltros;
+                      });
+                    },
+                    style: OutlinedButton.styleFrom(
+                      padding: EdgeInsets.zero,
+                      side: BorderSide(color: AppColors.primaryColor),
+                    ),
+                    child: Icon(Icons.filter_list, color: AppColors.primaryColor),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          if (_mostrarFiltros)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.06),
+                      blurRadius: 8,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Personaliza tu búsqueda',
+                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+                    ),
+                    const SizedBox(height: 10),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.place_outlined,
+                          size: 16,
+                          color: AppColors.primaryColor,
+                        ),
+                        const SizedBox(width: 6),
+                        const Text(
+                          'Ubicación',
+                          style: TextStyle(
+                            fontSize: 12,
                             fontWeight: FontWeight.w600,
                           ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                    CheckboxListTile(
+                      contentPadding: EdgeInsets.zero,
+                      dense: true,
+                      value: _cercaDeMi,
+                      onChanged: (value) {
+                        setState(() {
+                          _cercaDeMi = value ?? false;
+                        });
+                      },
+                      title: const Text('Lugares cercanos a mi'),
+                      controlAffinity: ListTileControlAffinity.leading,
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.bed_outlined,
+                          size: 16,
+                          color: AppColors.primaryColor,
+                        ),
+                        const SizedBox(width: 6),
+                        const Text(
+                          'Cantidad de cuartos',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                    Slider(
+                      value: _cuartos,
+                      min: 1,
+                      max: 8,
+                      divisions: 7,
+                      label: _cuartos.round().toString(),
+                      onChanged: (value) {
+                        setState(() {
+                          _cuartos = value;
+                        });
+                      },
+                    ),
+                    Text(
+                      '${_cuartos.round()} cuartos',
+                      style: const TextStyle(fontSize: 12),
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.people_outline,
+                          size: 16,
+                          color: AppColors.primaryColor,
+                        ),
+                        const SizedBox(width: 6),
+                        const Text(
+                          'Cantidad de personas',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                    Slider(
+                      value: _personas,
+                      min: 1,
+                      max: 16,
+                      divisions: 15,
+                      label: _personas.round().toString(),
+                      onChanged: (value) {
+                        setState(() {
+                          _personas = value;
+                        });
+                      },
+                    ),
+                    Text(
+                      '${_personas.round()} personas',
+                      style: const TextStyle(fontSize: 12),
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.attach_money,
+                          size: 16,
+                          color: AppColors.primaryColor,
+                        ),
+                        const SizedBox(width: 6),
+                        const Text(
+                          'Precio por noche',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                    RangeSlider(
+                      values: _precioRango,
+                      min: 0,
+                      max: 100000,
+                      divisions: 20,
+                      labels: RangeLabels(
+                        '₵ ${_formatPrecio(_precioRango.start)}',
+                        '₵ ${_formatPrecio(_precioRango.end)}',
+                      ),
+                      onChanged: (values) {
+                        setState(() {
+                          _precioRango = values;
+                        });
+                      },
+                    ),
+                    Text(
+                      '₵ ${_formatPrecio(_precioRango.start)} - ₵ ${_formatPrecio(_precioRango.end)}',
+                      style: const TextStyle(fontSize: 12),
                     ),
                   ],
                 ),
               ),
-          ],
-        ),
+            ),
+          Expanded(
+            child: FutureBuilder<List<Casa>>(
+              future: _cargarCasas(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                if (snapshot.hasError) {
+                  return Center(
+                    child: Text('Error al cargar casas: ${snapshot.error}'),
+                  );
+                }
+                final casas = snapshot.data ?? [];
+                final query = _searchController.text.trim().toLowerCase();
+                final filtradas = query.isEmpty
+                    ? casas
+                    : casas
+                        .where((c) => _matchesQuery(c.nombre, query))
+                        .toList();
+
+                if (filtradas.isEmpty) {
+                  return const Center(
+                    child: Text('No hay casas publicadas.'),
+                  );
+                }
+
+                return ListView.separated(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                  itemCount: filtradas.length,
+                  separatorBuilder: (_, __) => const SizedBox(height: 16),
+                  itemBuilder: (context, index) {
+                    final casa = filtradas[index];
+                    final imageIndex = _imageIndexByCasa[casa.id] ?? 0;
+                    final imagePath = casa.fotos.isNotEmpty
+                        ? casa.fotos[imageIndex.clamp(0, casa.fotos.length - 1)]
+                        : null;
+                    final imageProvider = _buildCasaImage(imagePath);
+
+                    return InkWell(
+                      onTap: () => _toggleImage(casa),
+                      borderRadius: BorderRadius.circular(16),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.08),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            ClipRRect(
+                              borderRadius: const BorderRadius.vertical(
+                                top: Radius.circular(16),
+                              ),
+                              child: Stack(
+                                children: [
+                                  SizedBox(
+                                    height: 180,
+                                    width: double.infinity,
+                                    child: imageProvider != null
+                                        ? Image(
+                                            image: imageProvider,
+                                            fit: BoxFit.cover,
+                                          )
+                                        : Container(
+                                            color: AppColors.backgroundColor,
+                                            alignment: Alignment.center,
+                                            child: Icon(
+                                              Icons.image_not_supported,
+                                              color: AppColors.textSecondaryColor,
+                                              size: 40,
+                                            ),
+                                          ),
+                                  ),
+                                  Positioned(
+                                    left: 12,
+                                    bottom: 12,
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 10,
+                                        vertical: 6,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: Colors.black.withOpacity(0.45),
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Text(
+                                            casa.nombre,
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 8),
+                                          Text(
+                                            '₵ ${_formatPrecio(casa.precioPorNoche)}',
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 4,
+                              ),
+                              child: Row(
+                                children: [
+                                  IconButton(
+                                    onPressed: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (_) => ReservarCasaScreen(
+                                            casa: casa,
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                    icon: const Icon(Icons.remove_red_eye_outlined),
+                                    color: AppColors.primaryColor,
+                                    padding: EdgeInsets.zero,
+                                    constraints: const BoxConstraints(
+                                      minWidth: 36,
+                                      minHeight: 36,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    'Ver detalles',
+                                    style: TextStyle(
+                                      color: AppColors.textSecondaryColor,
+                                      fontSize: 11,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
-  }
-
-  _EstiloDisplay? _estiloConEmoji(String estilo, BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    switch (estilo) {
-      case 'aventurero':
-        return _EstiloDisplay(label: l10n.adventurous, emoji: '🚀');
-      case 'minimalista':
-        return _EstiloDisplay(label: l10n.minimalist, emoji: '✨');
-      case 'contemporaneo':
-        return _EstiloDisplay(label: l10n.contemporary, emoji: '🖼️');
-      default:
-        return null;
-    }
-  }
-
-  ImageProvider? _buildImageProvider(String? ruta) {
-    if (ruta == null || ruta.isEmpty) return null;
-    if (ruta.startsWith('http')) {
-      return NetworkImage(ruta);
-    }
-    final file = File(ruta);
-    if (file.existsSync()) {
-      return FileImage(file);
-    }
-    return null;
   }
 }
 
 class _EstiloDisplay {
   final String label;
   final String emoji;
+
   _EstiloDisplay({required this.label, required this.emoji});
 }

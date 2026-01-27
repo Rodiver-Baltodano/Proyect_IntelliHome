@@ -1,0 +1,65 @@
+[
+  {
+    "reservationId": "673d8996-2253-403c-8813-059171d6b135",
+    "userId": "77047b45-0e20-495e-8f8e-d438bffab504",
+    "status": "PENDING",
+    "startDate": "2026-02-04T21:42:06.325699",
+    "endDate": "2026-02-06T21:42:06.325699",
+    "propertyId": "84bd3362-7aee-44ed-ae78-761a1f94aaf1",
+    "accessDomotics": false
+  },
+  {
+    "reservationId": "75ece78b-85b7-4268-a460-7978549fae28",
+    "userId": "77047b45-0e20-495e-8f8e-d438bffab504",
+    "status": "PENDING",
+    "startDate": "2026-02-04T21:47:48.367841",
+    "endDate": "2026-02-06T21:47:48.367841",
+    "propertyId": "9fda27b7-5663-42b0-9d2f-01d70666b2d4",
+    "accessDomotics": false
+  },
+  {
+    "reservationId": "376c1200-9163-43a9-856c-676da0e4c93c",
+    "userId": "77047b45-0e20-495e-8f8e-d438bffab504",
+    "status": "PENDING",
+    "startDate": "2026-02-04T21:50:27.464482",
+    "endDate": "2026-02-06T21:50:27.464482",
+    "propertyId": "b2beff32-5379-4142-9499-f8809b5c034d",
+    "accessDomotics": false
+  },
+  {
+    "reservationId": "d8d56985-95cc-422b-bb3b-cf2befbbae36",
+    "userId": "77047b45-0e20-495e-8f8e-d438bffab504",
+    "status": "PENDING",
+    "startDate": "2026-02-04T21:51:16.317975",
+    "endDate": "2026-02-06T21:51:16.317975",
+    "propertyId": "85b7ba03-c50c-48f1-b1a2-bfde051c8ab9",
+    "accessDomotics": false
+  },
+  {
+    "reservationId": "e3a828eb-c5fa-4517-8ddd-10d7f688aaa5",
+    "userId": "77047b45-0e20-495e-8f8e-d438bffab504",
+    "status": "PENDING",
+    "startDate": "2026-02-05T01:21:20.223895",
+    "endDate": "2026-02-07T01:21:20.223895",
+    "propertyId": "98d5f098-f1c4-4def-b4f6-933652ab6754",
+    "accessDomotics": false
+  },
+  {
+    "reservationId": "efa817dd-f9ef-4684-98d1-48bf5ff1d0ad",
+    "userId": "77047b45-0e20-495e-8f8e-d438bffab504",
+    "status": "PENDING",
+    "startDate": "2026-02-05T01:23:22.595021",
+    "endDate": "2026-02-07T01:23:22.595021",
+    "propertyId": "ab30e39a-e9a1-4921-8bb1-3119a1cfbff8",
+    "accessDomotics": false
+  },
+  {
+    "reservationId": "4a10104a-3722-469d-a7ac-521b70ccea0d",
+    "userId": "77047b45-0e20-495e-8f8e-d438bffab504",
+    "status": "PENDING",
+    "startDate": "2026-02-05T01:24:44.943686",
+    "endDate": "2026-02-07T01:24:44.943686",
+    "propertyId": "76339276-87bd-43cc-ba0e-30429350dacb",
+    "accessDomotics": false
+  }
+]

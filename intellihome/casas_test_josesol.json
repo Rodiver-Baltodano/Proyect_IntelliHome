@@ -1,0 +1,702 @@
+[
+  {
+    "id": "2ce4519a-78c7-4399-bb53-bf58d3eca3d9",
+    "nombre": "Casa de prueba de juanperez123",
+    "precioPorNoche": 45000.0,
+    "maxPersonas": 4,
+    "habitaciones": 2,
+    "descripcion": "Casa de prueba para validar el flujo de registro.",
+    "fotos": [
+      "foto1.jpg"
+    ],
+    "ubicacion": "San José, Costa Rica",
+    "reglasUso": "No fumar\nNo fiestas",
+    "amenidades": [
+      1,
+      2,
+      4,
+      7,
+      10
+    ],
+    "fechasNoDisponibles": [
+      "2026-01-30T20:48:14.518549",
+      "2026-01-31T20:48:14.518549"
+    ],
+    "fechaRegistro": "2026-01-25T20:48:14.525779"
+  },
+  {
+    "id": "b6c208ba-7ff1-4da5-8f4c-16aaddb535da",
+    "nombre": "Casa de prueba 1 de juanperez123",
+    "precioPorNoche": 46000.0,
+    "maxPersonas": 5,
+    "habitaciones": 2,
+    "descripcion": "Casa de prueba #1 para validar el flujo de registro.",
+    "fotos": [
+      "foto1.jpg"
+    ],
+    "ubicacion": "San José, Costa Rica",
+    "reglasUso": "No fumar\nNo fiestas",
+    "amenidades": [
+      1,
+      2,
+      4,
+      7,
+      10
+    ],
+    "fechasNoDisponibles": [
+      "2026-01-30T21:32:09.191924",
+      "2026-01-31T21:32:09.191924"
+    ],
+    "fechaRegistro": "2026-01-25T21:32:09.194924"
+  },
+  {
+    "id": "7d66b83f-5488-4adc-96d7-716c038c64cb",
+    "nombre": "Casa de prueba 2 de juanperez123",
+    "precioPorNoche": 47000.0,
+    "maxPersonas": 6,
+    "habitaciones": 2,
+    "descripcion": "Casa de prueba #2 para validar el flujo de registro.",
+    "fotos": [
+      "foto2.jpg"
+    ],
+    "ubicacion": "San José, Costa Rica",
+    "reglasUso": "No fumar\nNo fiestas",
+    "amenidades": [
+      1,
+      2,
+      4,
+      7,
+      10
+    ],
+    "fechasNoDisponibles": [
+      "2026-01-30T21:32:09.191924",
+      "2026-01-31T21:32:09.191924"
+    ],
+    "fechaRegistro": "2026-01-25T21:32:09.206009"
+  },
+  {
+    "id": "f6a75d07-f3a6-456f-9308-eb1f6325073b",
+    "nombre": "Casa de prueba 3 de juanperez123",
+    "precioPorNoche": 48000.0,
+    "maxPersonas": 7,
+    "habitaciones": 2,
+    "descripcion": "Casa de prueba #3 para validar el flujo de registro.",
+    "fotos": [
+      "foto3.jpg"
+    ],
+    "ubicacion": "San José, Costa Rica",
+    "reglasUso": "No fumar\nNo fiestas",
+    "amenidades": [
+      1,
+      2,
+      4,
+      7,
+      10
+    ],
+    "fechasNoDisponibles": [
+      "2026-01-30T21:32:09.191924",
+      "2026-01-31T21:32:09.191924"
+    ],
+    "fechaRegistro": "2026-01-25T21:32:09.228553"
+  },
+  {
+    "id": "8d164be8-7cf1-483b-a8c2-869645807cdb",
+    "nombre": "Casa de prueba 1 de juanperez123",
+    "precioPorNoche": 46000.0,
+    "maxPersonas": 5,
+    "habitaciones": 2,
+    "descripcion": "Casa de prueba #1 para validar el flujo de registro.",
+    "fotos": [
+      "foto1.jpg"
+    ],
+    "ubicacion": "San José, Costa Rica",
+    "reglasUso": "No fumar\nNo fiestas",
+    "amenidades": [
+      1,
+      2,
+      4,
+      7,
+      10
+    ],
+    "fechasNoDisponibles": [
+      "2026-01-30T21:40:21.747657",
+      "2026-01-31T21:40:21.747657"
+    ],
+    "fechaRegistro": "2026-01-25T21:40:21.747657"
+  },
+  {
+    "id": "c9f2f54a-a7d6-4db1-b2c8-516bda2961f0",
+    "nombre": "Casa de prueba 2 de juanperez123",
+    "precioPorNoche": 47000.0,
+    "maxPersonas": 6,
+    "habitaciones": 2,
+    "descripcion": "Casa de prueba #2 para validar el flujo de registro.",
+    "fotos": [
+      "foto2.jpg"
+    ],
+    "ubicacion": "San José, Costa Rica",
+    "reglasUso": "No fumar\nNo fiestas",
+    "amenidades": [
+      1,
+      2,
+      4,
+      7,
+      10
+    ],
+    "fechasNoDisponibles": [
+      "2026-01-30T21:40:21.747657",
+      "2026-01-31T21:40:21.747657"
+    ],
+    "fechaRegistro": "2026-01-25T21:40:21.761137"
+  },
+  {
+    "id": "a20d2fb0-8864-49b7-8236-e96144c98cb2",
+    "nombre": "Casa de prueba 3 de juanperez123",
+    "precioPorNoche": 48000.0,
+    "maxPersonas": 7,
+    "habitaciones": 2,
+    "descripcion": "Casa de prueba #3 para validar el flujo de registro.",
+    "fotos": [
+      "foto3.jpg"
+    ],
+    "ubicacion": "San José, Costa Rica",
+    "reglasUso": "No fumar\nNo fiestas",
+    "amenidades": [
+      1,
+      2,
+      4,
+      7,
+      10
+    ],
+    "fechasNoDisponibles": [
+      "2026-01-30T21:40:21.747657",
+      "2026-01-31T21:40:21.747657"
+    ],
+    "fechaRegistro": "2026-01-25T21:40:21.793069"
+  },
+  {
+    "id": "8f6675ea-7c64-4aac-b651-a07332f42969",
+    "nombre": "Casa de prueba 1 de juanperez123",
+    "precioPorNoche": 46000.0,
+    "maxPersonas": 5,
+    "habitaciones": 2,
+    "descripcion": "Casa de prueba #1 para validar el flujo de registro.",
+    "fotos": [
+      "foto1.jpg"
+    ],
+    "ubicacion": "San José, Costa Rica",
+    "reglasUso": "No fumar\nNo fiestas",
+    "amenidades": [
+      1,
+      2,
+      4,
+      7,
+      10
+    ],
+    "fechasNoDisponibles": [
+      "2026-01-30T21:42:06.242768",
+      "2026-01-31T21:42:06.242768"
+    ],
+    "fechaRegistro": "2026-01-25T21:42:06.242768"
+  },
+  {
+    "id": "8c0d3b54-b393-403c-b39f-4790c06ca856",
+    "nombre": "Casa de prueba 2 de juanperez123",
+    "precioPorNoche": 47000.0,
+    "maxPersonas": 6,
+    "habitaciones": 2,
+    "descripcion": "Casa de prueba #2 para validar el flujo de registro.",
+    "fotos": [
+      "foto2.jpg"
+    ],
+    "ubicacion": "San José, Costa Rica",
+    "reglasUso": "No fumar\nNo fiestas",
+    "amenidades": [
+      1,
+      2,
+      4,
+      7,
+      10
+    ],
+    "fechasNoDisponibles": [
+      "2026-01-30T21:42:06.242768",
+      "2026-01-31T21:42:06.242768"
+    ],
+    "fechaRegistro": "2026-01-25T21:42:06.260646"
+  },
+  {
+    "id": "84bd3362-7aee-44ed-ae78-761a1f94aaf1",
+    "nombre": "Casa de prueba 3 de juanperez123",
+    "precioPorNoche": 48000.0,
+    "maxPersonas": 7,
+    "habitaciones": 2,
+    "descripcion": "Casa de prueba #3 para validar el flujo de registro.",
+    "fotos": [
+      "foto3.jpg"
+    ],
+    "ubicacion": "San José, Costa Rica",
+    "reglasUso": "No fumar\nNo fiestas",
+    "amenidades": [
+      1,
+      2,
+      4,
+      7,
+      10
+    ],
+    "fechasNoDisponibles": [
+      "2026-01-30T21:42:06.242768",
+      "2026-01-31T21:42:06.242768"
+    ],
+    "fechaRegistro": "2026-01-25T21:42:06.278896"
+  },
+  {
+    "id": "c0156d35-02a8-4268-8297-0d31620bcccd",
+    "nombre": "Casa de prueba 1 de juanperez123",
+    "precioPorNoche": 46000.0,
+    "maxPersonas": 5,
+    "habitaciones": 2,
+    "descripcion": "Casa de prueba #1 para validar el flujo de registro.",
+    "fotos": [
+      "foto1.jpg"
+    ],
+    "ubicacion": "San José, Costa Rica",
+    "reglasUso": "No fumar\nNo fiestas",
+    "amenidades": [
+      1,
+      2,
+      4,
+      7,
+      10
+    ],
+    "fechasNoDisponibles": [
+      "2026-01-30T21:47:48.285374",
+      "2026-01-31T21:47:48.285374"
+    ],
+    "fechaRegistro": "2026-01-25T21:47:48.288882"
+  },
+  {
+    "id": "404910e0-4210-4ea2-9521-26e27df8637c",
+    "nombre": "Casa de prueba 2 de juanperez123",
+    "precioPorNoche": 47000.0,
+    "maxPersonas": 6,
+    "habitaciones": 2,
+    "descripcion": "Casa de prueba #2 para validar el flujo de registro.",
+    "fotos": [
+      "foto2.jpg"
+    ],
+    "ubicacion": "San José, Costa Rica",
+    "reglasUso": "No fumar\nNo fiestas",
+    "amenidades": [
+      1,
+      2,
+      4,
+      7,
+      10
+    ],
+    "fechasNoDisponibles": [
+      "2026-01-30T21:47:48.285374",
+      "2026-01-31T21:47:48.285374"
+    ],
+    "fechaRegistro": "2026-01-25T21:47:48.301618"
+  },
+  {
+    "id": "9fda27b7-5663-42b0-9d2f-01d70666b2d4",
+    "nombre": "Casa de prueba 3 de juanperez123",
+    "precioPorNoche": 48000.0,
+    "maxPersonas": 7,
+    "habitaciones": 2,
+    "descripcion": "Casa de prueba #3 para validar el flujo de registro.",
+    "fotos": [
+      "foto3.jpg"
+    ],
+    "ubicacion": "San José, Costa Rica",
+    "reglasUso": "No fumar\nNo fiestas",
+    "amenidades": [
+      1,
+      2,
+      4,
+      7,
+      10
+    ],
+    "fechasNoDisponibles": [
+      "2026-01-30T21:47:48.285374",
+      "2026-01-31T21:47:48.285374"
+    ],
+    "fechaRegistro": "2026-01-25T21:47:48.324137"
+  },
+  {
+    "id": "2c863ec4-fbc7-4c38-bb3d-ab32730307f3",
+    "nombre": "Casa de prueba 1 de juanperez123",
+    "precioPorNoche": 46000.0,
+    "maxPersonas": 5,
+    "habitaciones": 2,
+    "descripcion": "Casa de prueba #1 para validar el flujo de registro.",
+    "fotos": [
+      "foto1.jpg"
+    ],
+    "ubicacion": "San José, Costa Rica",
+    "reglasUso": "No fumar\nNo fiestas",
+    "amenidades": [
+      1,
+      2,
+      4,
+      7,
+      10
+    ],
+    "fechasNoDisponibles": [
+      "2026-01-30T21:50:27.368990",
+      "2026-01-31T21:50:27.369511"
+    ],
+    "fechaRegistro": "2026-01-25T21:50:27.371741"
+  },
+  {
+    "id": "20e6049a-2624-4ee4-9302-22762b620bc2",
+    "nombre": "Casa de prueba 2 de juanperez123",
+    "precioPorNoche": 47000.0,
+    "maxPersonas": 6,
+    "habitaciones": 2,
+    "descripcion": "Casa de prueba #2 para validar el flujo de registro.",
+    "fotos": [
+      "foto2.jpg"
+    ],
+    "ubicacion": "San José, Costa Rica",
+    "reglasUso": "No fumar\nNo fiestas",
+    "amenidades": [
+      1,
+      2,
+      4,
+      7,
+      10
+    ],
+    "fechasNoDisponibles": [
+      "2026-01-30T21:50:27.368990",
+      "2026-01-31T21:50:27.369511"
+    ],
+    "fechaRegistro": "2026-01-25T21:50:27.390159"
+  },
+  {
+    "id": "b2beff32-5379-4142-9499-f8809b5c034d",
+    "nombre": "Casa de prueba 3 de juanperez123",
+    "precioPorNoche": 48000.0,
+    "maxPersonas": 7,
+    "habitaciones": 2,
+    "descripcion": "Casa de prueba #3 para validar el flujo de registro.",
+    "fotos": [
+      "foto3.jpg"
+    ],
+    "ubicacion": "San José, Costa Rica",
+    "reglasUso": "No fumar\nNo fiestas",
+    "amenidades": [
+      1,
+      2,
+      4,
+      7,
+      10
+    ],
+    "fechasNoDisponibles": [
+      "2026-01-30T21:50:27.368990",
+      "2026-01-31T21:50:27.369511"
+    ],
+    "fechaRegistro": "2026-01-25T21:50:27.416341"
+  },
+  {
+    "id": "a6614da8-79f9-4c24-8099-dd2b9370fb5e",
+    "nombre": "Casa de prueba 1 de juanperez123",
+    "precioPorNoche": 46000.0,
+    "maxPersonas": 5,
+    "habitaciones": 2,
+    "descripcion": "Casa de prueba #1 para validar el flujo de registro.",
+    "fotos": [
+      "foto1.jpg"
+    ],
+    "ubicacion": "San José, Costa Rica",
+    "reglasUso": "No fumar\nNo fiestas",
+    "amenidades": [
+      1,
+      2,
+      4,
+      7,
+      10
+    ],
+    "fechasNoDisponibles": [
+      "2026-01-30T21:51:16.223941",
+      "2026-01-31T21:51:16.223941"
+    ],
+    "fechaRegistro": "2026-01-25T21:51:16.226293"
+  },
+  {
+    "id": "ea822b99-e48d-4603-8f7c-7100121d5f42",
+    "nombre": "Casa de prueba 2 de juanperez123",
+    "precioPorNoche": 47000.0,
+    "maxPersonas": 6,
+    "habitaciones": 2,
+    "descripcion": "Casa de prueba #2 para validar el flujo de registro.",
+    "fotos": [
+      "foto2.jpg"
+    ],
+    "ubicacion": "San José, Costa Rica",
+    "reglasUso": "No fumar\nNo fiestas",
+    "amenidades": [
+      1,
+      2,
+      4,
+      7,
+      10
+    ],
+    "fechasNoDisponibles": [
+      "2026-01-30T21:51:16.223941",
+      "2026-01-31T21:51:16.223941"
+    ],
+    "fechaRegistro": "2026-01-25T21:51:16.244988"
+  },
+  {
+    "id": "85b7ba03-c50c-48f1-b1a2-bfde051c8ab9",
+    "nombre": "Casa de prueba 3 de juanperez123",
+    "precioPorNoche": 48000.0,
+    "maxPersonas": 7,
+    "habitaciones": 2,
+    "descripcion": "Casa de prueba #3 para validar el flujo de registro.",
+    "fotos": [
+      "foto3.jpg"
+    ],
+    "ubicacion": "San José, Costa Rica",
+    "reglasUso": "No fumar\nNo fiestas",
+    "amenidades": [
+      1,
+      2,
+      4,
+      7,
+      10
+    ],
+    "fechasNoDisponibles": [
+      "2026-01-30T21:51:16.223941",
+      "2026-01-31T21:51:16.223941"
+    ],
+    "fechaRegistro": "2026-01-25T21:51:16.270941"
+  },
+  {
+    "id": "895de5eb-b16c-4355-b756-5361208186c1",
+    "nombre": "Casa de prueba 1 de juanperez123",
+    "precioPorNoche": 46000.0,
+    "maxPersonas": 5,
+    "habitaciones": 2,
+    "descripcion": "Casa de prueba #1 para validar el flujo de registro.",
+    "fotos": [
+      "foto1.jpg"
+    ],
+    "ubicacion": "San José, Costa Rica",
+    "reglasUso": "No fumar\nNo fiestas",
+    "amenidades": [
+      1,
+      2,
+      4,
+      7,
+      10
+    ],
+    "fechasNoDisponibles": [
+      "2026-01-31T01:21:20.068538",
+      "2026-02-01T01:21:20.070546"
+    ],
+    "fechaRegistro": "2026-01-26T01:21:20.075127"
+  },
+  {
+    "id": "086f9e7f-3112-4d6e-86a9-27bbe975d0e4",
+    "nombre": "Casa de prueba 2 de juanperez123",
+    "precioPorNoche": 47000.0,
+    "maxPersonas": 6,
+    "habitaciones": 2,
+    "descripcion": "Casa de prueba #2 para validar el flujo de registro.",
+    "fotos": [
+      "foto2.jpg"
+    ],
+    "ubicacion": "San José, Costa Rica",
+    "reglasUso": "No fumar\nNo fiestas",
+    "amenidades": [
+      1,
+      2,
+      4,
+      7,
+      10
+    ],
+    "fechasNoDisponibles": [
+      "2026-01-31T01:21:20.068538",
+      "2026-02-01T01:21:20.070546"
+    ],
+    "fechaRegistro": "2026-01-26T01:21:20.121574"
+  },
+  {
+    "id": "98d5f098-f1c4-4def-b4f6-933652ab6754",
+    "nombre": "Casa de prueba 3 de juanperez123",
+    "precioPorNoche": 48000.0,
+    "maxPersonas": 7,
+    "habitaciones": 2,
+    "descripcion": "Casa de prueba #3 para validar el flujo de registro.",
+    "fotos": [
+      "foto3.jpg"
+    ],
+    "ubicacion": "San José, Costa Rica",
+    "reglasUso": "No fumar\nNo fiestas",
+    "amenidades": [
+      1,
+      2,
+      4,
+      7,
+      10
+    ],
+    "fechasNoDisponibles": [
+      "2026-01-31T01:21:20.068538",
+      "2026-02-01T01:21:20.070546"
+    ],
+    "fechaRegistro": "2026-01-26T01:21:20.152121"
+  },
+  {
+    "id": "7399b926-fcb9-4a0c-959e-4e4eefa34dd2",
+    "nombre": "Casa de prueba 1 de juanperez123",
+    "precioPorNoche": 46000.0,
+    "maxPersonas": 5,
+    "habitaciones": 2,
+    "descripcion": "Casa de prueba #1 para validar el flujo de registro.",
+    "fotos": [
+      "foto1.jpg"
+    ],
+    "ubicacion": "San José, Costa Rica",
+    "reglasUso": "No fumar\nNo fiestas",
+    "amenidades": [
+      1,
+      2,
+      4,
+      7,
+      10
+    ],
+    "fechasNoDisponibles": [
+      "2026-01-31T01:23:22.464715",
+      "2026-02-01T01:23:22.464715"
+    ],
+    "fechaRegistro": "2026-01-26T01:23:22.468587"
+  },
+  {
+    "id": "ac519cf1-63fd-49c6-94cc-c95aeba766e7",
+    "nombre": "Casa de prueba 2 de juanperez123",
+    "precioPorNoche": 47000.0,
+    "maxPersonas": 6,
+    "habitaciones": 2,
+    "descripcion": "Casa de prueba #2 para validar el flujo de registro.",
+    "fotos": [
+      "foto2.jpg"
+    ],
+    "ubicacion": "San José, Costa Rica",
+    "reglasUso": "No fumar\nNo fiestas",
+    "amenidades": [
+      1,
+      2,
+      4,
+      7,
+      10
+    ],
+    "fechasNoDisponibles": [
+      "2026-01-31T01:23:22.464715",
+      "2026-02-01T01:23:22.464715"
+    ],
+    "fechaRegistro": "2026-01-26T01:23:22.504543"
+  },
+  {
+    "id": "ab30e39a-e9a1-4921-8bb1-3119a1cfbff8",
+    "nombre": "Casa de prueba 3 de juanperez123",
+    "precioPorNoche": 48000.0,
+    "maxPersonas": 7,
+    "habitaciones": 2,
+    "descripcion": "Casa de prueba #3 para validar el flujo de registro.",
+    "fotos": [
+      "foto3.jpg"
+    ],
+    "ubicacion": "San José, Costa Rica",
+    "reglasUso": "No fumar\nNo fiestas",
+    "amenidades": [
+      1,
+      2,
+      4,
+      7,
+      10
+    ],
+    "fechasNoDisponibles": [
+      "2026-01-31T01:23:22.464715",
+      "2026-02-01T01:23:22.464715"
+    ],
+    "fechaRegistro": "2026-01-26T01:23:22.538257"
+  },
+  {
+    "id": "353836c0-074e-4ff4-8fba-1a132208b6c3",
+    "nombre": "Casa de prueba 1 de juanperez123",
+    "precioPorNoche": 46000.0,
+    "maxPersonas": 5,
+    "habitaciones": 2,
+    "descripcion": "Casa de prueba #1 para validar el flujo de registro.",
+    "fotos": [
+      "foto1.jpg"
+    ],
+    "ubicacion": "San José, Costa Rica",
+    "reglasUso": "No fumar\nNo fiestas",
+    "amenidades": [
+      1,
+      2,
+      4,
+      7,
+      10
+    ],
+    "fechasNoDisponibles": [
+      "2026-01-31T01:24:44.797669",
+      "2026-02-01T01:24:44.797669"
+    ],
+    "fechaRegistro": "2026-01-26T01:24:44.797669"
+  },
+  {
+    "id": "4b24b69d-20d3-43a5-ab70-5b56f49fce36",
+    "nombre": "Casa de prueba 2 de juanperez123",
+    "precioPorNoche": 47000.0,
+    "maxPersonas": 6,
+    "habitaciones": 2,
+    "descripcion": "Casa de prueba #2 para validar el flujo de registro.",
+    "fotos": [
+      "foto2.jpg"
+    ],
+    "ubicacion": "San José, Costa Rica",
+    "reglasUso": "No fumar\nNo fiestas",
+    "amenidades": [
+      1,
+      2,
+      4,
+      7,
+      10
+    ],
+    "fechasNoDisponibles": [
+      "2026-01-31T01:24:44.797669",
+      "2026-02-01T01:24:44.797669"
+    ],
+    "fechaRegistro": "2026-01-26T01:24:44.834565"
+  },
+  {
+    "id": "76339276-87bd-43cc-ba0e-30429350dacb",
+    "nombre": "Casa de prueba 3 de juanperez123",
+    "precioPorNoche": 48000.0,
+    "maxPersonas": 7,
+    "habitaciones": 2,
+    "descripcion": "Casa de prueba #3 para validar el flujo de registro.",
+    "fotos": [
+      "foto3.jpg"
+    ],
+    "ubicacion": "San José, Costa Rica",
+    "reglasUso": "No fumar\nNo fiestas",
+    "amenidades": [
+      1,
+      2,
+      4,
+      7,
+      10
+    ],
+    "fechasNoDisponibles": [
+      "2026-01-31T01:24:44.797669",
+      "2026-02-01T01:24:44.797669"
+    ],
+    "fechaRegistro": "2026-01-26T01:24:44.871236"
+  }
+]

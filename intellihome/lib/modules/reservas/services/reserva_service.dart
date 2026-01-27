@@ -2,23 +2,26 @@ import 'package:intellihome/modules/reservas/models/reserva.dart';
 import 'package:intellihome/modules/reservas/models/resultado_reserva.dart';
 import 'package:intellihome/modules/reservas/repositories/reserva_repository.dart';
 import 'package:intellihome/modules/autenticacion/repositories/usuario_repository.dart';
+import 'package:intellihome/modules/autenticacion/repositories/casa_repositorio_json.dart';
 import 'package:intellihome/modules/reservas/services/whatsapp_service.dart';
 import 'package:uuid/uuid.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 /// Servicio para gestionar las operaciones de reservas
 class ReservaService {
   final ReservaRepositorioJson _repositorio;
   final UsuarioRepositorioJson? _usuarioRepositorio;
+  final CasaRepositorioJson? _casaRepositorio;
   final WhatsAppService _whatsappService;
   final _uuid = const Uuid();
 
   ReservaService({
     required ReservaRepositorioJson repositorio,
     UsuarioRepositorioJson? usuarioRepositorio,
+    CasaRepositorioJson? casaRepositorio,
     WhatsAppService? whatsappService,
   })  : _repositorio = repositorio,
         _usuarioRepositorio = usuarioRepositorio,
+        _casaRepositorio = casaRepositorio,
         _whatsappService = whatsappService ?? WhatsAppService();
 
   ///  Crear una reserva válida según fechas
@@ -40,9 +43,8 @@ class ReservaService {
           );
         }
 
-        // Validar que tenga método de pago (tarjeta o IBAN)
-        final tieneMetodoPago = usuario.datosTargeta != null || 
-                                usuario.numeroIBAN.isNotEmpty;
+        // Validar que tenga método de pago (solo tarjeta)
+        final tieneMetodoPago = usuario.datosTargeta != null;
         
         if (!tieneMetodoPago) {
           return ResultadoReserva.fallo(
@@ -60,7 +62,10 @@ class ReservaService {
         );
       }
 
-      if (startDate.isBefore(DateTime.now())) {
+      final hoy = DateTime.now();
+      final hoySinHora = DateTime(hoy.year, hoy.month, hoy.day);
+      final inicioSinHora = DateTime(startDate.year, startDate.month, startDate.day);
+      if (inicioSinHora.isBefore(hoySinHora)) {
         return ResultadoReserva.fallo(
           mensaje: 'La fecha de inicio no puede ser en el pasado',
           codigoError: 'PAST_DATE',
@@ -299,11 +304,14 @@ class ReservaService {
           print('📱 [WhatsApp] Enviando confirmación a +$telefono');
           
           // Enviar mensaje usando Twilio API
+          final casaNombre = await _casaRepositorio?.buscarPorId(propertyId);
+          final nombrePropiedad = casaNombre?.nombre ?? propertyId;
+
           final resultado = await _whatsappService.enviarConfirmacionReserva(
             telefono: telefono,
             nombreUsuario: nombre,
             reservationId: reservationId,
-            propertyId: propertyId,
+            propertyName: nombrePropiedad,
             startDate: startDate,
             endDate: endDate,
           );

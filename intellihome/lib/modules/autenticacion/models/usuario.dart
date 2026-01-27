@@ -49,6 +49,12 @@ class Usuario {
   /// Color de fondo personalizado guardado como int ARGB (null = usar default del tema)
   int? colorBackgroundARGB;
 
+  /// IDs de casas asociadas al usuario
+  final List<String> casas;
+
+  /// IDs de reservas asociadas al usuario
+  final List<String> reservas;
+
   Usuario({
     required this.id,
     required this.username,
@@ -74,6 +80,8 @@ class Usuario {
     this.estilo = 'aventurero',
     this.colorPrimarioARGB,
     this.colorBackgroundARGB,
+    this.casas = const [],
+    this.reservas = const [],
   });
 
   /// Crea un Usuario a partir de un Map (JSON)
@@ -107,6 +115,12 @@ class Usuario {
       estilo: json['estilo'] ?? 'aventurero',
       colorPrimarioARGB: json['colorPrimarioARGB'],
       colorBackgroundARGB: json['colorBackgroundARGB'],
+      casas: (json['casas'] as List<dynamic>? ?? [])
+          .map((e) => e.toString())
+          .toList(),
+      reservas: (json['reservas'] as List<dynamic>? ?? [])
+          .map((e) => e.toString())
+          .toList(),
     );
   }
 
@@ -137,6 +151,8 @@ class Usuario {
       'estilo': estilo,
       'colorPrimarioARGB': colorPrimarioARGB,
       'colorBackgroundARGB': colorBackgroundARGB,
+      'casas': casas,
+      'reservas': reservas,
     };
   }
 
