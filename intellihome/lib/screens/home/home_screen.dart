@@ -83,6 +83,60 @@ class _HomeScreenState extends State<HomeScreen> {
     return formatter.format(precio);
   }
 
+  String _normalizeText(String value) {
+    final lower = value.toLowerCase().trim();
+    const accents = 'áéíóúüñ';
+    const replacements = 'aeiouun';
+    final buffer = StringBuffer();
+    for (final rune in lower.runes) {
+      final char = String.fromCharCode(rune);
+      final idx = accents.indexOf(char);
+      buffer.write(idx >= 0 ? replacements[idx] : char);
+    }
+    return buffer.toString();
+  }
+
+  bool _matchesQuery(String titulo, String query) {
+    final normalizedTitle = _normalizeText(titulo);
+    final normalizedQuery = _normalizeText(query);
+
+    if (normalizedQuery.isEmpty) return true;
+    if (normalizedTitle.contains(normalizedQuery)) return true;
+
+    final titleTokens = normalizedTitle.split(RegExp(r'\s+'));
+    final queryTokens = normalizedQuery.split(RegExp(r'\s+'));
+
+    final allTokensMatch = queryTokens.every(
+      (token) => titleTokens.any((t) => t.startsWith(token)),
+    );
+    if (allTokensMatch) return true;
+
+    return _levenshteinDistance(normalizedTitle, normalizedQuery) <= 2;
+  }
+
+  int _levenshteinDistance(String s, String t) {
+    if (s == t) return 0;
+    if (s.isEmpty) return t.length;
+    if (t.isEmpty) return s.length;
+
+    final rows = List<int>.generate(t.length + 1, (i) => i);
+    for (var i = 0; i < s.length; i++) {
+      var prev = i + 1;
+      for (var j = 0; j < t.length; j++) {
+        final current = rows[j + 1];
+        final cost = s[i] == t[j] ? 0 : 1;
+        rows[j + 1] = [
+          rows[j + 1] + 1,
+          prev + 1,
+          rows[j] + cost,
+        ].reduce((a, b) => a < b ? a : b);
+        prev = current;
+      }
+      rows[0] = i + 1;
+    }
+    return rows[t.length];
+  }
+
   _EstiloDisplay? _estiloConEmoji(String estilo, BuildContext context) {
     final l10n = AppLocalizations.of(context);
     switch (estilo) {
@@ -333,9 +387,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 final filtradas = query.isEmpty
                     ? casas
                     : casas
-                        .where(
-                          (c) => c.nombre.toLowerCase().contains(query),
-                        )
+                        .where((c) => _matchesQuery(c.nombre, query))
                         .toList();
 
                 if (filtradas.isEmpty) {
