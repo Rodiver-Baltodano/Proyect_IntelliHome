@@ -5,6 +5,7 @@ import 'package:intellihome/config/app_colors.dart';
 import 'package:intellihome/l10n/app_localizations.dart';
 import 'package:intellihome/modules/autenticacion/models/casa.dart';
 import 'package:intellihome/modules/autenticacion/repositories/casa_repositorio_json.dart';
+import 'package:intellihome/modules/filters/services/filtro_casas_service.dart';
 import 'package:intellihome/modules/reservas/services/reserva_sync_service.dart';
 import 'package:intellihome/modules/ubicacion/services/ubicacion_service.dart';
 import 'package:intellihome/providers/theme_provider.dart';
@@ -152,6 +153,11 @@ class _HomeScreenState extends State<HomeScreen> {
     if (allTokensMatch) return true;
 
     return _levenshteinDistance(normalizedTitle, normalizedQuery) <= 2;
+  }
+
+  Future<List<Casa>> _filtrarCercaDeMi(List<Casa> casas) {
+    if (!_cercaDeMi) return Future.value(casas);
+    return FiltroCasasService().filtrarCercaDeMi(casas: casas);
   }
 
   int _levenshteinDistance(String s, String t) {
@@ -598,205 +604,215 @@ class _HomeScreenState extends State<HomeScreen> {
                         .where((c) => _matchesQuery(c.nombre, query))
                         .toList();
 
-                if (filtradas.isEmpty) {
-                  return const Center(
-                    child: Text('No hay casas publicadas.'),
-                  );
-                }
+                return FutureBuilder<List<Casa>>(
+                  future: _filtrarCercaDeMi(filtradas),
+                  builder: (context, filtroSnapshot) {
+                    if (filtroSnapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
 
-                return ListView.separated(
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-                  itemCount: filtradas.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 16),
-                  itemBuilder: (context, index) {
-                    final casa = filtradas[index];
-                    final imageIndex = _imageIndexByCasa[casa.id] ?? 0;
-                    final imagePath = casa.fotos.isNotEmpty
-                        ? casa.fotos[imageIndex.clamp(0, casa.fotos.length - 1)]
-                        : null;
-                    final imageProvider = _buildCasaImage(imagePath);
+                    final casasFiltradas = filtroSnapshot.data ?? [];
+                    if (casasFiltradas.isEmpty) {
+                      return const Center(
+                        child: Text('No hay casas publicadas.'),
+                      );
+                    }
 
-                    return InkWell(
-                      onTap: () => _toggleImage(casa),
-                      borderRadius: BorderRadius.circular(16),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: Colors.white,
+                    return ListView.separated(
+                      padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                      itemCount: casasFiltradas.length,
+                      separatorBuilder: (_, __) => const SizedBox(height: 16),
+                      itemBuilder: (context, index) {
+                        final casa = casasFiltradas[index];
+                        final imageIndex = _imageIndexByCasa[casa.id] ?? 0;
+                        final imagePath = casa.fotos.isNotEmpty
+                            ? casa.fotos[imageIndex.clamp(0, casa.fotos.length - 1)]
+                            : null;
+                        final imageProvider = _buildCasaImage(imagePath);
+
+                        return InkWell(
+                          onTap: () => _toggleImage(casa),
                           borderRadius: BorderRadius.circular(16),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.08),
-                              blurRadius: 10,
-                              offset: const Offset(0, 4),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(16),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.08),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            ClipRRect(
-                              borderRadius: const BorderRadius.vertical(
-                                top: Radius.circular(16),
-                              ),
-                              child: Stack(
-                                children: [
-                                  SizedBox(
-                                    height: 180,
-                                    width: double.infinity,
-                                    child: AnimatedSwitcher(
-                                      duration: const Duration(milliseconds: 200),
-                                      layoutBuilder: (currentChild, previousChildren) {
-                                        return Stack(
-                                          fit: StackFit.expand,
-                                          children: [
-                                            ...previousChildren,
-                                            if (currentChild != null) currentChild,
-                                          ],
-                                        );
-                                      },
-                                      child: imageProvider != null
-                                          ? Image(
-                                              key: ValueKey(imagePath),
-                                              image: imageProvider,
-                                              fit: BoxFit.cover,
-                                              gaplessPlayback: true,
-                                            )
-                                          : Container(
-                                              key: const ValueKey('no-image'),
-                                              color: AppColors.backgroundColor,
-                                              alignment: Alignment.center,
-                                              child: Icon(
-                                                Icons.image_not_supported,
-                                                color: AppColors.textSecondaryColor,
-                                                size: 40,
-                                              ),
-                                            ),
-                                    ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                ClipRRect(
+                                  borderRadius: const BorderRadius.vertical(
+                                    top: Radius.circular(16),
                                   ),
-                                  Positioned(
-                                    left: 12,
-                                    bottom: 12,
-                                    child: Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 10,
-                                        vertical: 6,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: Colors.black.withOpacity(0.45),
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                      child: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          Text(
-                                            casa.nombre,
-                                            style: const TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 14,
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                          ),
-                                          const SizedBox(width: 8),
-                                          Text(
-                                            '₵ ${_formatPrecio(casa.precioPorNoche)}',
-                                            style: const TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 12,
-                                              fontWeight: FontWeight.w500,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 4,
-                              ),
-                              child: Row(
-                                children: [
-                                  Row(
+                                  child: Stack(
                                     children: [
-                                      IconButton(
-                                        onPressed: () {
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (_) => ReservarCasaScreen(
-                                                casa: casa,
-                                              ),
-                                            ),
-                                          );
-                                        },
-                                        icon: const Icon(
-                                          Icons.remove_red_eye_outlined,
-                                        ),
-                                        color: AppColors.primaryColor,
-                                        padding: EdgeInsets.zero,
-                                        constraints: const BoxConstraints(
-                                          minWidth: 36,
-                                          minHeight: 36,
+                                      SizedBox(
+                                        height: 180,
+                                        width: double.infinity,
+                                        child: AnimatedSwitcher(
+                                          duration: const Duration(milliseconds: 200),
+                                          layoutBuilder: (currentChild, previousChildren) {
+                                            return Stack(
+                                              fit: StackFit.expand,
+                                              children: [
+                                                ...previousChildren,
+                                                if (currentChild != null) currentChild,
+                                              ],
+                                            );
+                                          },
+                                          child: imageProvider != null
+                                              ? Image(
+                                                  key: ValueKey(imagePath),
+                                                  image: imageProvider,
+                                                  fit: BoxFit.cover,
+                                                  gaplessPlayback: true,
+                                                )
+                                              : Container(
+                                                  key: const ValueKey('no-image'),
+                                                  color: AppColors.backgroundColor,
+                                                  alignment: Alignment.center,
+                                                  child: Icon(
+                                                    Icons.image_not_supported,
+                                                    color: AppColors.textSecondaryColor,
+                                                    size: 40,
+                                                  ),
+                                                ),
                                         ),
                                       ),
-                                      const SizedBox(width: 4),
-                                      Text(
-                                        'Ver detalles',
-                                        style: TextStyle(
-                                          color: AppColors.textSecondaryColor,
-                                          fontSize: 11,
+                                      Positioned(
+                                        left: 12,
+                                        bottom: 12,
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 10,
+                                            vertical: 6,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: Colors.black.withOpacity(0.45),
+                                            borderRadius: BorderRadius.circular(12),
+                                          ),
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Text(
+                                                casa.nombre,
+                                                style: const TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 14,
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                              ),
+                                              const SizedBox(width: 8),
+                                              Text(
+                                                '₵ ${_formatPrecio(casa.precioPorNoche)}',
+                                                style: const TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 12,
+                                                  fontWeight: FontWeight.w500,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
                                         ),
                                       ),
                                     ],
                                   ),
-                                  const Spacer(),
-                                  SizedBox(
-                                    width: 150,
-                                    child: Row(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        SizedBox(
-                                          width: 16,
-                                          child: Icon(
-                                            Icons.place_outlined,
-                                            size: 14,
-                                            color: AppColors.textSecondaryColor,
-                                          ),
-                                        ),
-                                        const SizedBox(width: 4),
-                                        Expanded(
-                                          child: FutureBuilder<String>(
-                                            future: _ubicacionFutures[casa.id] ??=
-                                                _resolverUbicacion(casa),
-                                            builder: (context, snapshot) {
-                                              final texto = snapshot.data ??
-                                                  (snapshot.connectionState ==
-                                                          ConnectionState.waiting
-                                                      ? 'Cargando...'
-                                                      : 'Sin ubicación');
-                                              return _MarqueeText(
-                                                text: texto,
-                                                style: TextStyle(
-                                                  color: AppColors.textSecondaryColor,
-                                                  fontSize: 11,
-                                                  fontWeight: FontWeight.w600,
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 4,
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Row(
+                                        children: [
+                                          IconButton(
+                                            onPressed: () {
+                                              Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                  builder: (_) => ReservarCasaScreen(
+                                                    casa: casa,
+                                                  ),
                                                 ),
                                               );
                                             },
+                                            icon: const Icon(
+                                              Icons.remove_red_eye_outlined,
+                                            ),
+                                            color: AppColors.primaryColor,
+                                            padding: EdgeInsets.zero,
+                                            constraints: const BoxConstraints(
+                                              minWidth: 36,
+                                              minHeight: 36,
+                                            ),
                                           ),
+                                          const SizedBox(width: 4),
+                                          Text(
+                                            'Ver detalles',
+                                            style: TextStyle(
+                                              color: AppColors.textSecondaryColor,
+                                              fontSize: 11,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      const Spacer(),
+                                      SizedBox(
+                                        width: 150,
+                                        child: Row(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            SizedBox(
+                                              width: 16,
+                                              child: Icon(
+                                                Icons.place_outlined,
+                                                size: 14,
+                                                color: AppColors.textSecondaryColor,
+                                              ),
+                                            ),
+                                            const SizedBox(width: 4),
+                                            Expanded(
+                                              child: FutureBuilder<String>(
+                                                future: _ubicacionFutures[casa.id] ??=
+                                                    _resolverUbicacion(casa),
+                                                builder: (context, snapshot) {
+                                                  final texto = snapshot.data ??
+                                                      (snapshot.connectionState ==
+                                                              ConnectionState.waiting
+                                                          ? 'Cargando...'
+                                                          : 'Sin ubicación');
+                                                  return _MarqueeText(
+                                                    text: texto,
+                                                    style: TextStyle(
+                                                      color: AppColors.textSecondaryColor,
+                                                      fontSize: 11,
+                                                      fontWeight: FontWeight.w600,
+                                                    ),
+                                                  );
+                                                },
+                                              ),
+                                            ),
+                                          ],
                                         ),
-                                      ],
-                                    ),
+                                      ),
+                                    ],
                                   ),
-                                ],
-                              ),
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
-                      ),
+                          ),
+                        );
+                      },
                     );
                   },
                 );
