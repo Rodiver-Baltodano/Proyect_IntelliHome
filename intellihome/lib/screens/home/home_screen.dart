@@ -33,6 +33,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final TextEditingController _searchController = TextEditingController();
   final Map<String, int> _imageIndexByCasa = {};
   final Map<String, Future<String>> _ubicacionFutures = {};
+  late final Future<List<Casa>> _casasFuture;
   bool _mostrarFiltros = false;
   bool _cercaDeMi = false;
   double _cuartos = 1;
@@ -43,6 +44,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _activarReservasPendientes();
+    _casasFuture = _cargarCasas();
   }
 
   @override
@@ -578,7 +580,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           Expanded(
             child: FutureBuilder<List<Casa>>(
-              future: _cargarCasas(),
+              future: _casasFuture,
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
@@ -641,20 +643,35 @@ class _HomeScreenState extends State<HomeScreen> {
                                   SizedBox(
                                     height: 180,
                                     width: double.infinity,
-                                    child: imageProvider != null
-                                        ? Image(
-                                            image: imageProvider,
-                                            fit: BoxFit.cover,
-                                          )
-                                        : Container(
-                                            color: AppColors.backgroundColor,
-                                            alignment: Alignment.center,
-                                            child: Icon(
-                                              Icons.image_not_supported,
-                                              color: AppColors.textSecondaryColor,
-                                              size: 40,
+                                    child: AnimatedSwitcher(
+                                      duration: const Duration(milliseconds: 200),
+                                      layoutBuilder: (currentChild, previousChildren) {
+                                        return Stack(
+                                          fit: StackFit.expand,
+                                          children: [
+                                            ...previousChildren,
+                                            if (currentChild != null) currentChild,
+                                          ],
+                                        );
+                                      },
+                                      child: imageProvider != null
+                                          ? Image(
+                                              key: ValueKey(imagePath),
+                                              image: imageProvider,
+                                              fit: BoxFit.cover,
+                                              gaplessPlayback: true,
+                                            )
+                                          : Container(
+                                              key: const ValueKey('no-image'),
+                                              color: AppColors.backgroundColor,
+                                              alignment: Alignment.center,
+                                              child: Icon(
+                                                Icons.image_not_supported,
+                                                color: AppColors.textSecondaryColor,
+                                                size: 40,
+                                              ),
                                             ),
-                                          ),
+                                    ),
                                   ),
                                   Positioned(
                                     left: 12,
