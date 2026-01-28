@@ -37,8 +37,8 @@ class _HomeScreenState extends State<HomeScreen> {
   late final Future<List<Casa>> _casasFuture;
   bool _mostrarFiltros = false;
   bool _cercaDeMi = false;
-  double _cuartos = 1;
-  double _personas = 1;
+  RangeValues _cuartosRango = const RangeValues(1, 8);
+  RangeValues _personasRango = const RangeValues(1, 16);
   RangeValues _precioRango = const RangeValues(0, 100000);
 
   @override
@@ -161,6 +161,10 @@ class _HomeScreenState extends State<HomeScreen> {
       cercaDeMi: _cercaDeMi,
       precioMin: _precioRango.start,
       precioMax: _precioRango.end,
+      cuartosMin: _cuartosRango.start,
+      cuartosMax: _cuartosRango.end,
+      personasMin: _personasRango.start,
+      personasMax: _personasRango.end,
     );
   }
 
@@ -488,29 +492,32 @@ class _HomeScreenState extends State<HomeScreen> {
                           color: AppColors.primaryColor,
                         ),
                         const SizedBox(width: 6),
-                        const Text(
-                          'Cantidad de cuartos',
-                          style: TextStyle(
+                        Text(
+                          'Cantidad de cuartos (${_cuartosRango.start.round()}-${_cuartosRango.end.round()})',
+                          style: const TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
                       ],
                     ),
-                    Slider(
-                      value: _cuartos,
+                    RangeSlider(
+                      values: _cuartosRango,
                       min: 1,
                       max: 8,
                       divisions: 7,
-                      label: _cuartos.round().toString(),
-                      onChanged: (value) {
+                      labels: RangeLabels(
+                        _cuartosRango.start.round().toString(),
+                        _cuartosRango.end.round().toString(),
+                      ),
+                      onChanged: (values) {
                         setState(() {
-                          _cuartos = value;
+                          _cuartosRango = values;
                         });
                       },
                     ),
                     Text(
-                      '${_cuartos.round()} cuartos',
+                      '${_cuartosRango.start.round()} - ${_cuartosRango.end.round()} cuartos',
                       style: const TextStyle(fontSize: 12),
                     ),
                     const SizedBox(height: 12),
@@ -522,29 +529,32 @@ class _HomeScreenState extends State<HomeScreen> {
                           color: AppColors.primaryColor,
                         ),
                         const SizedBox(width: 6),
-                        const Text(
-                          'Cantidad de personas',
-                          style: TextStyle(
+                        Text(
+                          'Cantidad de personas (${_personasRango.start.round()}-${_personasRango.end.round()})',
+                          style: const TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
                       ],
                     ),
-                    Slider(
-                      value: _personas,
+                    RangeSlider(
+                      values: _personasRango,
                       min: 1,
                       max: 16,
                       divisions: 15,
-                      label: _personas.round().toString(),
-                      onChanged: (value) {
+                      labels: RangeLabels(
+                        _personasRango.start.round().toString(),
+                        _personasRango.end.round().toString(),
+                      ),
+                      onChanged: (values) {
                         setState(() {
-                          _personas = value;
+                          _personasRango = values;
                         });
                       },
                     ),
                     Text(
-                      '${_personas.round()} personas',
+                      '${_personasRango.start.round()} - ${_personasRango.end.round()} personas',
                       style: const TextStyle(fontSize: 12),
                     ),
                     const SizedBox(height: 12),
@@ -556,9 +566,9 @@ class _HomeScreenState extends State<HomeScreen> {
                           color: AppColors.primaryColor,
                         ),
                         const SizedBox(width: 6),
-                        const Text(
-                          'Precio por noche',
-                          style: TextStyle(
+                        Text(
+                          'Precio por noche (₵${_formatPrecio(_precioRango.start)}-₵${_formatPrecio(_precioRango.end)})',
+                          style: const TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
                           ),
@@ -721,6 +731,54 @@ class _HomeScreenState extends State<HomeScreen> {
                                                   color: Colors.white,
                                                   fontSize: 12,
                                                   fontWeight: FontWeight.w500,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                      Positioned(
+                                        right: 12,
+                                        top: 12,
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 10,
+                                            vertical: 6,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: Colors.black.withOpacity(0.45),
+                                            borderRadius: BorderRadius.circular(12),
+                                          ),
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              const Icon(
+                                                Icons.meeting_room_outlined,
+                                                color: Colors.white,
+                                                size: 14,
+                                              ),
+                                              const SizedBox(width: 4),
+                                              Text(
+                                                casa.habitaciones.toString(),
+                                                style: const TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 12,
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                              ),
+                                              const SizedBox(width: 10),
+                                              const Icon(
+                                                Icons.people_outline,
+                                                color: Colors.white,
+                                                size: 14,
+                                              ),
+                                              const SizedBox(width: 4),
+                                              Text(
+                                                casa.maxPersonas.toString(),
+                                                style: const TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 12,
+                                                  fontWeight: FontWeight.w600,
                                                 ),
                                               ),
                                             ],

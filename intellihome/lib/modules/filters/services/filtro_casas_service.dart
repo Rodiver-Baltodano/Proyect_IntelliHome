@@ -8,11 +8,27 @@ class FiltroCasasService {
     bool cercaDeMi = false,
     double? precioMin,
     double? precioMax,
+    double? cuartosMin,
+    double? cuartosMax,
+    double? personasMin,
+    double? personasMax,
   }) async {
     var resultado = _filtrarPorPrecio(
       casas,
       min: precioMin,
       max: precioMax,
+    );
+
+    resultado = _filtrarPorCuartos(
+      resultado,
+      min: cuartosMin,
+      max: cuartosMax,
+    );
+
+    resultado = _filtrarPorPersonas(
+      resultado,
+      min: personasMin,
+      max: personasMax,
     );
 
     if (!cercaDeMi) return resultado;
@@ -62,6 +78,36 @@ class FiltroCasasService {
         .where(
           (casa) =>
               casa.precioPorNoche >= minValue && casa.precioPorNoche <= maxValue,
+        )
+        .toList();
+  }
+
+  List<Casa> _filtrarPorCuartos(
+    List<Casa> casas, {
+    double? min,
+    double? max,
+  }) {
+    final minValue = min ?? 1;
+    final maxValue = max ?? double.infinity;
+    return casas
+        .where(
+          (casa) => casa.habitaciones >= minValue &&
+              casa.habitaciones <= maxValue,
+        )
+        .toList();
+  }
+
+  List<Casa> _filtrarPorPersonas(
+    List<Casa> casas, {
+    double? min,
+    double? max,
+  }) {
+    final minValue = min ?? 1;
+    final maxValue = max ?? double.infinity;
+    return casas
+        .where(
+          (casa) => casa.maxPersonas >= minValue &&
+              casa.maxPersonas <= maxValue,
         )
         .toList();
   }
