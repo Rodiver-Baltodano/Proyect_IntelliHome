@@ -32,9 +32,11 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final TextEditingController _searchController = TextEditingController();
+  final ScrollController _listController = ScrollController();
   final Map<String, int> _imageIndexByCasa = {};
   final Map<String, Future<String>> _ubicacionFutures = {};
   late final Future<List<Casa>> _casasFuture;
+  late Future<List<Casa>> _filteredFuture;
   bool _mostrarFiltros = false;
   bool _cercaDeMi = false;
   RangeValues _cuartosRango = const RangeValues(1, 8);
@@ -46,11 +48,13 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     _activarReservasPendientes();
     _casasFuture = _cargarCasas();
+    _filteredFuture = _buildFilteredFuture();
   }
 
   @override
   void dispose() {
     _searchController.dispose();
+    _listController.dispose();
     super.dispose();
   }
 
@@ -59,6 +63,19 @@ class _HomeScreenState extends State<HomeScreen> {
     final rutaJson = p.join(appDir.path, 'casas_integrado.json');
     final repo = CasaRepositorioJson(rutaArchivo: rutaJson);
     return repo.cargarCasas();
+  }
+
+  Future<List<Casa>> _buildFilteredFuture() async {
+    final casas = await _casasFuture;
+    final query = _searchController.text.trim().toLowerCase();
+    final filtradas = query.isEmpty
+        ? casas
+        : casas.where((c) => _matchesQuery(c.nombre, query)).toList();
+    return _aplicarFiltros(filtradas);
+  }
+
+  void _updateFilteredFuture() {
+    _filteredFuture = _buildFilteredFuture();
   }
 
   Future<void> _activarReservasPendientes() async {
@@ -393,7 +410,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 Expanded(
                   child: TextField(
                     controller: _searchController,
-                    onChanged: (_) => setState(() {}),
+                    onChanged: (_) {
+                      setState(_updateFilteredFuture);
+                    },
                     decoration: InputDecoration(
                       hintText: 'Buscar casas...',
                       prefixIcon: const Icon(Icons.search),
@@ -478,6 +497,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       onChanged: (value) {
                         setState(() {
                           _cercaDeMi = value ?? false;
+                          _updateFilteredFuture();
                         });
                       },
                       title: const Text('Lugares cercanos a mi'),
@@ -513,6 +533,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       onChanged: (values) {
                         setState(() {
                           _cuartosRango = values;
+                          _updateFilteredFuture();
                         });
                       },
                     ),
@@ -550,6 +571,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       onChanged: (values) {
                         setState(() {
                           _personasRango = values;
+                          _updateFilteredFuture();
                         });
                       },
                     ),
@@ -587,6 +609,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       onChanged: (values) {
                         setState(() {
                           _precioRango = values;
+                          _updateFilteredFuture();
                         });
                       },
                     ),
@@ -600,7 +623,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           Expanded(
             child: FutureBuilder<List<Casa>>(
-              future: _casasFuture,
+              future: _filteredFuture,
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
@@ -610,271 +633,255 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: Text('Error al cargar casas: ${snapshot.error}'),
                   );
                 }
-                final casas = snapshot.data ?? [];
-                final query = _searchController.text.trim().toLowerCase();
-                final filtradas = query.isEmpty
-                    ? casas
-                    : casas
-                        .where((c) => _matchesQuery(c.nombre, query))
-                        .toList();
+                final casasFiltradas = snapshot.data ?? [];
+                if (casasFiltradas.isEmpty) {
+                  return const Center(
+                    child: Text('No hay casas publicadas.'),
+                  );
+                }
 
-                return FutureBuilder<List<Casa>>(
-                  future: _aplicarFiltros(filtradas),
-                  builder: (context, filtroSnapshot) {
-                    if (filtroSnapshot.connectionState == ConnectionState.waiting) {
-                      return const Center(child: CircularProgressIndicator());
-                    }
+                return ListView.separated(
+                  controller: _listController,
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                  itemCount: casasFiltradas.length,
+                  separatorBuilder: (_, __) => const SizedBox(height: 16),
+                  itemBuilder: (context, index) {
+                    final casa = casasFiltradas[index];
+                    final imageIndex = _imageIndexByCasa[casa.id] ?? 0;
+                    final imagePath = casa.fotos.isNotEmpty
+                        ? casa.fotos[imageIndex.clamp(0, casa.fotos.length - 1)]
+                        : null;
+                    final imageProvider = _buildCasaImage(imagePath);
 
-                    final casasFiltradas = filtroSnapshot.data ?? [];
-                    if (casasFiltradas.isEmpty) {
-                      return const Center(
-                        child: Text('No hay casas publicadas.'),
-                      );
-                    }
-
-                    return ListView.separated(
-                      padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-                      itemCount: casasFiltradas.length,
-                      separatorBuilder: (_, __) => const SizedBox(height: 16),
-                      itemBuilder: (context, index) {
-                        final casa = casasFiltradas[index];
-                        final imageIndex = _imageIndexByCasa[casa.id] ?? 0;
-                        final imagePath = casa.fotos.isNotEmpty
-                            ? casa.fotos[imageIndex.clamp(0, casa.fotos.length - 1)]
-                            : null;
-                        final imageProvider = _buildCasaImage(imagePath);
-
-                        return InkWell(
-                          onTap: () => _toggleImage(casa),
+                    return InkWell(
+                      onTap: () => _toggleImage(casa),
+                      borderRadius: BorderRadius.circular(16),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
                           borderRadius: BorderRadius.circular(16),
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(16),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.08),
-                                  blurRadius: 10,
-                                  offset: const Offset(0, 4),
-                                ),
-                              ],
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.08),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
                             ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                ClipRRect(
-                                  borderRadius: const BorderRadius.vertical(
-                                    top: Radius.circular(16),
+                          ],
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            ClipRRect(
+                              borderRadius: const BorderRadius.vertical(
+                                top: Radius.circular(16),
+                              ),
+                              child: Stack(
+                                children: [
+                                  SizedBox(
+                                    height: 180,
+                                    width: double.infinity,
+                                    child: AnimatedSwitcher(
+                                      duration: const Duration(milliseconds: 200),
+                                      layoutBuilder: (currentChild, previousChildren) {
+                                        return Stack(
+                                          fit: StackFit.expand,
+                                          children: [
+                                            ...previousChildren,
+                                            if (currentChild != null) currentChild,
+                                          ],
+                                        );
+                                      },
+                                      child: imageProvider != null
+                                          ? Image(
+                                              key: ValueKey(imagePath),
+                                              image: imageProvider,
+                                              fit: BoxFit.cover,
+                                              gaplessPlayback: true,
+                                            )
+                                          : Container(
+                                              key: const ValueKey('no-image'),
+                                              color: AppColors.backgroundColor,
+                                              alignment: Alignment.center,
+                                              child: Icon(
+                                                Icons.image_not_supported,
+                                                color: AppColors.textSecondaryColor,
+                                                size: 40,
+                                              ),
+                                            ),
+                                    ),
                                   ),
-                                  child: Stack(
-                                    children: [
-                                      SizedBox(
-                                        height: 180,
-                                        width: double.infinity,
-                                        child: AnimatedSwitcher(
-                                          duration: const Duration(milliseconds: 200),
-                                          layoutBuilder: (currentChild, previousChildren) {
-                                            return Stack(
-                                              fit: StackFit.expand,
-                                              children: [
-                                                ...previousChildren,
-                                                if (currentChild != null) currentChild,
-                                              ],
-                                            );
-                                          },
-                                          child: imageProvider != null
-                                              ? Image(
-                                                  key: ValueKey(imagePath),
-                                                  image: imageProvider,
-                                                  fit: BoxFit.cover,
-                                                  gaplessPlayback: true,
-                                                )
-                                              : Container(
-                                                  key: const ValueKey('no-image'),
-                                                  color: AppColors.backgroundColor,
-                                                  alignment: Alignment.center,
-                                                  child: Icon(
-                                                    Icons.image_not_supported,
-                                                    color: AppColors.textSecondaryColor,
-                                                    size: 40,
-                                                  ),
-                                                ),
-                                        ),
+                                  Positioned(
+                                    left: 12,
+                                    bottom: 12,
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 10,
+                                        vertical: 6,
                                       ),
-                                      Positioned(
-                                        left: 12,
-                                        bottom: 12,
-                                        child: Container(
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 10,
-                                            vertical: 6,
-                                          ),
-                                          decoration: BoxDecoration(
-                                            color: Colors.black.withOpacity(0.45),
-                                            borderRadius: BorderRadius.circular(12),
-                                          ),
-                                          child: Row(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              Text(
-                                                casa.nombre,
-                                                style: const TextStyle(
-                                                  color: Colors.white,
-                                                  fontSize: 14,
-                                                  fontWeight: FontWeight.w600,
-                                                ),
-                                              ),
-                                              const SizedBox(width: 8),
-                                              Text(
-                                                '₵ ${_formatPrecio(casa.precioPorNoche)}',
-                                                style: const TextStyle(
-                                                  color: Colors.white,
-                                                  fontSize: 12,
-                                                  fontWeight: FontWeight.w500,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
+                                      decoration: BoxDecoration(
+                                        color: Colors.black.withOpacity(0.45),
+                                        borderRadius: BorderRadius.circular(12),
                                       ),
-                                      Positioned(
-                                        right: 12,
-                                        top: 12,
-                                        child: Container(
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 10,
-                                            vertical: 6,
-                                          ),
-                                          decoration: BoxDecoration(
-                                            color: Colors.black.withOpacity(0.45),
-                                            borderRadius: BorderRadius.circular(12),
-                                          ),
-                                          child: Row(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              const Icon(
-                                                Icons.meeting_room_outlined,
-                                                color: Colors.white,
-                                                size: 14,
-                                              ),
-                                              const SizedBox(width: 4),
-                                              Text(
-                                                casa.habitaciones.toString(),
-                                                style: const TextStyle(
-                                                  color: Colors.white,
-                                                  fontSize: 12,
-                                                  fontWeight: FontWeight.w600,
-                                                ),
-                                              ),
-                                              const SizedBox(width: 10),
-                                              const Icon(
-                                                Icons.people_outline,
-                                                color: Colors.white,
-                                                size: 14,
-                                              ),
-                                              const SizedBox(width: 4),
-                                              Text(
-                                                casa.maxPersonas.toString(),
-                                                style: const TextStyle(
-                                                  color: Colors.white,
-                                                  fontSize: 12,
-                                                  fontWeight: FontWeight.w600,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 12,
-                                    vertical: 4,
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      Row(
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
                                         children: [
-                                          IconButton(
-                                            onPressed: () {
-                                              Navigator.push(
-                                                context,
-                                                MaterialPageRoute(
-                                                  builder: (_) => ReservarCasaScreen(
-                                                    casa: casa,
-                                                  ),
-                                                ),
-                                              );
-                                            },
-                                            icon: const Icon(
-                                              Icons.remove_red_eye_outlined,
-                                            ),
-                                            color: AppColors.primaryColor,
-                                            padding: EdgeInsets.zero,
-                                            constraints: const BoxConstraints(
-                                              minWidth: 36,
-                                              minHeight: 36,
+                                          Text(
+                                            casa.nombre,
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w600,
                                             ),
                                           ),
-                                          const SizedBox(width: 4),
+                                          const SizedBox(width: 8),
                                           Text(
-                                            'Ver detalles',
-                                            style: TextStyle(
-                                              color: AppColors.textSecondaryColor,
-                                              fontSize: 11,
+                                            '₵ ${_formatPrecio(casa.precioPorNoche)}',
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w500,
                                             ),
                                           ),
                                         ],
                                       ),
-                                      const Spacer(),
-                                      SizedBox(
-                                        width: 150,
-                                        child: Row(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            SizedBox(
-                                              width: 16,
-                                              child: Icon(
-                                                Icons.place_outlined,
-                                                size: 14,
-                                                color: AppColors.textSecondaryColor,
+                                    ),
+                                  ),
+                                  Positioned(
+                                    right: 12,
+                                    top: 12,
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 10,
+                                        vertical: 6,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: Colors.black.withOpacity(0.45),
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          const Icon(
+                                            Icons.meeting_room_outlined,
+                                            color: Colors.white,
+                                            size: 14,
+                                          ),
+                                          const SizedBox(width: 4),
+                                          Text(
+                                            casa.habitaciones.toString(),
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 10),
+                                          const Icon(
+                                            Icons.people_outline,
+                                            color: Colors.white,
+                                            size: 14,
+                                          ),
+                                          const SizedBox(width: 4),
+                                          Text(
+                                            casa.maxPersonas.toString(),
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 4,
+                              ),
+                              child: Row(
+                                children: [
+                                  Row(
+                                    children: [
+                                      IconButton(
+                                        onPressed: () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (_) => ReservarCasaScreen(
+                                                casa: casa,
                                               ),
                                             ),
-                                            const SizedBox(width: 4),
-                                            Expanded(
-                                              child: FutureBuilder<String>(
-                                                future: _ubicacionFutures[casa.id] ??=
-                                                    _resolverUbicacion(casa),
-                                                builder: (context, snapshot) {
-                                                  final texto = snapshot.data ??
-                                                      (snapshot.connectionState ==
-                                                              ConnectionState.waiting
-                                                          ? 'Cargando...'
-                                                          : 'Sin ubicación');
-                                                  return _MarqueeText(
-                                                    text: texto,
-                                                    style: TextStyle(
-                                                      color: AppColors.textSecondaryColor,
-                                                      fontSize: 11,
-                                                      fontWeight: FontWeight.w600,
-                                                    ),
-                                                  );
-                                                },
-                                              ),
-                                            ),
-                                          ],
+                                          );
+                                        },
+                                        icon: const Icon(
+                                          Icons.remove_red_eye_outlined,
+                                        ),
+                                        color: AppColors.primaryColor,
+                                        padding: EdgeInsets.zero,
+                                        constraints: const BoxConstraints(
+                                          minWidth: 36,
+                                          minHeight: 36,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        'Ver detalles',
+                                        style: TextStyle(
+                                          color: AppColors.textSecondaryColor,
+                                          fontSize: 11,
                                         ),
                                       ),
                                     ],
                                   ),
-                                ),
-                              ],
+                                  const Spacer(),
+                                  SizedBox(
+                                    width: 150,
+                                    child: Row(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        SizedBox(
+                                          width: 16,
+                                          child: Icon(
+                                            Icons.place_outlined,
+                                            size: 14,
+                                            color: AppColors.textSecondaryColor,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 4),
+                                        Expanded(
+                                          child: FutureBuilder<String>(
+                                            future: _ubicacionFutures[casa.id] ??=
+                                                _resolverUbicacion(casa),
+                                            builder: (context, snapshot) {
+                                              final texto = snapshot.data ??
+                                                  (snapshot.connectionState ==
+                                                          ConnectionState.waiting
+                                                      ? 'Cargando...'
+                                                      : 'Sin ubicación');
+                                              return _MarqueeText(
+                                                text: texto,
+                                                style: TextStyle(
+                                                  color: AppColors.textSecondaryColor,
+                                                  fontSize: 11,
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                              );
+                                            },
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
-                          ),
-                        );
-                      },
+                          ],
+                        ),
+                      ),
                     );
                   },
                 );
