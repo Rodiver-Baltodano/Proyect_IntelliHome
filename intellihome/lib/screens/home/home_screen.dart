@@ -6,6 +6,7 @@ import 'package:intellihome/l10n/app_localizations.dart';
 import 'package:intellihome/modules/autenticacion/models/casa.dart';
 import 'package:intellihome/modules/autenticacion/repositories/casa_repositorio_json.dart';
 import 'package:intellihome/modules/reservas/services/reserva_sync_service.dart';
+import 'package:intellihome/modules/ubicacion/services/ubicacion_service.dart';
 import 'package:intellihome/providers/theme_provider.dart';
 import 'package:intellihome/screens/home/domotic_screen.dart';
 import 'package:intellihome/screens/home/historial_reservas_screen.dart';
@@ -31,6 +32,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final TextEditingController _searchController = TextEditingController();
   final Map<String, int> _imageIndexByCasa = {};
+  final Map<String, Future<String>> _ubicacionFutures = {};
   bool _mostrarFiltros = false;
   bool _cercaDeMi = false;
   double _cuartos = 1;
@@ -97,6 +99,26 @@ class _HomeScreenState extends State<HomeScreen> {
   String _formatPrecio(double precio) {
     final formatter = NumberFormat('#,##0', 'en_US');
     return formatter.format(precio);
+  }
+
+  ({double lat, double lng})? _parseCoords(String raw) {
+    final trimmed = raw.trim();
+    if (trimmed.isEmpty) return null;
+    final parts = trimmed.split(',');
+    if (parts.length != 2) return null;
+    final lat = double.tryParse(parts[0].trim());
+    final lng = double.tryParse(parts[1].trim());
+    if (lat == null || lng == null) return null;
+    return (lat: lat, lng: lng);
+  }
+
+  Future<String> _resolverUbicacion(Casa casa) async {
+    final coords = _parseCoords(casa.ubicacion);
+    if (coords == null) return 'Sin ubicación';
+    return UbicacionService().obtenerProvinciaCanton(
+      lat: coords.lat,
+      lng: coords.lng,
+    );
   }
 
   String _normalizeText(String value) {
@@ -680,31 +702,76 @@ class _HomeScreenState extends State<HomeScreen> {
                               ),
                               child: Row(
                                 children: [
-                                  IconButton(
-                                    onPressed: () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (_) => ReservarCasaScreen(
-                                            casa: casa,
+                                  Row(
+                                    children: [
+                                      IconButton(
+                                        onPressed: () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (_) => ReservarCasaScreen(
+                                                casa: casa,
+                                              ),
+                                            ),
+                                          );
+                                        },
+                                        icon: const Icon(
+                                          Icons.remove_red_eye_outlined,
+                                        ),
+                                        color: AppColors.primaryColor,
+                                        padding: EdgeInsets.zero,
+                                        constraints: const BoxConstraints(
+                                          minWidth: 36,
+                                          minHeight: 36,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        'Ver detalles',
+                                        style: TextStyle(
+                                          color: AppColors.textSecondaryColor,
+                                          fontSize: 11,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const Spacer(),
+                                  SizedBox(
+                                    width: 150,
+                                    child: Row(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        SizedBox(
+                                          width: 16,
+                                          child: Icon(
+                                            Icons.place_outlined,
+                                            size: 14,
+                                            color: AppColors.textSecondaryColor,
                                           ),
                                         ),
-                                      );
-                                    },
-                                    icon: const Icon(Icons.remove_red_eye_outlined),
-                                    color: AppColors.primaryColor,
-                                    padding: EdgeInsets.zero,
-                                    constraints: const BoxConstraints(
-                                      minWidth: 36,
-                                      minHeight: 36,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    'Ver detalles',
-                                    style: TextStyle(
-                                      color: AppColors.textSecondaryColor,
-                                      fontSize: 11,
+                                        const SizedBox(width: 4),
+                                        Expanded(
+                                          child: FutureBuilder<String>(
+                                            future: _ubicacionFutures[casa.id] ??=
+                                                _resolverUbicacion(casa),
+                                            builder: (context, snapshot) {
+                                              final texto = snapshot.data ??
+                                                  (snapshot.connectionState ==
+                                                          ConnectionState.waiting
+                                                      ? 'Cargando...'
+                                                      : 'Sin ubicación');
+                                              return _MarqueeText(
+                                                text: texto,
+                                                style: TextStyle(
+                                                  color: AppColors.textSecondaryColor,
+                                                  fontSize: 11,
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                              );
+                                            },
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ),
                                 ],
@@ -730,4 +797,103 @@ class _EstiloDisplay {
   final String emoji;
 
   _EstiloDisplay({required this.label, required this.emoji});
+}
+
+class _MarqueeText extends StatefulWidget {
+  final String text;
+  final TextStyle style;
+
+  const _MarqueeText({
+    required this.text,
+    required this.style,
+  });
+
+  @override
+  State<_MarqueeText> createState() => _MarqueeTextState();
+}
+
+class _MarqueeTextState extends State<_MarqueeText> {
+  final ScrollController _controller = ScrollController();
+  bool _running = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _start());
+  }
+
+  @override
+  void didUpdateWidget(covariant _MarqueeText oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.text != widget.text) {
+      _start(reset: true);
+    }
+  }
+
+  Future<void> _start({bool reset = false}) async {
+    if (!mounted) return;
+    if (_running) return;
+    _running = true;
+
+    if (reset && _controller.hasClients) {
+      _controller.jumpTo(0);
+    }
+
+    await Future.delayed(const Duration(milliseconds: 200));
+    if (!mounted || !_controller.hasClients) {
+      _running = false;
+      return;
+    }
+
+    final maxScroll = _controller.position.maxScrollExtent;
+    if (maxScroll <= 0) {
+      _running = false;
+      return;
+    }
+
+    while (mounted && _controller.hasClients) {
+      if (!_controller.hasClients) break;
+      final duration = Duration(milliseconds: (maxScroll * 20).toInt().clamp(800, 8000));
+      try {
+        await _controller.animateTo(
+          maxScroll,
+          duration: duration,
+          curve: Curves.linear,
+        );
+      } catch (_) {
+        break;
+      }
+      if (!mounted || !_controller.hasClients) break;
+      await Future.delayed(const Duration(milliseconds: 800));
+      if (!_controller.hasClients) break;
+      _controller.jumpTo(0);
+      await Future.delayed(const Duration(milliseconds: 800));
+    }
+
+    _running = false;
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: widget.style.fontSize != null ? widget.style.fontSize! + 4 : 18,
+      child: SingleChildScrollView(
+        controller: _controller,
+        scrollDirection: Axis.horizontal,
+        physics: const NeverScrollableScrollPhysics(),
+        child: Text(
+          widget.text,
+          style: widget.style,
+          maxLines: 1,
+          overflow: TextOverflow.visible,
+        ),
+      ),
+    );
+  }
 }

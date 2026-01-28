@@ -6,6 +6,7 @@ import 'package:intellihome/modules/autenticacion/models/casa.dart';
 import 'package:intellihome/modules/autenticacion/repositories/casa_repositorio_json.dart';
 import 'package:intellihome/modules/reservas/models/reserva.dart';
 import 'package:intellihome/modules/reservas/repositories/reserva_repository.dart';
+import 'package:intellihome/modules/ubicacion/services/ubicacion_service.dart';
 import 'package:intellihome/providers/theme_provider.dart';
 import 'package:intellihome/screens/home/domotic_screen.dart';
 import 'package:path/path.dart' as p;
@@ -20,6 +21,8 @@ class HistorialReservasScreen extends StatefulWidget {
 }
 
 class _HistorialReservasScreenState extends State<HistorialReservasScreen> {
+  final Map<String, Future<String>> _ubicacionFutures = {};
+
   Future<List<_ReservaItem>> _cargarReservas() async {
     final usuario = context.read<ThemeProvider>().usuarioActual;
     if (usuario == null) return [];
@@ -73,6 +76,27 @@ class _HistorialReservasScreenState extends State<HistorialReservasScreen> {
     final file = File(ruta);
     if (file.existsSync()) return FileImage(file);
     return null;
+  }
+
+  ({double lat, double lng})? _parseCoords(String raw) {
+    final trimmed = raw.trim();
+    if (trimmed.isEmpty) return null;
+    final parts = trimmed.split(',');
+    if (parts.length != 2) return null;
+    final lat = double.tryParse(parts[0].trim());
+    final lng = double.tryParse(parts[1].trim());
+    if (lat == null || lng == null) return null;
+    return (lat: lat, lng: lng);
+  }
+
+  Future<String> _resolverUbicacion(Casa? casa) async {
+    if (casa == null) return 'Sin ubicación';
+    final coords = _parseCoords(casa.ubicacion);
+    if (coords == null) return 'Sin ubicación';
+    return UbicacionService().obtenerProvinciaCanton(
+      lat: coords.lat,
+      lng: coords.lng,
+    );
   }
 
   @override
@@ -170,6 +194,41 @@ class _HistorialReservasScreenState extends State<HistorialReservasScreen> {
                               fontSize: 11,
                               color: AppColors.textSecondaryColor,
                             ),
+                          ),
+                          const SizedBox(height: 4),
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              SizedBox(
+                                width: 16,
+                                child: Icon(
+                                  Icons.place_outlined,
+                                  size: 14,
+                                  color: AppColors.textSecondaryColor,
+                                ),
+                              ),
+                              const SizedBox(width: 4),
+                              Expanded(
+                                child: FutureBuilder<String>(
+                                  future: _ubicacionFutures[item.reserva.propertyId] ??=
+                                      _resolverUbicacion(casa),
+                                  builder: (context, snapshot) {
+                                    final texto = snapshot.data ??
+                                        (snapshot.connectionState ==
+                                                ConnectionState.waiting
+                                            ? 'Cargando...' 
+                                            : 'Sin ubicación');
+                                    return _MarqueeText(
+                                      text: texto,
+                                      style: const TextStyle(
+                                        fontSize: 11,
+                                        color: AppColors.textSecondaryColor,
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
