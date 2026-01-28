@@ -3,9 +3,20 @@ import 'package:intellihome/modules/autenticacion/models/casa.dart';
 import 'package:intellihome/modules/ubicacion/services/ubicacion_service.dart';
 
 class FiltroCasasService {
-  Future<List<Casa>> filtrarCercaDeMi({
+  Future<List<Casa>> filtrar({
     required List<Casa> casas,
+    bool cercaDeMi = false,
+    double? precioMin,
+    double? precioMax,
   }) async {
+    var resultado = _filtrarPorPrecio(
+      casas,
+      min: precioMin,
+      max: precioMax,
+    );
+
+    if (!cercaDeMi) return resultado;
+
     final posicion = await _obtenerPosicionActual();
     if (posicion == null) return [];
 
@@ -18,7 +29,7 @@ class FiltroCasasService {
     if (usuarioParts == null) return [];
 
     final resultados = await Future.wait(
-      casas.map((casa) async {
+      resultado.map((casa) async {
         final coords = _parseCoords(casa.ubicacion);
         if (coords == null) return null;
         final ubicacionCasa = await ubicacionService.obtenerProvinciaCanton(
@@ -38,6 +49,21 @@ class FiltroCasasService {
     );
 
     return resultados.whereType<Casa>().toList();
+  }
+
+  List<Casa> _filtrarPorPrecio(
+    List<Casa> casas, {
+    double? min,
+    double? max,
+  }) {
+    final minValue = min ?? 0;
+    final maxValue = max ?? double.infinity;
+    return casas
+        .where(
+          (casa) =>
+              casa.precioPorNoche >= minValue && casa.precioPorNoche <= maxValue,
+        )
+        .toList();
   }
 
   Future<Position?> _obtenerPosicionActual() async {

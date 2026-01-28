@@ -155,9 +155,13 @@ class _HomeScreenState extends State<HomeScreen> {
     return _levenshteinDistance(normalizedTitle, normalizedQuery) <= 2;
   }
 
-  Future<List<Casa>> _filtrarCercaDeMi(List<Casa> casas) {
-    if (!_cercaDeMi) return Future.value(casas);
-    return FiltroCasasService().filtrarCercaDeMi(casas: casas);
+  Future<List<Casa>> _aplicarFiltros(List<Casa> casas) {
+    return FiltroCasasService().filtrar(
+      casas: casas,
+      cercaDeMi: _cercaDeMi,
+      precioMin: _precioRango.start,
+      precioMax: _precioRango.end,
+    );
   }
 
   int _levenshteinDistance(String s, String t) {
@@ -605,7 +609,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         .toList();
 
                 return FutureBuilder<List<Casa>>(
-                  future: _filtrarCercaDeMi(filtradas),
+                  future: _aplicarFiltros(filtradas),
                   builder: (context, filtroSnapshot) {
                     if (filtroSnapshot.connectionState == ConnectionState.waiting) {
                       return const Center(child: CircularProgressIndicator());
