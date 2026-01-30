@@ -68,10 +68,20 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<List<Casa>> _buildFilteredFuture() async {
     final casas = await _casasFuture;
     final query = _searchController.text.trim().toLowerCase();
-    final filtradas = query.isEmpty
-        ? casas
-        : casas.where((c) => _matchesQuery(c.nombre, query)).toList();
-    return _aplicarFiltros(filtradas);
+    if (query.isEmpty) {
+      return _aplicarFiltros(casas);
+    }
+
+    final filtradas = await Future.wait(
+      casas.map((casa) async {
+        if (_matchesQuery(casa.nombre, query)) return casa;
+        final ubicacion = await _getUbicacionFuture(casa);
+        if (_matchesQuery(ubicacion, query)) return casa;
+        return null;
+      }),
+    );
+
+    return _aplicarFiltros(filtradas.whereType<Casa>().toList());
   }
 
   void _updateFilteredFuture() {
@@ -139,6 +149,10 @@ class _HomeScreenState extends State<HomeScreen> {
       lat: coords.lat,
       lng: coords.lng,
     );
+  }
+
+  Future<String> _getUbicacionFuture(Casa casa) {
+    return _ubicacionFutures[casa.id] ??= _resolverUbicacion(casa);
   }
 
   String _normalizeText(String value) {
