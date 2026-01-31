@@ -20,6 +20,9 @@ class Reserva {
   /// ID de la propiedad reservada
   final String propertyId;
 
+  ///Nombre de la casa
+  final String nombreCasa;
+
   /// Indica si tiene acceso a la domótica de la propiedad
   final bool accessDomotics;
 
@@ -31,6 +34,7 @@ class Reserva {
     required this.startDate,
     required this.endDate,
     required this.propertyId,
+    required this.nombreCasa,
     this.accessDomotics = false,
   });
 
@@ -43,6 +47,7 @@ class Reserva {
       startDate: DateTime.parse(json['startDate'] as String),
       endDate: DateTime.parse(json['endDate'] as String),
       propertyId: json['propertyId'] as String,
+      nombreCasa: json['nombreCasa'] as String,
       accessDomotics: json['accessDomotics'] as bool? ?? false,
     );
   }
@@ -56,6 +61,7 @@ class Reserva {
       'startDate': startDate.toIso8601String(),
       'endDate': endDate.toIso8601String(),
       'propertyId': propertyId,
+      'nombreCasa': nombreCasa,
       'accessDomotics': accessDomotics,
     };
   }
@@ -68,6 +74,7 @@ class Reserva {
     DateTime? startDate,
     DateTime? endDate,
     String? propertyId,
+    String? nombreCasa,
     bool? accessDomotics,
   }) {
     return Reserva(
@@ -77,13 +84,14 @@ class Reserva {
       startDate: startDate ?? this.startDate,
       endDate: endDate ?? this.endDate,
       propertyId: propertyId ?? this.propertyId,
+      nombreCasa: nombreCasa ?? this.nombreCasa,
       accessDomotics: accessDomotics ?? this.accessDomotics,
     );
   }
 
   @override
   String toString() {
-    return 'Reserva(id: $reservationId, status: $status, property: $propertyId, '
+    return 'Reserva(id: $reservationId, status: $status, property: $propertyId, nombreCasa: $nombreCasa, '
         'dates: ${startDate.toIso8601String()} - ${endDate.toIso8601String()}, '
         'domotics: $accessDomotics)';
   }

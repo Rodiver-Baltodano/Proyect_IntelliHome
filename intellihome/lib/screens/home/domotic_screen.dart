@@ -2,6 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:intellihome/config/app_colors.dart';
 import 'package:intellihome/l10n/app_localizations.dart';
 import 'package:intellihome/modules/autenticacion/services/tcp_client.dart';
+import 'package:intellihome/modules/reservas/services/reserva_service.dart';
+import 'package:intellihome/modules/reservas/repositories/reserva_repository.dart';
+import 'package:intellihome/modules/autenticacion/repositories/usuario_repository.dart';
+import 'package:intellihome/modules/autenticacion/repositories/casa_repositorio_json.dart';
+import 'package:intellihome/session/session_manager.dart';
+import 'dart:io';
 
 class DomoticScreen extends StatefulWidget {
   const DomoticScreen({super.key});
@@ -17,6 +23,14 @@ class _DomoticScreenState extends State<DomoticScreen> {
   bool _shockDetected = false;
   bool _flameDetected = false;
   bool _puertaAbierta = false;
+  
+  // Servicio de reservas para notificaciones
+  ReservaService? _reservaService;
+  String? _reservaActiva;
+  
+  // Control de notificaciones enviadas
+  bool _notificacionIncendioEnviada = false;
+  bool _notificacionSismoEnviada = false;
 
   // Mapeo de habitaciones a pines GPIO
   final Map<String, int> _roomToPinMap = {
@@ -45,8 +59,53 @@ class _DomoticScreenState extends State<DomoticScreen> {
   @override
   void initState() {
     super.initState();
+    _initializeServices();
     _setupTcpCallbacks();
     _connectToRaspberryPi();
+  }
+
+  Future<void> _initializeServices() async {
+    try {
+      // Obtener rutas de archivos
+      final reservasPath = await _getFilePath('reservas_test.json');
+      final usuariosPath = await _getFilePath('usuarios_integrado.json');
+      final casasPath = await _getFilePath('casas_test_josesol.json');
+
+      // Inicializar repositorios
+      final reservaRepo = ReservaRepositorioJson(rutaArchivo: reservasPath);
+      final usuarioRepo = UsuarioRepositorioJson(rutaArchivo: usuariosPath);
+      final casaRepo = CasaRepositorioJson(rutaArchivo: casasPath);
+
+      // Inicializar servicio
+      _reservaService = ReservaService(
+        repositorio: reservaRepo,
+        usuarioRepositorio: usuarioRepo,
+        casaRepositorio: casaRepo,
+      );
+
+      // Buscar reserva activa del usuario actual
+      final userId = SessionManager.currentUserId;
+      if (userId != null) {
+        final reservas = await reservaRepo.obtenerPorUsuario(userId);
+        final activa = reservas.where((r) => r.status == 'ACTIVE').firstOrNull;
+        if (activa != null) {
+          setState(() {
+            _reservaActiva = activa.reservationId;
+          });
+        }
+      }
+    } catch (e) {
+      debugPrint('Error inicializando servicios: $e');
+    }
+  }
+
+  Future<String> _getFilePath(String fileName) async {
+    try {
+      final directory = Directory.current;
+      return '${directory.path}/$fileName';
+    } catch (e) {
+      return fileName;
+    }
   }
 
   void _setupTcpCallbacks() {
@@ -103,12 +162,22 @@ class _DomoticScreenState extends State<DomoticScreen> {
           }
         }
 
-        // Mostrar mensaje si hay detección nueva
+        // Mostrar mensaje y enviar notificación si hay detección nueva
         if (!previousFlame && _flameDetected) {
           _showMessage('🔥 ¡LLAMA DETECTADA!');
+          _enviarNotificacionIncendio();
         }
         if (!previousShock && _shockDetected) {
           _showMessage('📳 ¡VIBRACIÓN DETECTADA!');
+          _enviarNotificacionSismo();
+        }
+        
+        // Resetear flags si los sensores vuelven a normal
+        if (previousFlame && !_flameDetected) {
+          _notificacionIncendioEnviada = false;
+        }
+        if (previousShock && !_shockDetected) {
+          _notificacionSismoEnviada = false;
         }
       } catch (e) {
         print('Error procesando datos de sensores: $e');
@@ -706,5 +775,59 @@ class _DomoticScreenState extends State<DomoticScreen> {
         ],
       ),
     );
+  }
+
+  Future<void> _enviarNotificacionIncendio() async {
+    // Evitar enviar múltiples notificaciones
+    if (_notificacionIncendioEnviada) return;
+    
+    if (_reservaService == null || _reservaActiva == null) {
+      debugPrint('No se puede enviar notificación: servicio o reserva no disponible');
+      return;
+    }
+
+    _notificacionIncendioEnviada = true;
+
+    try {
+      final resultado = await _reservaService!.enviarNotificacionIncendio(_reservaActiva!);
+      
+      if (resultado.exitoso) {
+        debugPrint(' Notificación de incendio enviada correctamente');
+        if (mounted) {
+          print(' Alerta de incendio enviada por WhatsApp');
+        }
+      } else {
+        debugPrint(' Error al enviar notificación de incendio: ${resultado.mensaje}');
+      }
+    } catch (e) {
+      debugPrint('Error enviando notificación de incendio: $e');
+    }
+  }
+
+  Future<void> _enviarNotificacionSismo() async {
+    // Evitar enviar múltiples notificaciones
+    if (_notificacionSismoEnviada) return;
+    
+    if (_reservaService == null || _reservaActiva == null) {
+      debugPrint('No se puede enviar notificación: servicio o reserva no disponible');
+      return;
+    }
+
+    _notificacionSismoEnviada = true;
+
+    try {
+      final resultado = await _reservaService!.enviarNotificacionSismo(_reservaActiva!);
+      
+      if (resultado.exitoso) {
+        debugPrint('Notificación de sismo enviada correctamente');
+        if (mounted) {
+          _showMessage(' Alerta de sismo enviada por WhatsApp');
+        }
+      } else {
+        debugPrint('Error al enviar notificación de sismo: ${resultado.mensaje}');
+      }
+    } catch (e) {
+      debugPrint('Error enviando notificación de sismo: $e');
+    }
   }
 }

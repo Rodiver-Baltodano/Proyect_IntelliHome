@@ -28,6 +28,7 @@ class ReservaService {
   Future<ResultadoReserva> createReservation({
     required String userId,
     required String propertyId,
+    required String nombreCasa,
     required DateTime startDate,
     required DateTime endDate,
   }) async {
@@ -94,6 +95,7 @@ class ReservaService {
         startDate: startDate,
         endDate: endDate,
         propertyId: propertyId,
+        nombreCasa: nombreCasa,
         accessDomotics: false,
       );
 
@@ -104,6 +106,7 @@ class ReservaService {
         userId: userId,
         reservationId: nuevaReserva.reservationId,
         propertyId: propertyId,
+        nombreCasa: nombreCasa,
         startDate: startDate,
         endDate: endDate,
       );
@@ -120,38 +123,98 @@ class ReservaService {
     }
   }
 
-  /// Confirma una reserva pendiente
-  Future<ResultadoReserva> confirmarReserva(String reservationId) async {
+  /// Envía notificación de incendio solo si la reserva está activa
+  Future<ResultadoReserva> enviarNotificacionIncendio(String reservationId) async {
     try {
-      await _repositorio.confirmarReserva(reservationId);
       final reserva = await _repositorio.buscarPorId(reservationId);
+      
+      if (reserva == null) {
+        return ResultadoReserva.fallo(
+          mensaje: 'Reserva no encontrada',
+          codigoError: 'RESERVATION_NOT_FOUND',
+        );
+      }
+
+      // Verificar que la reserva esté activa
+      if (reserva.status != ReservaStatus.active) {
+        return ResultadoReserva.fallo(
+          mensaje: 'La reserva no está activa. Estado actual: ${reserva.status}',
+          codigoError: 'RESERVATION_NOT_ACTIVE',
+        );
+      }
+
+      // Obtener información del usuario y la casa para enviar la notificación
+      if (_usuarioRepositorio != null && _casaRepositorio != null) {
+        final usuario = await _usuarioRepositorio.buscarPorId(reserva.userId);
+        final casa = await _casaRepositorio.buscarPorId(reserva.propertyId);
+        
+        if (usuario != null && casa != null) {
+          await _whatsappService.enviarNotificacionIncendio(
+            propertyId: reserva.propertyId,
+            horadesatre: DateTime.now(),
+            nombreUsuario: usuario.username,
+            telefono: usuario.telefono,
+            nombreCasa: casa.nombre,
+          );
+        }
+      }
 
       return ResultadoReserva.exito(
-        mensaje: 'Reserva confirmada exitosamente',
+        mensaje: 'Notificación de incendio enviada exitosamente',
         reserva: reserva,
       );
     } catch (e) {
       return ResultadoReserva.fallo(
-        mensaje: 'Error al confirmar la reserva: ${e.toString()}',
-        codigoError: 'CONFIRM_ERROR',
+        mensaje: 'Error al enviar notificación de incendio: ${e.toString()}',
+        codigoError: 'NOTIFICATION_ERROR',
       );
     }
   }
 
-  /// Cancela una reserva
-  Future<ResultadoReserva> cancelarReserva(String reservationId) async {
+  /// Envía notificación de sismo solo si la reserva está activa
+  Future<ResultadoReserva> enviarNotificacionSismo(String reservationId) async {
     try {
-      await _repositorio.cancelarReserva(reservationId);
       final reserva = await _repositorio.buscarPorId(reservationId);
+      
+      if (reserva == null) {
+        return ResultadoReserva.fallo(
+          mensaje: 'Reserva no encontrada',
+          codigoError: 'RESERVATION_NOT_FOUND',
+        );
+      }
+
+      // Verificar que la reserva esté activa
+      if (reserva.status != ReservaStatus.active) {
+        return ResultadoReserva.fallo(
+          mensaje: 'La reserva no está activa. Estado actual: ${reserva.status}',
+          codigoError: 'RESERVATION_NOT_ACTIVE',
+        );
+      }
+
+      // Obtener información del usuario y la casa para enviar la notificación
+      if (_usuarioRepositorio != null && _casaRepositorio != null) {
+        final usuario = await _usuarioRepositorio.buscarPorId(reserva.userId);
+        final casa = await _casaRepositorio.buscarPorId(reserva.propertyId);
+        
+        if (usuario != null && casa != null) {
+          await _whatsappService.enviarNotificacionSismo(
+            propertyId: reserva.propertyId,
+            horadesatre: DateTime.now(),
+            nombreUsuario: usuario.username,
+            telefono: usuario.telefono,
+            nombreCasa: casa.nombre,
+          );
+        }
+      }
 
       return ResultadoReserva.exito(
-        mensaje: 'Reserva cancelada exitosamente',
+        mensaje: 'Notificación de sismo enviada exitosamente',
         reserva: reserva,
       );
     } catch (e) {
       return ResultadoReserva.fallo(
-        mensaje: 'Error al cancelar la reserva: ${e.toString()}',
-        codigoError: 'CANCEL_ERROR',
+        mensaje: 'Error al enviar notificación de sismo: ${e.toString()}',
+        codigoError: 'NOTIFICATION_ERROR',
       );
     }
   }
@@ -243,14 +306,14 @@ class ReservaService {
             );
             await _repositorio.actualizarReserva(reservaActualizada);
             reservasActivadas.add(reservaActualizada);
-            print('✅ [RESERVAS] Reserva ${reserva.reservationId} activada - Acceso domótico habilitado');
+            print('[Reservas] Reserva ${reserva.reservationId} activada - Acceso domótico habilitado');
           }
         }
       }
 
       return reservasActivadas;
     } catch (e) {
-      print('❌ Error al activar reservas: $e');
+      print('[Reservas] Error al activar reservas: $e');
       return [];
     }
   }
@@ -273,14 +336,14 @@ class ReservaService {
             );
             await _repositorio.actualizarReserva(reservaActualizada);
             reservasFinalizadas.add(reservaActualizada);
-            print('✅ Reserva ${reserva.reservationId} finalizada');
+            print('[Reservas] Reserva ${reserva.reservationId} finalizada');
           }
         }
       }
 
       return reservasFinalizadas;
     } catch (e) {
-      print('❌ Error al finalizar reservas: $e');
+      print('[Reservas] Error al finalizar reservas: $e');
       return [];
     }
   }
@@ -290,6 +353,7 @@ class ReservaService {
     required String userId,
     required String reservationId,
     required String propertyId,
+    required String nombreCasa,
     required DateTime startDate,
     required DateTime endDate,
   }) async {
@@ -301,7 +365,7 @@ class ReservaService {
           final telefono = usuario.telefono;
           final nombre = usuario.nombreApellidos;
           
-          print('📱 [WhatsApp] Enviando confirmación a +$telefono');
+          print('[WhatsApp] Enviando confirmación a +$telefono');
           
           // Enviar mensaje usando Twilio API
           final casaNombre = await _casaRepositorio?.buscarPorId(propertyId);
@@ -312,28 +376,29 @@ class ReservaService {
             nombreUsuario: nombre,
             reservationId: reservationId,
             propertyName: nombrePropiedad,
+            envio: DateTime.now(),
             startDate: startDate,
             endDate: endDate,
           );
 
           if (resultado.success) {
-            print('✅ [WhatsApp] Mensaje enviado exitosamente');
-            print('📊 [WhatsApp] SID: ${resultado.messageSid}');
+            print('[WhatsApp] Mensaje enviado exitosamente');
+            print('[WhatsApp] SID: ${resultado.messageSid}');
             return true;
           } else {
-            print('❌ [WhatsApp] Error: ${resultado.message}');
+            print('[WhatsApp] Error: ${resultado.message}');
             return false;
           }
         } else {
-          print('⚠️ [WhatsApp] Usuario no encontrado');
+          print('[WhatsApp] Usuario no encontrado');
           return false;
         }
       } else {
-        print('⚠️ [WhatsApp] Repositorio de usuarios no disponible');
+        print('[WhatsApp] Repositorio de usuarios no disponible');
         return false;
       }
     } catch (e) {
-      print('❌ [WhatsApp] Error al enviar mensaje: $e');
+      print('[WhatsApp] Error al enviar mensaje: $e');
       return false;
     }
   }

@@ -35,7 +35,7 @@ class WhatsAppService {
       // Formatear número de teléfono
       final telefonoFormateado = _formatearTelefono(telefono);
       
-      print('📱 [WhatsApp] Iniciando envío...');
+      print('  [WhatsApp] Iniciando envío...');
       print('   Account SID: ${_accountSid.substring(0, 6)}...');
       print('   Desde: $_fromNumber');
       print('   Para: whatsapp:$telefonoFormateado');
@@ -70,10 +70,10 @@ class WhatsAppService {
       // Procesar respuesta
       if (response.statusCode == 200 || response.statusCode == 201) {
         final data = jsonDecode(response.body);
-        print('✅ [WhatsApp] Mensaje enviado exitosamente');
-        print('📱 [WhatsApp] SID: ${data['sid']}');
-        print('📊 [WhatsApp] Estado: ${data['status']}');
-        print('💰 [WhatsApp] Precio: ${data['price'] ?? 'N/A'} ${data['price_unit'] ?? ''}');
+        print(' [WhatsApp] Mensaje enviado exitosamente');
+        print(' [WhatsApp] SID: ${data['sid']}');
+        print(' [WhatsApp] Estado: ${data['status']}');
+        print(' [WhatsApp] Precio: ${data['price'] ?? 'N/A'} ${data['price_unit'] ?? ''}');
         
         return WhatsAppResult.success(
           'Mensaje enviado exitosamente',
@@ -90,7 +90,7 @@ class WhatsAppService {
           errorCode = errorData['code']?.toString();
           
           // Logs detallados del error
-          print('❌ [WhatsApp] Error ${response.statusCode}');
+          print(' [WhatsApp] Error ${response.statusCode}');
           print('   Código: ${errorCode ?? 'N/A'}');
           print('   Mensaje: $errorMessage');
           
@@ -98,7 +98,7 @@ class WhatsAppService {
             print('   Más info: ${errorData['more_info']}');
           }
         } catch (e) {
-          print('❌ [WhatsApp] Error ${response.statusCode}: No se pudo parsear respuesta');
+          print(' [WhatsApp] Error ${response.statusCode}: No se pudo parsear respuesta');
           print('   Respuesta raw: ${response.body}');
         }
         
@@ -110,10 +110,10 @@ class WhatsAppService {
         );
       }
     } on Exception catch (e) {
-      print('❌ [WhatsApp] Excepción: $e');
+      print(' [WhatsApp] Excepción: $e');
       return WhatsAppResult.error('Error de conexión: ${e.toString()}');
     } catch (e) {
-      print('❌ [WhatsApp] Error inesperado: $e');
+      print(' [WhatsApp] Error inesperado: $e');
       return WhatsAppResult.error('Error inesperado: ${e.toString()}');
     }
   }
@@ -143,6 +143,7 @@ class WhatsAppService {
     required String nombreUsuario,
     required String reservationId,
     required String propertyName,
+    required DateTime envio,
     required DateTime startDate,
     required DateTime endDate,
   }) async {
@@ -151,7 +152,7 @@ class WhatsAppService {
     
     final mensaje = '''🏠 *IntelliHome - Confirmación de Reserva*
 
-Hola $nombreUsuario,
+Hola $nombreUsuario, $envio
 
 ✅ Tu reserva ha sido confirmada exitosamente.
 
@@ -171,21 +172,23 @@ _IntelliHome Team_''';
     );
   }
 
-  /// Envía mensaje de activación de reserva
-  Future<WhatsAppResult> enviarActivacionReserva({
+  /// Envía mensaje de alerta de incendio al numero del usuario
+  Future<WhatsAppResult> enviarNotificacionIncendio({
     required String telefono,
     required String nombreUsuario,
+    required DateTime horadesatre,
+    required String nombreCasa,
     required String propertyId,
   }) async {
-    final mensaje = '''🔓 *IntelliHome - Reserva Activada*
+    final mensaje = '''🔥*IntelliHome - Alerta de Incendio*
 
-Hola $nombreUsuario,
+Hola $nombreUsuario,${horadesatre.day.toString().padLeft(2, '0')}/${horadesatre.month.toString().padLeft(2, '0')}/${horadesatre.year.toString().padLeft(4, '0')}/${horadesatre.hour.toString().padLeft(2, '0')}:${horadesatre.minute.toString().padLeft(2, '0')},
 
-✅ Tu reserva en $propertyId está ahora ACTIVA.
+ Se ha detectado una alerta de incendio en $propertyId,$nombreCasa.
 
-🏠 Ya puedes acceder a los controles domóticos de la propiedad.
-
-¡Disfruta tu estadía!
+ Por favor, toma las precauciones necesarias y sigue las instrucciones de seguridad.
+ Mantenerse alejado del área afectada y buscar una ruta de salida segura. No dudes en
+ llamar a los servicios de emergencia si es necesario.
 
 _IntelliHome Team_''';
 
@@ -195,21 +198,23 @@ _IntelliHome Team_''';
     );
   }
 
-  /// Envía mensaje de finalización de reserva
-  Future<WhatsAppResult> enviarFinalizacionReserva({
+  /// Envíar alerta de sismo al numero del usuario
+  Future<WhatsAppResult> enviarNotificacionSismo({
     required String telefono,
     required String nombreUsuario,
+    required DateTime horadesatre,
+    required String nombreCasa,
     required String propertyId,
   }) async {
-    final mensaje = '''🏁 *IntelliHome - Reserva Finalizada*
+    final mensaje = '''🫨*IntelliHome - Alerta de Sismo*
 
-Hola $nombreUsuario,
+Hola $nombreUsuario,${horadesatre.day.toString().padLeft(2, '0')}/${horadesatre.month.toString().padLeft(2, '0')}/${horadesatre.year.toString().padLeft(4, '0')}/${horadesatre.hour.toString().padLeft(2, '0')}:${horadesatre.minute.toString().padLeft(2, '0')},
 
-✅ Tu reserva en $propertyId ha finalizado.
-
-⭐ ¿Te gustaría dejar una reseña?
-
-Esperamos verte pronto.
+  Hemos detectado un sismo en $propertyId,$nombreCasa.
+  Por favor, mantén la calma y sigue las instrucciones de seguridad.
+  Asegúrate de estar en un lugar seguro y alejado de objetos que puedan caer
+  o causar daño. Si es necesario, evacua el área siguiendo la ruta de emergencia
+  establecidas en la propiedad.
 
 _IntelliHome Team_''';
 
