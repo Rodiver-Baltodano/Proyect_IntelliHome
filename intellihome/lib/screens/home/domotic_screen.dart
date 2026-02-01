@@ -3,10 +3,14 @@ import 'package:flutter/services.dart';
 import 'package:intellihome/config/app_colors.dart';
 import 'package:intellihome/l10n/app_localizations.dart';
 import 'package:intellihome/modules/autenticacion/services/tcp_client.dart';
-import 'package:intellihome/modules/reservas/services/whatsapp_service.dart';
+import 'package:intellihome/modules/reservas/services/reserva_service.dart';
 import 'package:intellihome/modules/reservas/repositories/reserva_repository.dart';
+import 'package:intellihome/modules/reservas/models/reserva.dart';
 import 'package:intellihome/modules/autenticacion/repositories/usuario_repository.dart';
+import 'package:intellihome/modules/autenticacion/repositories/casa_repositorio_json.dart';
 import 'package:intellihome/session/session_manager.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' as p;
 import 'dart:io';
 
 class DomoticScreen extends StatefulWidget {
@@ -24,6 +28,10 @@ class _DomoticScreenState extends State<DomoticScreen> {
   bool _puertaAbierta = true;  // Inicia abierta (0°)
   bool _garajeAbierto = true;  // Inicia abierto (0°)
 
+  // Servicio de reservas para notificaciones
+  ReservaService? _reservaService;
+  String? _reservaActiva;
+  
   // Control de notificaciones enviadas
   bool _notificacionIncendioEnviada = false;
   bool _notificacionSismoEnviada = false;
@@ -52,9 +60,6 @@ class _DomoticScreenState extends State<DomoticScreen> {
     'cuarto3': false,
   };
 
-  // Servicio de WhatsApp para notificaciones directas
-  final WhatsAppService _whatsappService = WhatsAppService();
-
   @override
   void initState() {
     super.initState();
@@ -63,20 +68,161 @@ class _DomoticScreenState extends State<DomoticScreen> {
     _connectToRaspberryPi();
   }
 
+  /// VERSIÓN MEJORADA - Inicialización robusta del servicio de reservas
   Future<void> _initializeServices() async {
     try {
-      debugPrint('[67] Servicios de notificación inicializados');
-    } catch (e) {
-      debugPrint('[69] Error inicializando servicios: $e');
-    }
-  }
+      debugPrint('🔄 [INIT] Iniciando servicios de notificación...');
+      
+      // 1. Verificar usuario actual
+      final userId = SessionManager.currentUserId;
+      debugPrint('👤 [INIT] Usuario actual: ${userId ?? "NO AUTENTICADO"}');
+      
+      if (userId == null) {
+        debugPrint('⚠️ [INIT] No hay usuario autenticado - notificaciones deshabilitadas');
+        return;
+      }
 
-  Future<String> _getFilePath(String fileName) async {
-    try {
-      final directory = Directory.current;
-      return '${directory.path}/$fileName';
-    } catch (e) {
-      return fileName;
+      // 2. Obtener directorio de documentos de la app
+      final appDir = await getApplicationDocumentsDirectory();
+      debugPrint('📁 [INIT] Directorio de la app: ${appDir.path}');
+
+      // 3. CORRECCIÓN PRINCIPAL: Usar las rutas correctas confirmadas
+      final usuariosPath = p.join(appDir.path, 'usuarios_integrado.json');
+      final casasPath = p.join(appDir.path, 'casas_integrado.json');
+      final reservasPath = p.join(appDir.path, 'reservas_integrado.json');
+
+      debugPrint('📂 [INIT] Rutas de archivos:');
+      debugPrint('  - Usuarios: $usuariosPath');
+      debugPrint('  - Casas: $casasPath');
+      debugPrint('  - Reservas: $reservasPath');
+
+      // 4. Verificar existencia de archivos (en el orden correcto)
+      final usuariosFile = File(usuariosPath);
+      final casasFile = File(casasPath);
+      final reservasFile = File(reservasPath);
+
+      bool todosExisten = true;
+
+      if (!await usuariosFile.exists()) {
+        debugPrint('❌ [INIT] Archivo de usuarios NO ENCONTRADO: $usuariosPath');
+        todosExisten = false;
+      } else {
+        debugPrint('✅ [INIT] Archivo de usuarios encontrado');
+      }
+
+      if (!await casasFile.exists()) {
+        debugPrint('❌ [INIT] Archivo de casas NO ENCONTRADO: $casasPath');
+        todosExisten = false;
+      } else {
+        debugPrint('✅ [INIT] Archivo de casas encontrado');
+      }
+
+      if (!await reservasFile.exists()) {
+        debugPrint('❌ [INIT] Archivo de reservas NO ENCONTRADO: $reservasPath');
+        debugPrint('💡 [INIT] Verifica que el archivo exista en el directorio de documentos');
+        todosExisten = false;
+      } else {
+        debugPrint('✅ [INIT] Archivo de reservas encontrado');
+      }
+
+      if (!todosExisten) {
+        debugPrint('❌ [INIT] Faltan archivos requeridos - abortando inicialización');
+        return;
+      }
+
+      debugPrint('✅ [INIT] Todos los archivos encontrados correctamente');
+
+      // 5. Inicializar repositorios
+      debugPrint('🔧 [INIT] Inicializando repositorios...');
+      final reservaRepo = ReservaRepositorioJson(rutaArchivo: reservasPath);
+      final usuarioRepo = UsuarioRepositorioJson(rutaArchivo: usuariosPath);
+      final casaRepo = CasaRepositorioJson(rutaArchivo: casasPath);
+
+      // 6. Inicializar servicio con todos los repositorios
+      debugPrint('🔧 [INIT] Creando servicio de reservas...');
+      _reservaService = ReservaService(
+        repositorio: reservaRepo,
+        usuarioRepositorio: usuarioRepo,  // ✅ IMPORTANTE: Pasar repositorio
+        casaRepositorio: casaRepo,        // ✅ IMPORTANTE: Pasar repositorio
+      );
+
+      debugPrint('✅ [INIT] Servicio de reservas inicializado correctamente');
+
+      // 7. Buscar reservas del usuario
+      debugPrint('🔍 [INIT] Buscando reservas del usuario $userId...');
+      final reservas = await reservaRepo.obtenerPorUsuario(userId);
+      debugPrint('📋 [INIT] Reservas encontradas: ${reservas.length}');
+
+      if (reservas.isEmpty) {
+        debugPrint('⚠️ [INIT] El usuario no tiene reservas registradas');
+        debugPrint('💡 [INIT] El servicio está inicializado pero no hay reserva activa');
+        return;
+      }
+
+      // 8. Mostrar todas las reservas encontradas
+      debugPrint('📋 [INIT] Listado de reservas:');
+      for (var i = 0; i < reservas.length; i++) {
+        final r = reservas[i];
+        debugPrint('  ${i + 1}. Reserva ${r.reservationId}');
+        debugPrint('     Status: ${r.status}');
+        debugPrint('     Casa: ${r.nombreCasa}');
+        debugPrint('     Fechas: ${r.startDate} - ${r.endDate}');
+      }
+
+      // 9. Seleccionar reserva activa (prioridad: ACTIVE > CONFIRMED > PENDING > primera disponible)
+      debugPrint('🔍 [INIT] Seleccionando reserva activa...');
+      
+      var reservaSeleccionada = reservas.where((r) => r.status == ReservaStatus.active).firstOrNull;
+      
+      if (reservaSeleccionada == null) {
+        debugPrint('⚠️ [INIT] No hay reserva ACTIVE, buscando CONFIRMED...');
+        reservaSeleccionada = reservas.where((r) => r.status == ReservaStatus.confirmed).firstOrNull;
+      }
+      
+      if (reservaSeleccionada == null) {
+        debugPrint('⚠️ [INIT] No hay reserva CONFIRMED, buscando PENDING...');
+        reservaSeleccionada = reservas.where((r) => r.status == ReservaStatus.pending).firstOrNull;
+      }
+
+      if (reservaSeleccionada == null) {
+        debugPrint('⚠️ [INIT] No hay reserva con estado válido, usando la primera disponible...');
+        reservaSeleccionada = reservas.firstOrNull;
+      }
+      
+      // 10. Guardar reserva seleccionada
+      if (reservaSeleccionada != null) {
+        if (mounted) {
+          setState(() {
+            _reservaActiva = reservaSeleccionada!.reservationId;
+          });
+        }
+        
+        debugPrint('✅ [INIT] ══════════════════════════════════════════');
+        debugPrint('✅ [INIT] RESERVA SELECCIONADA EXITOSAMENTE');
+        debugPrint('✅ [INIT] ID: ${reservaSeleccionada.reservationId}');
+        debugPrint('✅ [INIT] Status: ${reservaSeleccionada.status}');
+        debugPrint('✅ [INIT] Casa: ${reservaSeleccionada.nombreCasa}');
+        debugPrint('✅ [INIT] Usuario: ${reservaSeleccionada.userId}');
+        debugPrint('🔔 [INIT] NOTIFICACIONES DE EMERGENCIA: HABILITADAS');
+        debugPrint('✅ [INIT] ══════════════════════════════════════════');
+        
+        if (reservaSeleccionada.status != ReservaStatus.active) {
+          debugPrint('⚠️ [INIT] NOTA: La reserva no está ACTIVE (está ${reservaSeleccionada.status})');
+          debugPrint('⚠️ [INIT] Las notificaciones de emergencia funcionarán de todas formas');
+        }
+      } else {
+        debugPrint('❌ [INIT] No se pudo seleccionar ninguna reserva');
+        debugPrint('💡 [INIT] El servicio está disponible pero no hay reserva activa');
+      }
+
+    } catch (e, stackTrace) {
+      debugPrint('❌ [INIT] ══════════════════════════════════════════');
+      debugPrint('❌ [INIT] ERROR CRÍTICO EN INICIALIZACIÓN');
+      debugPrint('❌ [INIT] Error: $e');
+      debugPrint('❌ [INIT] ══════════════════════════════════════════');
+      debugPrint('Stack trace completo:');
+      debugPrint('$stackTrace');
+      debugPrint('══════════════════════════════════════════');
     }
   }
 
@@ -154,11 +300,11 @@ class _DomoticScreenState extends State<DomoticScreen> {
           _notificacionSismoEnviada = false;
         }
       } catch (e) {
-        print('Error procesando datos de sensores: $e');
+        debugPrint('❌ [SENSOR] Error procesando datos: $e');
       }
     } else if (message.trim() == 'OK') {
       // Confirmación de comando ejecutado
-      print('Comando ejecutado correctamente');
+      debugPrint('✅ [TCP] Comando ejecutado correctamente');
     }
   }
 
@@ -306,93 +452,159 @@ class _DomoticScreenState extends State<DomoticScreen> {
     );
   }
 
+  /// VERSIÓN MEJORADA - Envío de notificación de incendio con mejor manejo de errores
   Future<void> _enviarNotificacionIncendio() async {
-    // Evitar enviar múltiples notificaciones
-    if (_notificacionIncendioEnviada) return;
+    debugPrint('🔥 [NOTIF] ══════════════════════════════════════════');
+    debugPrint('🔥 [NOTIF] Iniciando envío de notificación de INCENDIO');
     
-    final userId = SessionManager.currentUserId;
-    if (userId == null) {
-      debugPrint('[320] Usuario no autenticado');
+    // 1. Verificar si ya se envió
+    if (_notificacionIncendioEnviada) {
+      debugPrint('⚠️ [NOTIF] Notificación ya enviada previamente - saltando');
+      debugPrint('══════════════════════════════════════════');
+      return;
+    }
+    
+    // 2. Verificar servicio
+    if (_reservaService == null) {
+      debugPrint('❌ [NOTIF] ERROR: Servicio de reservas NO DISPONIBLE');
+      debugPrint('💡 [NOTIF] El servicio no se inicializó correctamente');
+      debugPrint('💡 [NOTIF] Revisa los logs de [INIT] para más detalles');
+      debugPrint('══════════════════════════════════════════');
       return;
     }
 
+    debugPrint('✅ [NOTIF] Servicio de reservas disponible');
+
+    // 3. Verificar reserva activa
+    if (_reservaActiva == null) {
+      debugPrint('❌ [NOTIF] ERROR: No hay reserva activa');
+      debugPrint('💡 [NOTIF] No se pudo seleccionar una reserva para notificaciones');
+      debugPrint('══════════════════════════════════════════');
+      return;
+    }
+
+    debugPrint('✅ [NOTIF] Reserva activa encontrada: $_reservaActiva');
+    debugPrint('📱 [NOTIF] Enviando notificación vía WhatsApp...');
+
+    // 4. Marcar como enviada ANTES de intentar enviar (evita duplicados)
     _notificacionIncendioEnviada = true;
 
     try {
-      // Solo obtener datos del usuario - sin validar reservas
-      final usuariosPath = await _getFilePath('usuarios_integrado.json');
-      final usuarioRepo = UsuarioRepositorioJson(rutaArchivo: usuariosPath);
+      // 5. Intentar enviar notificación
+      final resultado = await _reservaService!.enviarNotificacionIncendio(_reservaActiva!);
       
-      final usuario = await usuarioRepo.buscarPorId(userId);
-      if (usuario == null) {
-        debugPrint('[333] Usuario no encontrado');
-        return;
-      }
-
-      // Enviar notificación directamente por WhatsApp
-      final resultado = await _whatsappService.enviarNotificacionIncendio(
-        telefono: usuario.telefono,
-        nombreUsuario: usuario.username,
-        horadesatre: DateTime.now(),
-        nombreCasa: 'Casa IntelliHome',
-        propertyId: 'emergency',
-      );
-      
-      if (resultado.success) {
-        debugPrint('[347] Alerta de incendio enviada por WhatsApp');
+      if (resultado.exitoso) {
+        debugPrint('✅ [NOTIF] ══════════════════════════════════════════');
+        debugPrint('✅ [NOTIF] NOTIFICACIÓN ENVIADA EXITOSAMENTE');
+        debugPrint('✅ [NOTIF] Mensaje: ${resultado.mensaje}');
+        debugPrint('✅ [NOTIF] ══════════════════════════════════════════');
+        
         if (mounted) {
-         /// _showMessage(' Alerta de incendio enviada por WhatsApp');
+          _showMessage('📱 Alerta de incendio enviada por WhatsApp');
         }
       } else {
-        debugPrint('[352] Error al enviar WhatsApp: ${resultado.message}');
+        debugPrint('❌ [NOTIF] ══════════════════════════════════════════');
+        debugPrint('❌ [NOTIF] ERROR AL ENVIAR NOTIFICACIÓN');
+        debugPrint('❌ [NOTIF] Mensaje: ${resultado.mensaje}');
+        debugPrint('❌ [NOTIF] Código: ${resultado.codigoError ?? "N/A"}');
+        debugPrint('❌ [NOTIF] ══════════════════════════════════════════');
+        
+        if (mounted) {
+          _showMessage('Error: ${resultado.mensaje}');
+        }
+        
+        // Permitir reintentar si falló
+        _notificacionIncendioEnviada = false;
       }
-    } catch (e) {
-      debugPrint('[355] Error enviando notificación de incendio: $e');
+    } catch (e, stackTrace) {
+      debugPrint('❌ [NOTIF] ══════════════════════════════════════════');
+      debugPrint('❌ [NOTIF] EXCEPCIÓN AL ENVIAR NOTIFICACIÓN');
+      debugPrint('❌ [NOTIF] Error: $e');
+      debugPrint('❌ [NOTIF] ══════════════════════════════════════════');
+      debugPrint('Stack trace:');
+      debugPrint('$stackTrace');
+      debugPrint('══════════════════════════════════════════');
+      
+      // Permitir reintentar si hubo excepción
+      _notificacionIncendioEnviada = false;
     }
   }
 
+  /// VERSIÓN MEJORADA - Envío de notificación de sismo con mejor manejo de errores
   Future<void> _enviarNotificacionSismo() async {
-    // Evitar enviar múltiples notificaciones
-    if (_notificacionSismoEnviada) return;
+    debugPrint('📳 [NOTIF] ══════════════════════════════════════════');
+    debugPrint('📳 [NOTIF] Iniciando envío de notificación de SISMO');
     
-    final userId = SessionManager.currentUserId;
-    if (userId == null) {
-      debugPrint('[365] Usuario no autenticado');
+    // 1. Verificar si ya se envió
+    if (_notificacionSismoEnviada) {
+      debugPrint('⚠️ [NOTIF] Notificación ya enviada previamente - saltando');
+      debugPrint('══════════════════════════════════════════');
+      return;
+    }
+    
+    // 2. Verificar servicio
+    if (_reservaService == null) {
+      debugPrint('❌ [NOTIF] ERROR: Servicio de reservas NO DISPONIBLE');
+      debugPrint('💡 [NOTIF] El servicio no se inicializó correctamente');
+      debugPrint('💡 [NOTIF] Revisa los logs de [INIT] para más detalles');
+      debugPrint('══════════════════════════════════════════');
       return;
     }
 
+    debugPrint('✅ [NOTIF] Servicio de reservas disponible');
+
+    // 3. Verificar reserva activa
+    if (_reservaActiva == null) {
+      debugPrint('❌ [NOTIF] ERROR: No hay reserva activa');
+      debugPrint('💡 [NOTIF] No se pudo seleccionar una reserva para notificaciones');
+      debugPrint('══════════════════════════════════════════');
+      return;
+    }
+
+    debugPrint('✅ [NOTIF] Reserva activa encontrada: $_reservaActiva');
+    debugPrint('📱 [NOTIF] Enviando notificación vía WhatsApp...');
+
+    // 4. Marcar como enviada ANTES de intentar enviar (evita duplicados)
     _notificacionSismoEnviada = true;
 
     try {
-      // Solo obtener datos del usuario - sin validar reservas
-      final usuariosPath = await _getFilePath('usuarios_integrado.json');
-      final usuarioRepo = UsuarioRepositorioJson(rutaArchivo: usuariosPath);
+      // 5. Intentar enviar notificación
+      final resultado = await _reservaService!.enviarNotificacionSismo(_reservaActiva!);
       
-      final usuario = await usuarioRepo.buscarPorId(userId);
-      if (usuario == null) {
-        debugPrint('[378] Usuario no encontrado');
-        return;
-      }
-
-      // Enviar notificación directamente por WhatsApp
-      final resultado = await _whatsappService.enviarNotificacionSismo(
-        telefono: usuario.telefono,
-        nombreUsuario: usuario.username,
-        horadesatre: DateTime.now(),
-        nombreCasa: 'Casa IntelliHome',
-        propertyId: 'emergency',
-      );
-      
-      if (resultado.success) {
-        debugPrint('[392] Alerta de sismo enviada por WhatsApp');
+      if (resultado.exitoso) {
+        debugPrint('✅ [NOTIF] ══════════════════════════════════════════');
+        debugPrint('✅ [NOTIF] NOTIFICACIÓN ENVIADA EXITOSAMENTE');
+        debugPrint('✅ [NOTIF] Mensaje: ${resultado.mensaje}');
+        debugPrint('✅ [NOTIF] ══════════════════════════════════════════');
+        
         if (mounted) {
-          ///_showMessage(' Alerta de sismo enviada por WhatsApp');
+          _showMessage('📱 Alerta de sismo enviada por WhatsApp');
         }
       } else {
-        debugPrint('[397] Error al enviar WhatsApp: ${resultado.message}');
+        debugPrint('❌ [NOTIF] ══════════════════════════════════════════');
+        debugPrint('❌ [NOTIF] ERROR AL ENVIAR NOTIFICACIÓN');
+        debugPrint('❌ [NOTIF] Mensaje: ${resultado.mensaje}');
+        debugPrint('❌ [NOTIF] Código: ${resultado.codigoError ?? "N/A"}');
+        debugPrint('❌ [NOTIF] ══════════════════════════════════════════');
+        
+        if (mounted) {
+          _showMessage('Error: ${resultado.mensaje}');
+        }
+        
+        // Permitir reintentar si falló
+        _notificacionSismoEnviada = false;
       }
-    } catch (e) {
-      debugPrint('[400] Error enviando notificación de sismo: $e');
+    } catch (e, stackTrace) {
+      debugPrint('❌ [NOTIF] ══════════════════════════════════════════');
+      debugPrint('❌ [NOTIF] EXCEPCIÓN AL ENVIAR NOTIFICACIÓN');
+      debugPrint('❌ [NOTIF] Error: $e');
+      debugPrint('❌ [NOTIF] ══════════════════════════════════════════');
+      debugPrint('Stack trace:');
+      debugPrint('$stackTrace');
+      debugPrint('══════════════════════════════════════════');
+      
+      // Permitir reintentar si hubo excepción
+      _notificacionSismoEnviada = false;
     }
   }
 

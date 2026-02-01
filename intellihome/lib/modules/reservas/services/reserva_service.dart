@@ -91,7 +91,7 @@ class ReservaService {
       final nuevaReserva = Reserva(
         reservationId: _uuid.v4(),
         userId: userId,
-        status: ReservaStatus.pending,
+        status: ReservaStatus.active,
         startDate: startDate,
         endDate: endDate,
         propertyId: propertyId,
