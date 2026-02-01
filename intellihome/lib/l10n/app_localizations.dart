@@ -245,11 +245,12 @@ abstract class AppLocalizations {
   String get pleaseWait;
   String get processing;
 
-  // Domótica
-
+  // Domótica - Control
   String get domoticControl;
   String get connectedToRaspberry;
   String get reconnect;
+  
+  // Domótica - Habitaciones
   String get garage;
   String get livingRoom;
   String get kitchen;
@@ -258,11 +259,26 @@ abstract class AppLocalizations {
   String get bedroom1;
   String get bedroom2;
   String get bedroom3;
+  
+  // Domótica - Estados
   String get turnedOn;
   String get turnedOff;
+  
+  // Domótica - Sensores
+  String get flame;
+  String get vibration;
+  String get detected;
+  String get normal;
+  
+  // Domótica - Estados de conexión
+  String get connected;
+  String get disconnected;
+  
+  // Domótica - Puertas
+  String get door;
+  String get garageLabel;
 
   // Huella avisos
-
   String get enterUsername;
   String get biometricNotSupported;
   String get biometricReason;

@@ -25,13 +25,13 @@ class _DomoticScreenState extends State<DomoticScreen> {
   bool _isConnected = false;
   bool _flameDetected = false;
   bool _shockDetected = false;
-  bool _puertaAbierta = false; // Inicia abierta (0°)
-  bool _garajeAbierto = false; // Inicia abierto (0°)
+  bool _puertaAbierta = true;  // Inicia abierta (0°)
+  bool _garajeAbierto = true;  // Inicia abierto (0°)
 
   // Servicio de reservas para notificaciones
   ReservaService? _reservaService;
   String? _reservaActiva;
-
+  
   // Control de notificaciones enviadas
   bool _notificacionIncendioEnviada = false;
   bool _notificacionSismoEnviada = false;
@@ -72,15 +72,13 @@ class _DomoticScreenState extends State<DomoticScreen> {
   Future<void> _initializeServices() async {
     try {
       debugPrint('🔄 [INIT] Iniciando servicios de notificación...');
-
+      
       // 1. Verificar usuario actual
       final userId = SessionManager.currentUserId;
       debugPrint('👤 [INIT] Usuario actual: ${userId ?? "NO AUTENTICADO"}');
-
+      
       if (userId == null) {
-        debugPrint(
-          '⚠️ [INIT] No hay usuario autenticado - notificaciones deshabilitadas',
-        );
+        debugPrint('⚠️ [INIT] No hay usuario autenticado - notificaciones deshabilitadas');
         return;
       }
 
@@ -121,18 +119,14 @@ class _DomoticScreenState extends State<DomoticScreen> {
 
       if (!await reservasFile.exists()) {
         debugPrint('❌ [INIT] Archivo de reservas NO ENCONTRADO: $reservasPath');
-        debugPrint(
-          '💡 [INIT] Verifica que el archivo exista en el directorio de documentos',
-        );
+        debugPrint('💡 [INIT] Verifica que el archivo exista en el directorio de documentos');
         todosExisten = false;
       } else {
         debugPrint('✅ [INIT] Archivo de reservas encontrado');
       }
 
       if (!todosExisten) {
-        debugPrint(
-          '❌ [INIT] Faltan archivos requeridos - abortando inicialización',
-        );
+        debugPrint('❌ [INIT] Faltan archivos requeridos - abortando inicialización');
         return;
       }
 
@@ -148,8 +142,8 @@ class _DomoticScreenState extends State<DomoticScreen> {
       debugPrint('🔧 [INIT] Creando servicio de reservas...');
       _reservaService = ReservaService(
         repositorio: reservaRepo,
-        usuarioRepositorio: usuarioRepo, // ✅ IMPORTANTE: Pasar repositorio
-        casaRepositorio: casaRepo, // ✅ IMPORTANTE: Pasar repositorio
+        usuarioRepositorio: usuarioRepo,  // ✅ IMPORTANTE: Pasar repositorio
+        casaRepositorio: casaRepo,        // ✅ IMPORTANTE: Pasar repositorio
       );
 
       debugPrint('✅ [INIT] Servicio de reservas inicializado correctamente');
@@ -161,9 +155,7 @@ class _DomoticScreenState extends State<DomoticScreen> {
 
       if (reservas.isEmpty) {
         debugPrint('⚠️ [INIT] El usuario no tiene reservas registradas');
-        debugPrint(
-          '💡 [INIT] El servicio está inicializado pero no hay reserva activa',
-        );
+        debugPrint('💡 [INIT] El servicio está inicializado pero no hay reserva activa');
         return;
       }
 
@@ -179,32 +171,24 @@ class _DomoticScreenState extends State<DomoticScreen> {
 
       // 9. Seleccionar reserva activa (prioridad: ACTIVE > CONFIRMED > PENDING > primera disponible)
       debugPrint('🔍 [INIT] Seleccionando reserva activa...');
-
-      var reservaSeleccionada = reservas
-          .where((r) => r.status == ReservaStatus.active)
-          .firstOrNull;
-
+      
+      var reservaSeleccionada = reservas.where((r) => r.status == ReservaStatus.active).firstOrNull;
+      
       if (reservaSeleccionada == null) {
         debugPrint('⚠️ [INIT] No hay reserva ACTIVE, buscando CONFIRMED...');
-        reservaSeleccionada = reservas
-            .where((r) => r.status == ReservaStatus.confirmed)
-            .firstOrNull;
+        reservaSeleccionada = reservas.where((r) => r.status == ReservaStatus.confirmed).firstOrNull;
       }
-
+      
       if (reservaSeleccionada == null) {
         debugPrint('⚠️ [INIT] No hay reserva CONFIRMED, buscando PENDING...');
-        reservaSeleccionada = reservas
-            .where((r) => r.status == ReservaStatus.pending)
-            .firstOrNull;
+        reservaSeleccionada = reservas.where((r) => r.status == ReservaStatus.pending).firstOrNull;
       }
 
       if (reservaSeleccionada == null) {
-        debugPrint(
-          '⚠️ [INIT] No hay reserva con estado válido, usando la primera disponible...',
-        );
+        debugPrint('⚠️ [INIT] No hay reserva con estado válido, usando la primera disponible...');
         reservaSeleccionada = reservas.firstOrNull;
       }
-
+      
       // 10. Guardar reserva seleccionada
       if (reservaSeleccionada != null) {
         if (mounted) {
@@ -212,7 +196,7 @@ class _DomoticScreenState extends State<DomoticScreen> {
             _reservaActiva = reservaSeleccionada!.reservationId;
           });
         }
-
+        
         debugPrint('✅ [INIT] ══════════════════════════════════════════');
         debugPrint('✅ [INIT] RESERVA SELECCIONADA EXITOSAMENTE');
         debugPrint('✅ [INIT] ID: ${reservaSeleccionada.reservationId}');
@@ -221,21 +205,16 @@ class _DomoticScreenState extends State<DomoticScreen> {
         debugPrint('✅ [INIT] Usuario: ${reservaSeleccionada.userId}');
         debugPrint('🔔 [INIT] NOTIFICACIONES DE EMERGENCIA: HABILITADAS');
         debugPrint('✅ [INIT] ══════════════════════════════════════════');
-
+        
         if (reservaSeleccionada.status != ReservaStatus.active) {
-          debugPrint(
-            '⚠️ [INIT] NOTA: La reserva no está ACTIVE (está ${reservaSeleccionada.status})',
-          );
-          debugPrint(
-            '⚠️ [INIT] Las notificaciones de emergencia funcionarán de todas formas',
-          );
+          debugPrint('⚠️ [INIT] NOTA: La reserva no está ACTIVE (está ${reservaSeleccionada.status})');
+          debugPrint('⚠️ [INIT] Las notificaciones de emergencia funcionarán de todas formas');
         }
       } else {
         debugPrint('❌ [INIT] No se pudo seleccionar ninguna reserva');
-        debugPrint(
-          '💡 [INIT] El servicio está disponible pero no hay reserva activa',
-        );
+        debugPrint('💡 [INIT] El servicio está disponible pero no hay reserva activa');
       }
+
     } catch (e, stackTrace) {
       debugPrint('❌ [INIT] ══════════════════════════════════════════');
       debugPrint('❌ [INIT] ERROR CRÍTICO EN INICIALIZACIÓN');
@@ -477,14 +456,14 @@ class _DomoticScreenState extends State<DomoticScreen> {
   Future<void> _enviarNotificacionIncendio() async {
     debugPrint('🔥 [NOTIF] ══════════════════════════════════════════');
     debugPrint('🔥 [NOTIF] Iniciando envío de notificación de INCENDIO');
-
+    
     // 1. Verificar si ya se envió
     if (_notificacionIncendioEnviada) {
       debugPrint('⚠️ [NOTIF] Notificación ya enviada previamente - saltando');
       debugPrint('══════════════════════════════════════════');
       return;
     }
-
+    
     // 2. Verificar servicio
     if (_reservaService == null) {
       debugPrint('❌ [NOTIF] ERROR: Servicio de reservas NO DISPONIBLE');
@@ -499,9 +478,7 @@ class _DomoticScreenState extends State<DomoticScreen> {
     // 3. Verificar reserva activa
     if (_reservaActiva == null) {
       debugPrint('❌ [NOTIF] ERROR: No hay reserva activa');
-      debugPrint(
-        '💡 [NOTIF] No se pudo seleccionar una reserva para notificaciones',
-      );
+      debugPrint('💡 [NOTIF] No se pudo seleccionar una reserva para notificaciones');
       debugPrint('══════════════════════════════════════════');
       return;
     }
@@ -514,16 +491,14 @@ class _DomoticScreenState extends State<DomoticScreen> {
 
     try {
       // 5. Intentar enviar notificación
-      final resultado = await _reservaService!.enviarNotificacionIncendio(
-        _reservaActiva!,
-      );
-
+      final resultado = await _reservaService!.enviarNotificacionIncendio(_reservaActiva!);
+      
       if (resultado.exitoso) {
         debugPrint('✅ [NOTIF] ══════════════════════════════════════════');
         debugPrint('✅ [NOTIF] NOTIFICACIÓN ENVIADA EXITOSAMENTE');
         debugPrint('✅ [NOTIF] Mensaje: ${resultado.mensaje}');
         debugPrint('✅ [NOTIF] ══════════════════════════════════════════');
-
+        
         if (mounted) {
           _showMessage('📱 Alerta de incendio enviada por WhatsApp');
         }
@@ -533,11 +508,11 @@ class _DomoticScreenState extends State<DomoticScreen> {
         debugPrint('❌ [NOTIF] Mensaje: ${resultado.mensaje}');
         debugPrint('❌ [NOTIF] Código: ${resultado.codigoError ?? "N/A"}');
         debugPrint('❌ [NOTIF] ══════════════════════════════════════════');
-
+        
         if (mounted) {
           _showMessage('Error: ${resultado.mensaje}');
         }
-
+        
         // Permitir reintentar si falló
         _notificacionIncendioEnviada = false;
       }
@@ -549,7 +524,7 @@ class _DomoticScreenState extends State<DomoticScreen> {
       debugPrint('Stack trace:');
       debugPrint('$stackTrace');
       debugPrint('══════════════════════════════════════════');
-
+      
       // Permitir reintentar si hubo excepción
       _notificacionIncendioEnviada = false;
     }
@@ -559,14 +534,14 @@ class _DomoticScreenState extends State<DomoticScreen> {
   Future<void> _enviarNotificacionSismo() async {
     debugPrint('📳 [NOTIF] ══════════════════════════════════════════');
     debugPrint('📳 [NOTIF] Iniciando envío de notificación de SISMO');
-
+    
     // 1. Verificar si ya se envió
     if (_notificacionSismoEnviada) {
       debugPrint('⚠️ [NOTIF] Notificación ya enviada previamente - saltando');
       debugPrint('══════════════════════════════════════════');
       return;
     }
-
+    
     // 2. Verificar servicio
     if (_reservaService == null) {
       debugPrint('❌ [NOTIF] ERROR: Servicio de reservas NO DISPONIBLE');
@@ -581,9 +556,7 @@ class _DomoticScreenState extends State<DomoticScreen> {
     // 3. Verificar reserva activa
     if (_reservaActiva == null) {
       debugPrint('❌ [NOTIF] ERROR: No hay reserva activa');
-      debugPrint(
-        '💡 [NOTIF] No se pudo seleccionar una reserva para notificaciones',
-      );
+      debugPrint('💡 [NOTIF] No se pudo seleccionar una reserva para notificaciones');
       debugPrint('══════════════════════════════════════════');
       return;
     }
@@ -596,16 +569,14 @@ class _DomoticScreenState extends State<DomoticScreen> {
 
     try {
       // 5. Intentar enviar notificación
-      final resultado = await _reservaService!.enviarNotificacionSismo(
-        _reservaActiva!,
-      );
-
+      final resultado = await _reservaService!.enviarNotificacionSismo(_reservaActiva!);
+      
       if (resultado.exitoso) {
         debugPrint('✅ [NOTIF] ══════════════════════════════════════════');
         debugPrint('✅ [NOTIF] NOTIFICACIÓN ENVIADA EXITOSAMENTE');
         debugPrint('✅ [NOTIF] Mensaje: ${resultado.mensaje}');
         debugPrint('✅ [NOTIF] ══════════════════════════════════════════');
-
+        
         if (mounted) {
           _showMessage('📱 Alerta de sismo enviada por WhatsApp');
         }
@@ -615,11 +586,11 @@ class _DomoticScreenState extends State<DomoticScreen> {
         debugPrint('❌ [NOTIF] Mensaje: ${resultado.mensaje}');
         debugPrint('❌ [NOTIF] Código: ${resultado.codigoError ?? "N/A"}');
         debugPrint('❌ [NOTIF] ══════════════════════════════════════════');
-
+        
         if (mounted) {
           _showMessage('Error: ${resultado.mensaje}');
         }
-
+        
         // Permitir reintentar si falló
         _notificacionSismoEnviada = false;
       }
@@ -631,7 +602,7 @@ class _DomoticScreenState extends State<DomoticScreen> {
       debugPrint('Stack trace:');
       debugPrint('$stackTrace');
       debugPrint('══════════════════════════════════════════');
-
+      
       // Permitir reintentar si hubo excepción
       _notificacionSismoEnviada = false;
     }
@@ -725,100 +696,84 @@ class _DomoticScreenState extends State<DomoticScreen> {
                               _buildSquareLightButton(
                                 'garaje',
                                 l10n.garage,
-                                left: constraints.maxWidth * 0.336,
-                                top: constraints.maxHeight * 0.677,
-                                width: constraints.maxHeight * 0.3245,
-                                height: constraints.maxHeight * 0.261,
+                                left: constraints.maxWidth * 0.50,
+                                top: constraints.maxHeight * 0.68,
                               ),
 
                               // Botón Garaje (servo) - En el garaje
                               _buildDoorButtonOnPlan(
-                                label: '',
+                                label: 'Garaje',
                                 icon: Icons.garage,
                                 isOpen: _garajeAbierto,
                                 onPressed: _toggleGaraje,
-                                left: constraints.maxWidth * 0.811,
-                                top: constraints.maxHeight * 0.757,
+                                left: constraints.maxWidth * 0.65,
+                                top: constraints.maxHeight * 0.68,
                               ),
 
                               // Botón Puerta (servo) - En la sala
                               _buildDoorButtonOnPlan(
-                                label: '',
+                                label: 'Puerta',
                                 icon: Icons.door_front_door,
                                 isOpen: _puertaAbierta,
                                 onPressed: _togglePuerta,
-                                left: constraints.maxWidth * 0.811,
-                                top: constraints.maxHeight * 0.495,
+                                left: constraints.maxWidth * 0.35,
+                                top: constraints.maxHeight * 0.49,
                               ),
 
                               // Sala - GP2
                               _buildSquareLightButton(
                                 'sala',
                                 l10n.livingRoom,
-                                left: constraints.maxWidth * 0.338,
-                                top: constraints.maxHeight * 0.425,
-                                width: constraints.maxHeight * 0.32243,
-                                height: constraints.maxHeight * 0.2552,
+                                left: constraints.maxWidth * 0.50,
+                                top: constraints.maxHeight * 0.49,
                               ),
 
                               // Cocina - GP3
                               _buildSquareLightButton(
                                 'cocina',
                                 l10n.kitchen,
-                                left: constraints.maxWidth * 0.145,
-                                top: constraints.maxHeight * 0.425,
-                                width: constraints.maxHeight * 0.1345,
-                                height: constraints.maxHeight * 0.2561,
+                                left: constraints.maxWidth * 0.16,
+                                top: constraints.maxHeight * 0.49,
                               ),
 
                               // Baño 1 - GP4
                               _buildSquareLightButton(
                                 'bano1',
                                 l10n.bathroom1,
-                                left: constraints.maxWidth * 0.145,
-                                top: constraints.maxHeight * 0.28775,
-                                width: constraints.maxHeight * 0.1357,
-                                height: constraints.maxHeight * 0.142,
+                                left: constraints.maxWidth * 0.16,
+                                top: constraints.maxHeight * 0.32,
                               ),
 
                               // Baño 2 - GP5
                               _buildSquareLightButton(
                                 'bano2',
                                 l10n.bathroom2,
-                                left: constraints.maxWidth * 0.553,
-                                top: constraints.maxHeight * 0.28775,
-                                width: constraints.maxHeight * 0.175,
-                                height: constraints.maxHeight * 0.142,
+                                left: constraints.maxWidth * 0.60,
+                                top: constraints.maxHeight * 0.32,
                               ),
 
                               // Cuarto 1 - GP6
                               _buildSquareLightButton(
                                 'cuarto1',
                                 l10n.bedroom1,
-                                left: constraints.maxWidth * 0.145,
-                                top: constraints.maxHeight * 0.104,
-                                width: constraints.maxHeight * 0.1345,
-                                height: constraints.maxHeight * 0.1883,
+                                left: constraints.maxWidth * 0.15,
+                                top: constraints.maxHeight * 0.18,
                               ),
 
                               // Cuarto 2 - GP7
                               _buildSquareLightButton(
                                 'cuarto2',
                                 l10n.bedroom2,
-                                left: constraints.maxWidth * 0.338,
-                                top: constraints.maxHeight * 0.104,
-                                width: constraints.maxHeight * 0.151,
-                                height: constraints.maxHeight * 0.1883,
+                                left: constraints.maxWidth * 0.35,
+                                top: constraints.maxHeight * 0.18,
                               ),
 
                               // Cuarto 3 - GP8
                               _buildSquareLightButton(
                                 'cuarto3',
                                 l10n.bedroom3,
-                                left: constraints.maxWidth * 0.553,
-                                top: constraints.maxHeight * 0.104,
-                                width: constraints.maxHeight * 0.175,
-                                height: constraints.maxHeight * 0.1883,
+                                left: constraints.maxWidth * 0.60,
+                                top: constraints.maxHeight * 0.18,
                               ),
                             ],
                           );
@@ -866,7 +821,11 @@ class _DomoticScreenState extends State<DomoticScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, size: 120, color: iconColor),
+              Icon(
+                icon,
+                size: 120,
+                color: iconColor,
+              ),
               const SizedBox(height: 24),
               Text(
                 title,
@@ -907,7 +866,7 @@ class _DomoticScreenState extends State<DomoticScreen> {
       child: Column(
         children: [
           // Indicador de conexión
-          _buildConnectionIndicator(l10n),
+          _buildConnectionIndicator(),
           const SizedBox(height: 12),
           const Divider(height: 1),
           const SizedBox(height: 12),
@@ -918,9 +877,8 @@ class _DomoticScreenState extends State<DomoticScreen> {
             children: [
               // Sensor de llama
               _buildSensorIndicator(
-                l10n: l10n,
                 icon: Icons.local_fire_department,
-                label: l10n.flame,
+                label: 'Llama',
                 isActive: _flameDetected,
                 activeColor: Colors.red,
               ),
@@ -930,9 +888,8 @@ class _DomoticScreenState extends State<DomoticScreen> {
 
               // Sensor de vibración
               _buildSensorIndicator(
-                l10n: l10n,
                 icon: Icons.vibration,
-                label: l10n.vibration,
+                label: 'Vibración',
                 isActive: _shockDetected,
                 activeColor: Colors.orange,
               ),
@@ -943,7 +900,7 @@ class _DomoticScreenState extends State<DomoticScreen> {
     );
   }
 
-  Widget _buildConnectionIndicator(AppLocalizations l10n) {
+  Widget _buildConnectionIndicator() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
@@ -969,7 +926,7 @@ class _DomoticScreenState extends State<DomoticScreen> {
           ),
           const SizedBox(width: 8),
           Text(
-            _isConnected ? l10n.connected : l10n.disconnected,
+            _isConnected ? 'Conectado' : 'Desconectado',
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w600,
@@ -982,7 +939,6 @@ class _DomoticScreenState extends State<DomoticScreen> {
   }
 
   Widget _buildSensorIndicator({
-    required AppLocalizations l10n,
     required IconData icon,
     required String label,
     required bool isActive,
@@ -1019,7 +975,7 @@ class _DomoticScreenState extends State<DomoticScreen> {
           ),
         ),
         Text(
-          isActive ? l10n.detected : l10n.normal,
+          isActive ? 'DETECTADO' : 'Normal',
           style: TextStyle(
             fontSize: 10,
             color: isActive ? activeColor : Colors.grey.shade600,
@@ -1037,8 +993,6 @@ class _DomoticScreenState extends State<DomoticScreen> {
     double? right,
     double? top,
     double? bottom,
-    double width = 52.5,
-    double height = 60,
   }) {
     final isOn = lightStates[roomKey] ?? false;
 
@@ -1049,56 +1003,60 @@ class _DomoticScreenState extends State<DomoticScreen> {
       bottom: bottom,
       child: GestureDetector(
         onTap: () => _toggleLight(roomKey),
-        child: Container(
-          width: width,
-          height: height,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(3),
-            color: Colors.white.withOpacity(0.3),
-            border: Border.all(
-              color: isOn ? Colors.yellow.shade600 : Colors.grey.shade400,
-              width: 2,
-            ),
-            boxShadow: isOn
-                ? [
-                    BoxShadow(
-                      color: Colors.yellow.withOpacity(0.6),
-                      blurRadius: 20,
-                      spreadRadius: 5,
-                    ),
-                  ]
-                : [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      blurRadius: 4,
-                      spreadRadius: 1,
-                    ),
-                  ],
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                isOn ? Icons.lightbulb : Icons.lightbulb_outline,
-                size: 28,
-                color: isOn ? Colors.amber.shade600 : Colors.grey.shade600,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 50,
+              height: 50,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(8),
+                color: Colors.white.withOpacity(0.3),
+                border: Border.all(
+                  color: isOn ? Colors.yellow.shade600 : Colors.grey.shade400,
+                  width: 2,
+                ),
+                boxShadow: isOn
+                    ? [
+                        BoxShadow(
+                          color: Colors.yellow.withOpacity(0.6),
+                          blurRadius: 20,
+                          spreadRadius: 5,
+                        ),
+                      ]
+                    : [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 4,
+                          spreadRadius: 1,
+                        ),
+                      ],
               ),
-              const SizedBox(height: 4),
-              Text(
+              child: Center(
+                child: Icon(
+                  isOn ? Icons.lightbulb : Icons.lightbulb_outline,
+                  size: 28,
+                  color: isOn ? Colors.amber.shade600 : Colors.grey.shade600,
+                ),
+              ),
+            ),
+            const SizedBox(height: 4),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.9),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
                 roomName,
                 style: TextStyle(
-                  fontSize: 11.25, // Aumentado de 9 a 11.25 (25% más grande)
+                  fontSize: 10,
                   fontWeight: FontWeight.bold,
-                  color: isOn
-                      ? Colors.amber.shade900
-                      : AppColors.textPrimaryColor,
+                  color: AppColors.textPrimaryColor,
                 ),
-                textAlign: TextAlign.center,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -1138,7 +1096,11 @@ class _DomoticScreenState extends State<DomoticScreen> {
                   ),
                 ],
               ),
-              child: Icon(icon, size: 28, color: Colors.white),
+              child: Icon(
+                icon,
+                size: 28,
+                color: Colors.white,
+              ),
             ),
             const SizedBox(height: 4),
             Container(
