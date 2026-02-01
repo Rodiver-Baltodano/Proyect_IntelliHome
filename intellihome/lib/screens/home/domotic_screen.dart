@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intellihome/config/app_colors.dart';
 import 'package:intellihome/l10n/app_localizations.dart';
 import 'package:intellihome/modules/autenticacion/services/tcp_client.dart';
@@ -19,11 +20,11 @@ class DomoticScreen extends StatefulWidget {
 class _DomoticScreenState extends State<DomoticScreen> {
   final TcpClient _tcpClient = TcpClient();
   bool _isConnected = false;
-  bool _garajeAbierto = false;
-  bool _shockDetected = false;
   bool _flameDetected = false;
-  bool _puertaAbierta = false;
-  
+  bool _shockDetected = false;
+  bool _puertaAbierta = true;  // Inicia abierta (0°)
+  bool _garajeAbierto = true;  // Inicia abierto (0°)
+
   // Servicio de reservas para notificaciones
   ReservaService? _reservaService;
   String? _reservaActiva;
@@ -162,16 +163,18 @@ class _DomoticScreenState extends State<DomoticScreen> {
           }
         }
 
-        // Mostrar mensaje y enviar notificación si hay detección nueva
+        // Vibrar, mostrar alerta y enviar notificación si hay detección nueva
         if (!previousFlame && _flameDetected) {
+          HapticFeedback.vibrate();
           _showMessage('🔥 ¡LLAMA DETECTADA!');
           _enviarNotificacionIncendio();
         }
         if (!previousShock && _shockDetected) {
+          HapticFeedback.vibrate();
           _showMessage('📳 ¡VIBRACIÓN DETECTADA!');
           _enviarNotificacionSismo();
         }
-        
+
         // Resetear flags si los sensores vuelven a normal
         if (previousFlame && !_flameDetected) {
           _notificacionIncendioEnviada = false;
@@ -191,7 +194,7 @@ class _DomoticScreenState extends State<DomoticScreen> {
   Future<void> _connectToRaspberryPi() async {
     try {
       // Intenta conectar al servidor TCP en la Raspberry Pi Pico W
-      final connected = await _tcpClient.connect('10.243.100.158', 8080);
+      final connected = await _tcpClient.connect('10.134.222.158', 8080);
 
       if (mounted) {
         setState(() {
@@ -260,8 +263,8 @@ class _DomoticScreenState extends State<DomoticScreen> {
 
     try {
       final newState = !_puertaAbierta;
-      // 0° = cerrada, 90° = abierta
-      final angle = newState ? 90 : 0;
+      // 0° = abierta (estable), -90° = cerrada
+      final angle = newState ? 0 : -90;
       final command = 'SERVO1:$angle\n';
 
       await _tcpClient.sendMessage(command);
@@ -285,8 +288,8 @@ class _DomoticScreenState extends State<DomoticScreen> {
 
     try {
       final newState = !_garajeAbierto;
-      // 0° = cerrada, 90° = abierta
-      final angle = newState ? 90 : 0;
+      // 0° = abierto (estable), -90° = cerrado
+      final angle = newState ? 0 : -90;
       final command = 'SERVO2:$angle\n';
 
       await _tcpClient.sendMessage(command);
@@ -330,6 +333,60 @@ class _DomoticScreenState extends State<DomoticScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(message), duration: const Duration(seconds: 2)),
     );
+  }
+
+  Future<void> _enviarNotificacionIncendio() async {
+    // Evitar enviar múltiples notificaciones
+    if (_notificacionIncendioEnviada) return;
+    
+    if (_reservaService == null || _reservaActiva == null) {
+      debugPrint('No se puede enviar notificación: servicio o reserva no disponible');
+      return;
+    }
+
+    _notificacionIncendioEnviada = true;
+
+    try {
+      final resultado = await _reservaService!.enviarNotificacionIncendio(_reservaActiva!);
+      
+      if (resultado.exitoso) {
+        debugPrint('✅ Notificación de incendio enviada correctamente');
+        if (mounted) {
+          _showMessage('📱 Alerta de incendio enviada por WhatsApp');
+        }
+      } else {
+        debugPrint('❌ Error al enviar notificación de incendio: ${resultado.mensaje}');
+      }
+    } catch (e) {
+      debugPrint('Error enviando notificación de incendio: $e');
+    }
+  }
+
+  Future<void> _enviarNotificacionSismo() async {
+    // Evitar enviar múltiples notificaciones
+    if (_notificacionSismoEnviada) return;
+    
+    if (_reservaService == null || _reservaActiva == null) {
+      debugPrint('No se puede enviar notificación: servicio o reserva no disponible');
+      return;
+    }
+
+    _notificacionSismoEnviada = true;
+
+    try {
+      final resultado = await _reservaService!.enviarNotificacionSismo(_reservaActiva!);
+      
+      if (resultado.exitoso) {
+        debugPrint('✅ Notificación de sismo enviada correctamente');
+        if (mounted) {
+          _showMessage('📱 Alerta de sismo enviada por WhatsApp');
+        }
+      } else {
+        debugPrint('❌ Error al enviar notificación de sismo: ${resultado.mensaje}');
+      }
+    } catch (e) {
+      debugPrint('Error enviando notificación de sismo: $e');
+    }
   }
 
   @override
@@ -390,103 +447,183 @@ class _DomoticScreenState extends State<DomoticScreen> {
             ),
           ],
         ),
-        body: SafeArea(
-          child: Container(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              children: [
-                // Panel de sensores
-                _buildSensorPanel(l10n),
-                const SizedBox(height: 16),
+        body: Stack(
+          children: [
+            // Contenido principal
+            SafeArea(
+              child: Container(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  children: [
+                    // Panel de sensores
+                    _buildSensorPanel(l10n),
+                    const SizedBox(height: 16),
 
-                // Botones de control de puertas (servos)
-                _buildDoorControlPanel(),
-                const SizedBox(height: 16),
+                    // Plano de la casa con botones
+                    Expanded(
+                      child: LayoutBuilder(
+                        builder: (context, constraints) {
+                          return Stack(
+                            children: [
+                              // Imagen del plano de la casa
+                              Positioned.fill(
+                                child: Image.asset(
+                                  'lib/assets/icons/house_plan.png',
+                                  fit: BoxFit.contain,
+                                ),
+                              ),
 
-                // Plano de la casa con botones
-                Expanded(
-                  child: LayoutBuilder(
-                    builder: (context, constraints) {
-                      return Stack(
-                        children: [
-                          // Imagen del plano de la casa
-                          Positioned.fill(
-                            child: Image.asset(
-                              'lib/assets/icons/house_plan.png',
-                              fit: BoxFit.contain,
-                            ),
-                          ),
+                              // Garaje - GP1
+                              _buildSquareLightButton(
+                                'garaje',
+                                l10n.garage,
+                                left: constraints.maxWidth * 0.50,
+                                top: constraints.maxHeight * 0.68,
+                              ),
 
-                          // Garaje - GP1
-                          _buildLightButton(
-                            'garaje',
-                            l10n.garage,
-                            left: constraints.maxWidth * 0.50,
-                            top: constraints.maxHeight * 0.68,
-                          ),
+                              // Botón Garaje (servo) - En el garaje
+                              _buildDoorButtonOnPlan(
+                                label: 'Garaje',
+                                icon: Icons.garage,
+                                isOpen: _garajeAbierto,
+                                onPressed: _toggleGaraje,
+                                left: constraints.maxWidth * 0.65,
+                                top: constraints.maxHeight * 0.68,
+                              ),
 
-                          // Sala - GP2
-                          _buildLightButton(
-                            'sala',
-                            l10n.livingRoom,
-                            left: constraints.maxWidth * 0.50,
-                            top: constraints.maxHeight * 0.49,
-                          ),
+                              // Botón Puerta (servo) - En la sala
+                              _buildDoorButtonOnPlan(
+                                label: 'Puerta',
+                                icon: Icons.door_front_door,
+                                isOpen: _puertaAbierta,
+                                onPressed: _togglePuerta,
+                                left: constraints.maxWidth * 0.35,
+                                top: constraints.maxHeight * 0.49,
+                              ),
 
-                          // Cocina - GP3
-                          _buildLightButton(
-                            'cocina',
-                            l10n.kitchen,
-                            left: constraints.maxWidth * 0.16,
-                            top: constraints.maxHeight * 0.49,
-                          ),
+                              // Sala - GP2
+                              _buildSquareLightButton(
+                                'sala',
+                                l10n.livingRoom,
+                                left: constraints.maxWidth * 0.50,
+                                top: constraints.maxHeight * 0.49,
+                              ),
 
-                          // Baño 1 - GP4
-                          _buildLightButton(
-                            'bano1',
-                            l10n.bathroom1,
-                            left: constraints.maxWidth * 0.16,
-                            top: constraints.maxHeight * 0.32,
-                          ),
+                              // Cocina - GP3
+                              _buildSquareLightButton(
+                                'cocina',
+                                l10n.kitchen,
+                                left: constraints.maxWidth * 0.16,
+                                top: constraints.maxHeight * 0.49,
+                              ),
 
-                          // Baño 2 - GP5
-                          _buildLightButton(
-                            'bano2',
-                            l10n.bathroom2,
-                            left: constraints.maxWidth * 0.60,
-                            top: constraints.maxHeight * 0.32,
-                          ),
+                              // Baño 1 - GP4
+                              _buildSquareLightButton(
+                                'bano1',
+                                l10n.bathroom1,
+                                left: constraints.maxWidth * 0.16,
+                                top: constraints.maxHeight * 0.32,
+                              ),
 
-                          // Cuarto 1 - GP6
-                          _buildLightButton(
-                            'cuarto1',
-                            l10n.bedroom1,
-                            left: constraints.maxWidth * 0.15,
-                            top: constraints.maxHeight * 0.18,
-                          ),
+                              // Baño 2 - GP5
+                              _buildSquareLightButton(
+                                'bano2',
+                                l10n.bathroom2,
+                                left: constraints.maxWidth * 0.60,
+                                top: constraints.maxHeight * 0.32,
+                              ),
 
-                          // Cuarto 2 - GP7
-                          _buildLightButton(
-                            'cuarto2',
-                            l10n.bedroom2,
-                            left: constraints.maxWidth * 0.35,
-                            top: constraints.maxHeight * 0.18,
-                          ),
+                              // Cuarto 1 - GP6
+                              _buildSquareLightButton(
+                                'cuarto1',
+                                l10n.bedroom1,
+                                left: constraints.maxWidth * 0.15,
+                                top: constraints.maxHeight * 0.18,
+                              ),
 
-                          // Cuarto 3 - GP8
-                          _buildLightButton(
-                            'cuarto3',
-                            l10n.bedroom3,
-                            left: constraints.maxWidth * 0.60,
-                            top: constraints.maxHeight * 0.18,
-                          ),
-                        ],
-                      );
-                    },
-                  ),
+                              // Cuarto 2 - GP7
+                              _buildSquareLightButton(
+                                'cuarto2',
+                                l10n.bedroom2,
+                                left: constraints.maxWidth * 0.35,
+                                top: constraints.maxHeight * 0.18,
+                              ),
+
+                              // Cuarto 3 - GP8
+                              _buildSquareLightButton(
+                                'cuarto3',
+                                l10n.bedroom3,
+                                left: constraints.maxWidth * 0.60,
+                                top: constraints.maxHeight * 0.18,
+                              ),
+                            ],
+                          );
+                        },
+                      ),
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
+
+            // Alerta de fuego (pantalla completa)
+            if (_flameDetected)
+              _buildFullScreenAlert(
+                color: Colors.red.withOpacity(0.85),
+                icon: Icons.local_fire_department,
+                title: '¡FUEGO DETECTADO!',
+                iconColor: Colors.red.shade900,
+              ),
+
+            // Alerta de sismo (pantalla completa)
+            if (_shockDetected)
+              _buildFullScreenAlert(
+                color: Colors.brown.withOpacity(0.85),
+                icon: Icons.warning_amber_rounded,
+                title: '¡SISMO DETECTADO!',
+                iconColor: Colors.brown.shade900,
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFullScreenAlert({
+    required Color color,
+    required IconData icon,
+    required String title,
+    required Color iconColor,
+  }) {
+    return Positioned.fill(
+      child: Container(
+        color: color,
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                icon,
+                size: 120,
+                color: iconColor,
+              ),
+              const SizedBox(height: 24),
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: 32,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                  shadows: [
+                    Shadow(
+                      color: Colors.black.withOpacity(0.5),
+                      blurRadius: 10,
+                    ),
+                  ],
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
           ),
         ),
       ),
@@ -630,7 +767,7 @@ class _DomoticScreenState extends State<DomoticScreen> {
     );
   }
 
-  Widget _buildLightButton(
+  Widget _buildSquareLightButton(
     String roomKey,
     String roomName, {
     double? left,
@@ -645,189 +782,126 @@ class _DomoticScreenState extends State<DomoticScreen> {
       right: right,
       top: top,
       bottom: bottom,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: Colors.white,
-              boxShadow: isOn
-                  ? [
-                      BoxShadow(
-                        color: Colors.yellow.withOpacity(0.6),
-                        blurRadius: 20,
-                        spreadRadius: 5,
-                      ),
-                    ]
-                  : [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        blurRadius: 4,
-                        spreadRadius: 1,
-                      ),
-                    ],
-            ),
-            child: IconButton(
-              icon: Icon(
-                isOn ? Icons.lightbulb : Icons.lightbulb_outline,
-                size: 28,
+      child: GestureDetector(
+        onTap: () => _toggleLight(roomKey),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 50,
+              height: 50,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(8),
+                color: Colors.white.withOpacity(0.3),
+                border: Border.all(
+                  color: isOn ? Colors.yellow.shade600 : Colors.grey.shade400,
+                  width: 2,
+                ),
+                boxShadow: isOn
+                    ? [
+                        BoxShadow(
+                          color: Colors.yellow.withOpacity(0.6),
+                          blurRadius: 20,
+                          spreadRadius: 5,
+                        ),
+                      ]
+                    : [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 4,
+                          spreadRadius: 1,
+                        ),
+                      ],
               ),
-              color: isOn ? Colors.amber.shade600 : Colors.grey.shade600,
-              onPressed: () => _toggleLight(roomKey),
-            ),
-          ),
-          const SizedBox(height: 4),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.9),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Text(
-              roomName,
-              style: TextStyle(
-                fontSize: 10,
-                fontWeight: FontWeight.bold,
-                color: AppColors.textPrimaryColor,
+              child: Center(
+                child: Icon(
+                  isOn ? Icons.lightbulb : Icons.lightbulb_outline,
+                  size: 28,
+                  color: isOn ? Colors.amber.shade600 : Colors.grey.shade600,
+                ),
               ),
             ),
-          ),
-        ],
+            const SizedBox(height: 4),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.9),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                roomName,
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.textPrimaryColor,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildDoorControlPanel() {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 8,
-            spreadRadius: 2,
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          // Botón Puerta
-          Expanded(
-            child: _buildDoorButton(
-              label: 'Puerta',
-              icon: Icons.door_front_door,
-              isOpen: _puertaAbierta,
-              onPressed: _togglePuerta,
-            ),
-          ),
-          const SizedBox(width: 12),
-
-          // Botón Garaje
-          Expanded(
-            child: _buildDoorButton(
-              label: 'Garaje',
-              icon: Icons.garage,
-              isOpen: _garajeAbierto,
-              onPressed: _toggleGaraje,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDoorButton({
+  Widget _buildDoorButtonOnPlan({
     required String label,
     required IconData icon,
     required bool isOpen,
     required VoidCallback onPressed,
+    double? left,
+    double? right,
+    double? top,
+    double? bottom,
   }) {
-    return ElevatedButton(
-      onPressed: onPressed,
-      style: ElevatedButton.styleFrom(
-        backgroundColor: isOpen ? Colors.green.shade500 : Colors.grey.shade400,
-        foregroundColor: Colors.white,
-        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        elevation: isOpen ? 4 : 2,
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 32, color: Colors.white),
-          const SizedBox(height: 8),
-          Text(
-            label,
-            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            isOpen ? 'ABIERTA' : 'CERRADA',
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w500,
-              color: Colors.white.withOpacity(0.9),
+    return Positioned(
+      left: left,
+      right: right,
+      top: top,
+      bottom: bottom,
+      child: GestureDetector(
+        onTap: onPressed,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 50,
+              height: 50,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(8),
+                color: isOpen ? Colors.green.shade500 : Colors.grey.shade400,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.2),
+                    blurRadius: 4,
+                    spreadRadius: 1,
+                  ),
+                ],
+              ),
+              child: Icon(
+                icon,
+                size: 28,
+                color: Colors.white,
+              ),
             ),
-          ),
-        ],
+            const SizedBox(height: 4),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.9),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                label,
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.textPrimaryColor,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
-  }
-
-  Future<void> _enviarNotificacionIncendio() async {
-    // Evitar enviar múltiples notificaciones
-    if (_notificacionIncendioEnviada) return;
-    
-    if (_reservaService == null || _reservaActiva == null) {
-      debugPrint('No se puede enviar notificación: servicio o reserva no disponible');
-      return;
-    }
-
-    _notificacionIncendioEnviada = true;
-
-    try {
-      final resultado = await _reservaService!.enviarNotificacionIncendio(_reservaActiva!);
-      
-      if (resultado.exitoso) {
-        debugPrint(' Notificación de incendio enviada correctamente');
-        if (mounted) {
-          print(' Alerta de incendio enviada por WhatsApp');
-        }
-      } else {
-        debugPrint(' Error al enviar notificación de incendio: ${resultado.mensaje}');
-      }
-    } catch (e) {
-      debugPrint('Error enviando notificación de incendio: $e');
-    }
-  }
-
-  Future<void> _enviarNotificacionSismo() async {
-    // Evitar enviar múltiples notificaciones
-    if (_notificacionSismoEnviada) return;
-    
-    if (_reservaService == null || _reservaActiva == null) {
-      debugPrint('No se puede enviar notificación: servicio o reserva no disponible');
-      return;
-    }
-
-    _notificacionSismoEnviada = true;
-
-    try {
-      final resultado = await _reservaService!.enviarNotificacionSismo(_reservaActiva!);
-      
-      if (resultado.exitoso) {
-        debugPrint('Notificación de sismo enviada correctamente');
-        if (mounted) {
-          _showMessage(' Alerta de sismo enviada por WhatsApp');
-        }
-      } else {
-        debugPrint('Error al enviar notificación de sismo: ${resultado.mensaje}');
-      }
-    } catch (e) {
-      debugPrint('Error enviando notificación de sismo: $e');
-    }
   }
 }
