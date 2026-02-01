@@ -3,10 +3,9 @@ import 'package:flutter/services.dart';
 import 'package:intellihome/config/app_colors.dart';
 import 'package:intellihome/l10n/app_localizations.dart';
 import 'package:intellihome/modules/autenticacion/services/tcp_client.dart';
-import 'package:intellihome/modules/reservas/services/reserva_service.dart';
+import 'package:intellihome/modules/reservas/services/whatsapp_service.dart';
 import 'package:intellihome/modules/reservas/repositories/reserva_repository.dart';
 import 'package:intellihome/modules/autenticacion/repositories/usuario_repository.dart';
-import 'package:intellihome/modules/autenticacion/repositories/casa_repositorio_json.dart';
 import 'package:intellihome/session/session_manager.dart';
 import 'dart:io';
 
@@ -25,10 +24,6 @@ class _DomoticScreenState extends State<DomoticScreen> {
   bool _puertaAbierta = true;  // Inicia abierta (0°)
   bool _garajeAbierto = true;  // Inicia abierto (0°)
 
-  // Servicio de reservas para notificaciones
-  ReservaService? _reservaService;
-  String? _reservaActiva;
-  
   // Control de notificaciones enviadas
   bool _notificacionIncendioEnviada = false;
   bool _notificacionSismoEnviada = false;
@@ -57,6 +52,9 @@ class _DomoticScreenState extends State<DomoticScreen> {
     'cuarto3': false,
   };
 
+  // Servicio de WhatsApp para notificaciones directas
+  final WhatsAppService _whatsappService = WhatsAppService();
+
   @override
   void initState() {
     super.initState();
@@ -67,36 +65,9 @@ class _DomoticScreenState extends State<DomoticScreen> {
 
   Future<void> _initializeServices() async {
     try {
-      // Obtener rutas de archivos
-      final reservasPath = await _getFilePath('reservas_test.json');
-      final usuariosPath = await _getFilePath('usuarios_integrado.json');
-      final casasPath = await _getFilePath('casas_test_josesol.json');
-
-      // Inicializar repositorios
-      final reservaRepo = ReservaRepositorioJson(rutaArchivo: reservasPath);
-      final usuarioRepo = UsuarioRepositorioJson(rutaArchivo: usuariosPath);
-      final casaRepo = CasaRepositorioJson(rutaArchivo: casasPath);
-
-      // Inicializar servicio
-      _reservaService = ReservaService(
-        repositorio: reservaRepo,
-        usuarioRepositorio: usuarioRepo,
-        casaRepositorio: casaRepo,
-      );
-
-      // Buscar reserva activa del usuario actual
-      final userId = SessionManager.currentUserId;
-      if (userId != null) {
-        final reservas = await reservaRepo.obtenerPorUsuario(userId);
-        final activa = reservas.where((r) => r.status == 'ACTIVE').firstOrNull;
-        if (activa != null) {
-          setState(() {
-            _reservaActiva = activa.reservationId;
-          });
-        }
-      }
+      debugPrint('[67] Servicios de notificación inicializados');
     } catch (e) {
-      debugPrint('Error inicializando servicios: $e');
+      debugPrint('[69] Error inicializando servicios: $e');
     }
   }
 
@@ -339,26 +310,44 @@ class _DomoticScreenState extends State<DomoticScreen> {
     // Evitar enviar múltiples notificaciones
     if (_notificacionIncendioEnviada) return;
     
-    if (_reservaService == null || _reservaActiva == null) {
-      debugPrint('No se puede enviar notificación: servicio o reserva no disponible');
+    final userId = SessionManager.currentUserId;
+    if (userId == null) {
+      debugPrint('[320] Usuario no autenticado');
       return;
     }
 
     _notificacionIncendioEnviada = true;
 
     try {
-      final resultado = await _reservaService!.enviarNotificacionIncendio(_reservaActiva!);
+      // Solo obtener datos del usuario - sin validar reservas
+      final usuariosPath = await _getFilePath('usuarios_integrado.json');
+      final usuarioRepo = UsuarioRepositorioJson(rutaArchivo: usuariosPath);
       
-      if (resultado.exitoso) {
-        debugPrint('✅ Notificación de incendio enviada correctamente');
+      final usuario = await usuarioRepo.buscarPorId(userId);
+      if (usuario == null) {
+        debugPrint('[333] Usuario no encontrado');
+        return;
+      }
+
+      // Enviar notificación directamente por WhatsApp
+      final resultado = await _whatsappService.enviarNotificacionIncendio(
+        telefono: usuario.telefono,
+        nombreUsuario: usuario.username,
+        horadesatre: DateTime.now(),
+        nombreCasa: 'Casa IntelliHome',
+        propertyId: 'emergency',
+      );
+      
+      if (resultado.success) {
+        debugPrint('[347] Alerta de incendio enviada por WhatsApp');
         if (mounted) {
-          _showMessage('📱 Alerta de incendio enviada por WhatsApp');
+         /// _showMessage(' Alerta de incendio enviada por WhatsApp');
         }
       } else {
-        debugPrint('❌ Error al enviar notificación de incendio: ${resultado.mensaje}');
+        debugPrint('[352] Error al enviar WhatsApp: ${resultado.message}');
       }
     } catch (e) {
-      debugPrint('Error enviando notificación de incendio: $e');
+      debugPrint('[355] Error enviando notificación de incendio: $e');
     }
   }
 
@@ -366,26 +355,44 @@ class _DomoticScreenState extends State<DomoticScreen> {
     // Evitar enviar múltiples notificaciones
     if (_notificacionSismoEnviada) return;
     
-    if (_reservaService == null || _reservaActiva == null) {
-      debugPrint('No se puede enviar notificación: servicio o reserva no disponible');
+    final userId = SessionManager.currentUserId;
+    if (userId == null) {
+      debugPrint('[365] Usuario no autenticado');
       return;
     }
 
     _notificacionSismoEnviada = true;
 
     try {
-      final resultado = await _reservaService!.enviarNotificacionSismo(_reservaActiva!);
+      // Solo obtener datos del usuario - sin validar reservas
+      final usuariosPath = await _getFilePath('usuarios_integrado.json');
+      final usuarioRepo = UsuarioRepositorioJson(rutaArchivo: usuariosPath);
       
-      if (resultado.exitoso) {
-        debugPrint('✅ Notificación de sismo enviada correctamente');
+      final usuario = await usuarioRepo.buscarPorId(userId);
+      if (usuario == null) {
+        debugPrint('[378] Usuario no encontrado');
+        return;
+      }
+
+      // Enviar notificación directamente por WhatsApp
+      final resultado = await _whatsappService.enviarNotificacionSismo(
+        telefono: usuario.telefono,
+        nombreUsuario: usuario.username,
+        horadesatre: DateTime.now(),
+        nombreCasa: 'Casa IntelliHome',
+        propertyId: 'emergency',
+      );
+      
+      if (resultado.success) {
+        debugPrint('[392] Alerta de sismo enviada por WhatsApp');
         if (mounted) {
-          _showMessage('📱 Alerta de sismo enviada por WhatsApp');
+          ///_showMessage(' Alerta de sismo enviada por WhatsApp');
         }
       } else {
-        debugPrint('❌ Error al enviar notificación de sismo: ${resultado.mensaje}');
+        debugPrint('[397] Error al enviar WhatsApp: ${resultado.message}');
       }
     } catch (e) {
-      debugPrint('Error enviando notificación de sismo: $e');
+      debugPrint('[400] Error enviando notificación de sismo: $e');
     }
   }
 

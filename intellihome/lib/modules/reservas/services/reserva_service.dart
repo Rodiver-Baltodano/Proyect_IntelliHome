@@ -135,14 +135,6 @@ class ReservaService {
         );
       }
 
-      // Verificar que la reserva esté activa
-      if (reserva.status != ReservaStatus.active) {
-        return ResultadoReserva.fallo(
-          mensaje: 'La reserva no está activa. Estado actual: ${reserva.status}',
-          codigoError: 'RESERVATION_NOT_ACTIVE',
-        );
-      }
-
       // Obtener información del usuario y la casa para enviar la notificación
       if (_usuarioRepositorio != null && _casaRepositorio != null) {
         final usuario = await _usuarioRepositorio.buscarPorId(reserva.userId);
@@ -180,14 +172,6 @@ class ReservaService {
         return ResultadoReserva.fallo(
           mensaje: 'Reserva no encontrada',
           codigoError: 'RESERVATION_NOT_FOUND',
-        );
-      }
-
-      // Verificar que la reserva esté activa
-      if (reserva.status != ReservaStatus.active) {
-        return ResultadoReserva.fallo(
-          mensaje: 'La reserva no está activa. Estado actual: ${reserva.status}',
-          codigoError: 'RESERVATION_NOT_ACTIVE',
         );
       }
 
