@@ -21,12 +21,12 @@ class DomoticScreen extends StatefulWidget {
 }
 
 class _DomoticScreenState extends State<DomoticScreen> {
-  final TcpClient _tcpClient = TcpClient();
+  final TcpClient _tcpClient = TcpClient(); // Singleton - siempre la misma instancia
   bool _isConnected = false;
   bool _flameDetected = false;
   bool _shockDetected = false;
-  bool _puertaAbierta = false; // Inicia abierta (0°)
-  bool _garajeAbierto = false; // Inicia abierto (0°)
+  bool _puertaAbierta = false; // Inicia cerrada (0°)
+  bool _garajeAbierto = false; // Inicia cerrado (90°)
 
   // Servicio de reservas para notificaciones
   ReservaService? _reservaService;
@@ -401,8 +401,8 @@ class _DomoticScreenState extends State<DomoticScreen> {
 
     try {
       final newState = !_puertaAbierta;
-      // 0° = abierta (estable), -90° = cerrada
-      final angle = newState ? 0 : -90;
+      // 0° = cerrada, 90° = abierta
+      final angle = newState ? 90 : 0;
       final command = 'SERVO1:$angle\n';
 
       await _tcpClient.sendMessage(command);
@@ -426,8 +426,8 @@ class _DomoticScreenState extends State<DomoticScreen> {
 
     try {
       final newState = !_garajeAbierto;
-      // 0° = abierto (estable), -90° = cerrado
-      final angle = newState ? 0 : -90;
+      // 90° = cerrado, 180° = abierto
+      final angle = newState ? 180 : 90;
       final command = 'SERVO2:$angle\n';
 
       await _tcpClient.sendMessage(command);
@@ -639,11 +639,8 @@ class _DomoticScreenState extends State<DomoticScreen> {
 
   @override
   void dispose() {
-    // Limpiar callbacks antes de desconectar
-    _tcpClient.onDisconnected = null;
-    _tcpClient.onError = null;
-    _tcpClient.onMessageReceived = null;
-    _tcpClient.disconnect();
+    // ✅ SOLO limpia callbacks - NO desconectes (es un Singleton)
+    _tcpClient.clearCallbacks();
     super.dispose();
   }
 
@@ -653,8 +650,8 @@ class _DomoticScreenState extends State<DomoticScreen> {
 
     return WillPopScope(
       onWillPop: () async {
-        // Desconectar antes de volver
-        await _tcpClient.disconnect();
+        // ✅ SOLO limpia callbacks al volver atrás - NO desconectes
+        _tcpClient.clearCallbacks();
         return true;
       },
       child: Scaffold(
@@ -665,8 +662,8 @@ class _DomoticScreenState extends State<DomoticScreen> {
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
             onPressed: () async {
-              // Desconectar antes de volver
-              await _tcpClient.disconnect();
+              // ✅ SOLO limpia callbacks antes de volver - NO desconectes
+              _tcpClient.clearCallbacks();
               if (mounted) {
                 Navigator.pop(context);
               }
