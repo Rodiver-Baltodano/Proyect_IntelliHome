@@ -57,6 +57,18 @@ class _ReservarConfirmacionScreenState
     return DateFormat('dd/MM/yyyy').format(fecha);
   }
 
+  ImageProvider? _buildImageProvider(String? ruta) {
+    if (ruta == null || ruta.isEmpty) return null;
+    if (ruta.startsWith('http')) {
+      return NetworkImage(ruta);
+    }
+    final file = File(ruta);
+    if (file.existsSync()) {
+      return FileImage(file);
+    }
+    return null;
+  }
+
   String _formatearDatosTarjeta(String numeroTarjeta, String fechaExpiracion) {
     final limpia = numeroTarjeta.replaceAll(RegExp(r'\s+'), '');
     final ultimos4 = limpia.length >= 4 ? limpia.substring(limpia.length - 4) : limpia;
@@ -188,6 +200,14 @@ class _ReservarConfirmacionScreenState
         ),
       );
 
+      final usuarioActualizado = await usuariosRepo.buscarPorId(usuario.id);
+      if (usuarioActualizado != null && mounted) {
+        context.read<ThemeProvider>().inicializarConUsuario(
+              usuarioActualizado,
+              repositorio: usuariosRepo,
+            );
+      }
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
@@ -267,11 +287,19 @@ class _ReservarConfirmacionScreenState
             if (widget.casa.fotos.isNotEmpty)
               ClipRRect(
                 borderRadius: BorderRadius.circular(12),
-                child: Image.file(
-                  File(widget.casa.fotos.first),
-                  height: 180,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
+                child: Builder(
+                  builder: (context) {
+                    final provider = _buildImageProvider(
+                      widget.casa.fotos.first,
+                    );
+                    if (provider == null) return const SizedBox.shrink();
+                    return Image(
+                      image: provider,
+                      height: 180,
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                    );
+                  },
                 ),
               ),
             if (widget.casa.fotos.isNotEmpty) const SizedBox(height: 16),

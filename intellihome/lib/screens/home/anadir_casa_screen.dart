@@ -5,8 +5,10 @@ import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intellihome/config/app_colors.dart';
+import 'package:intellihome/modules/autenticacion/models/usuario.dart';
 import 'package:intellihome/modules/autenticacion/repositories/casa_azure_blob_repository.dart';
 import 'package:intellihome/modules/autenticacion/repositories/casa_repositorio_json.dart';
+import 'package:intellihome/modules/autenticacion/repositories/usuario_repository.dart';
 import 'package:intellihome/modules/autenticacion/services/registro_casa_service.dart';
 import 'package:intellihome/providers/theme_provider.dart';
 import 'package:intellihome/screens/home/amenidades_data.dart';
@@ -306,6 +308,51 @@ class _AnadirCasaScreenState extends State<AnadirCasaScreen> {
           ),
         );
         return;
+      }
+
+      if (usuario != null) {
+        final usuariosPath = p.join(appDir.path, 'usuarios_integrado.json');
+        final usuariosRepo = UsuarioRepositorioJson(rutaArchivo: usuariosPath);
+        final nuevasCasas = {
+          ...usuario.casas,
+          casaId,
+        }.toList();
+
+        final actualizado = Usuario(
+          id: usuario.id,
+          username: usuario.username,
+          nombreApellidos: usuario.nombreApellidos,
+          correo: usuario.correo,
+          telefono: usuario.telefono,
+          contrasena: usuario.contrasena,
+          nacionalidad: usuario.nacionalidad,
+          numeroIBAN: usuario.numeroIBAN,
+          fotoPerfil: usuario.fotoPerfil,
+          aceptaTerminos: usuario.aceptaTerminos,
+          cedula: usuario.cedula,
+          datosTargeta: usuario.datosTargeta,
+          huellaBiometrica: usuario.huellaBiometrica,
+          intentosFallidos: usuario.intentosFallidos,
+          intentosFallidosCodigo: usuario.intentosFallidosCodigo,
+          estaBloqueado: usuario.estaBloqueado,
+          codigoRecuperacion: usuario.codigoRecuperacion,
+          codigoExpira: usuario.codigoExpira,
+          fechaRegistro: usuario.fechaRegistro,
+          fechaNacimiento: usuario.fechaNacimiento,
+          tema: usuario.tema,
+          estilo: usuario.estilo,
+          colorPrimarioARGB: usuario.colorPrimarioARGB,
+          colorBackgroundARGB: usuario.colorBackgroundARGB,
+          casas: nuevasCasas,
+          reservas: usuario.reservas,
+        );
+
+        await usuariosRepo.actualizarUsuario(actualizado);
+        if (mounted) {
+          context
+              .read<ThemeProvider>()
+              .inicializarConUsuario(actualizado, repositorio: usuariosRepo);
+        }
       }
 
       Navigator.pop(context, '¡Casa añadida!');

@@ -1,16 +1,34 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:intellihome/modules/reservas/models/reserva.dart';
+import 'package:intellihome/modules/reservas/repositories/reserva_azure_blob_repository.dart';
 
 /// Repositorio para gestionar reservas almacenadas en un archivo JSON
 class ReservaRepositorioJson {
   final String rutaArchivo;
+  ReservaAzureBlobRepository? _azureRepo;
 
   ReservaRepositorioJson({required this.rutaArchivo});
 
+  bool get _usarAzure {
+    final reservasUrl = dotenv.env['RESERVAS_BLOB_SAS_URL'];
+    return reservasUrl != null && reservasUrl.isNotEmpty;
+  }
+
+  ReservaAzureBlobRepository _getAzureRepo() {
+    if (_azureRepo != null) return _azureRepo!;
+    final reservasUrl = dotenv.env['RESERVAS_BLOB_SAS_URL'] ?? '';
+    _azureRepo = ReservaAzureBlobRepository(reservasBlobSasUrl: reservasUrl);
+    return _azureRepo!;
+  }
+
   /// Lee el archivo JSON y devuelve la lista de reservas.
   Future<List<Reserva>> cargarReservas() async {
+    if (_usarAzure) {
+      return _getAzureRepo().cargarReservas();
+    }
     final archivo = File(rutaArchivo);
 
     ///print('[Reserva_Repository] Cargando reservas desde: $rutaArchivo');
@@ -46,6 +64,10 @@ class ReservaRepositorioJson {
   /// Guarda la lista completa de reservas al archivo JSON.
   /// Por simplicidad, guarda como LISTA RAÍZ.
   Future<void> guardarReservas(List<Reserva> reservas) async {
+    if (_usarAzure) {
+      await _getAzureRepo().guardarReservas(reservas);
+      return;
+    }
     final archivo = File(rutaArchivo);
 
     // Asegurar que la carpeta exista
