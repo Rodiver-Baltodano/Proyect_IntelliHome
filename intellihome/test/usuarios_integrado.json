@@ -1,0 +1,34 @@
+[
+  {
+    "id": "user-001",
+    "username": "admin",
+    "nombreApellidos": "Administrador General",
+    "correo": "admin@intellihome.com",
+    "telefono": "88888888",
+    "contrasena": "hash_demo",
+    "nacionalidad": "CR",
+    "numeroIBAN": "CR00000000000000000000",
+    "fotoPerfil": "",
+    "aceptaTerminos": true,
+    "cedula": "1-1111-1111",
+    "datosTargeta": "**** **** **** 1234 (exp 12/29)",
+    "huellaBiometrica": null,
+    "intentosFallidos": 0,
+    "intentosFallidosCodigo": 0,
+    "estaBloqueado": false,
+    "codigoRecuperacion": null,
+    "codigoExpira": null,
+    "fechaRegistro": "2026-02-01T12:00:00.000Z",
+    "fechaNacimiento": "1990-01-01T00:00:00.000Z",
+    "tema": "medio",
+    "estilo": "aventurero",
+    "colorPrimarioARGB": null,
+    "colorBackgroundARGB": null,
+    "casas": [
+      "casa-001"
+    ],
+    "reservas": [
+      "res-001"
+    ]
+  }
+]

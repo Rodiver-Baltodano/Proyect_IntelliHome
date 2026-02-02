@@ -1,7 +1,9 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:intellihome/modules/autenticacion/models/usuario.dart';
+import 'package:intellihome/modules/autenticacion/repositories/usuario_azure_blob_repository.dart';
 
 /// Repositorio que carga y guarda usuarios en un archivo JSON.
 ///
@@ -13,11 +15,35 @@ import 'package:intellihome/modules/autenticacion/models/usuario.dart';
 ///    { "usuarios": [ {usuario1}, {usuario2} ] }
 class UsuarioRepositorioJson {
   final String rutaArchivo;
+  UsuarioAzureBlobRepository? _azureRepo;
 
   UsuarioRepositorioJson({required this.rutaArchivo});
 
+  bool get _usarAzure {
+    final usersUrl = dotenv.env['USERS_BLOB_SAS_URL'];
+    final imagesUrl = dotenv.env['IMAGES_CONTAINER_SAS_URL'];
+    return usersUrl != null &&
+        usersUrl.isNotEmpty &&
+        imagesUrl != null &&
+        imagesUrl.isNotEmpty;
+  }
+
+  UsuarioAzureBlobRepository _getAzureRepo() {
+    if (_azureRepo != null) return _azureRepo!;
+    final usersUrl = dotenv.env['USERS_BLOB_SAS_URL'] ?? '';
+    final imagesUrl = dotenv.env['IMAGES_CONTAINER_SAS_URL'] ?? '';
+    _azureRepo = UsuarioAzureBlobRepository(
+      usersBlobSasUrl: usersUrl,
+      imagesContainerSasUrl: imagesUrl,
+    );
+    return _azureRepo!;
+  }
+
   /// Lee el archivo JSON y devuelve la lista de usuarios.
   Future<List<Usuario>> cargarUsuarios() async {
+    if (_usarAzure) {
+      return _getAzureRepo().cargarUsuarios();
+    }
     final archivo = File(rutaArchivo);
 
     print('📂 [REPO] Cargando usuarios desde: $rutaArchivo');
@@ -54,6 +80,10 @@ class UsuarioRepositorioJson {
   /// Guarda la lista completa de usuarios al archivo JSON.
   /// Por simplicidad, guarda como LISTA RAÍZ.
   Future<void> guardarUsuarios(List<Usuario> usuarios) async {
+    if (_usarAzure) {
+      await _getAzureRepo().guardarUsuarios(usuarios);
+      return;
+    }
     final archivo = File(rutaArchivo);
 
     // Asegurar que la carpeta exista
@@ -89,11 +119,14 @@ class UsuarioRepositorioJson {
 
   /// Actualiza (reemplaza) un usuario por id y guarda.
   Future<void> actualizarUsuario(Usuario usuarioActualizado) async {
-    final usuarios = await cargarUsuarios();
+    if (_usarAzure) {
+      await _getAzureRepo().agregarOActualizarUsuario(usuarioActualizado);
+      return;
+    }
 
+    final usuarios = await cargarUsuarios();
     final index = usuarios.indexWhere((u) => u.id == usuarioActualizado.id);
     if (index == -1) {
-      // Si no existe, podés decidir lanzar error o agregarlo.
       throw StateError('No se encontró el usuario con id=${usuarioActualizado.id}');
     }
 
@@ -103,9 +136,17 @@ class UsuarioRepositorioJson {
 
   /// Guarda un nuevo usuario (lo agrega a la lista existente).
   Future<void> guardarUsuario(Usuario nuevoUsuario) async {
-    final usuarios = await cargarUsuarios();
+    if (_usarAzure) {
+      final usuarios = await cargarUsuarios();
+      if (usuarios.any((u) => u.id == nuevoUsuario.id)) {
+        throw StateError('Ya existe un usuario con id=${nuevoUsuario.id}');
+      }
+      usuarios.add(nuevoUsuario);
+      await guardarUsuarios(usuarios);
+      return;
+    }
 
-    // Verificar que no exista con el mismo id
+    final usuarios = await cargarUsuarios();
     if (usuarios.any((u) => u.id == nuevoUsuario.id)) {
       throw StateError('Ya existe un usuario con id=${nuevoUsuario.id}');
     }

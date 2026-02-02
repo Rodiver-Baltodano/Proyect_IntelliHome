@@ -1,3 +1,4 @@
+import 'package:intellihome/modules/autenticacion/models/usuario.dart';
 import 'package:intellihome/modules/reservas/models/reserva.dart';
 import 'package:intellihome/modules/reservas/models/resultado_reserva.dart';
 import 'package:intellihome/modules/reservas/repositories/reserva_repository.dart';
@@ -91,7 +92,7 @@ class ReservaService {
       final nuevaReserva = Reserva(
         reservationId: _uuid.v4(),
         userId: userId,
-        status: ReservaStatus.active,
+        status: ReservaStatus.pending,
         startDate: startDate,
         endDate: endDate,
         propertyId: propertyId,
@@ -100,6 +101,45 @@ class ReservaService {
       );
 
       await _repositorio.agregarReserva(nuevaReserva);
+
+      if (_usuarioRepositorio != null) {
+        final usuario = await _usuarioRepositorio.buscarPorId(userId);
+        if (usuario != null) {
+          final nuevasReservas = {
+            ...usuario.reservas,
+            nuevaReserva.reservationId,
+          }.toList();
+          final actualizado = Usuario(
+            id: usuario.id,
+            username: usuario.username,
+            nombreApellidos: usuario.nombreApellidos,
+            correo: usuario.correo,
+            telefono: usuario.telefono,
+            contrasena: usuario.contrasena,
+            nacionalidad: usuario.nacionalidad,
+            numeroIBAN: usuario.numeroIBAN,
+            fotoPerfil: usuario.fotoPerfil,
+            aceptaTerminos: usuario.aceptaTerminos,
+            cedula: usuario.cedula,
+            datosTargeta: usuario.datosTargeta,
+            huellaBiometrica: usuario.huellaBiometrica,
+            intentosFallidos: usuario.intentosFallidos,
+            intentosFallidosCodigo: usuario.intentosFallidosCodigo,
+            estaBloqueado: usuario.estaBloqueado,
+            codigoRecuperacion: usuario.codigoRecuperacion,
+            codigoExpira: usuario.codigoExpira,
+            fechaRegistro: usuario.fechaRegistro,
+            fechaNacimiento: usuario.fechaNacimiento,
+            tema: usuario.tema,
+            estilo: usuario.estilo,
+            colorPrimarioARGB: usuario.colorPrimarioARGB,
+            colorBackgroundARGB: usuario.colorBackgroundARGB,
+            casas: usuario.casas,
+            reservas: nuevasReservas,
+          );
+          await _usuarioRepositorio.actualizarUsuario(actualizado);
+        }
+      }
 
       // Enviar WhatsApp de confirmación
       await sendWhatsapp(

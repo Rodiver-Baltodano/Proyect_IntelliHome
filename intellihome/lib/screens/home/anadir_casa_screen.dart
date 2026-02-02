@@ -2,9 +2,13 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intellihome/config/app_colors.dart';
+import 'package:intellihome/modules/autenticacion/models/usuario.dart';
+import 'package:intellihome/modules/autenticacion/repositories/casa_azure_blob_repository.dart';
 import 'package:intellihome/modules/autenticacion/repositories/casa_repositorio_json.dart';
+import 'package:intellihome/modules/autenticacion/repositories/usuario_repository.dart';
 import 'package:intellihome/modules/autenticacion/services/registro_casa_service.dart';
 import 'package:intellihome/providers/theme_provider.dart';
 import 'package:intellihome/screens/home/amenidades_data.dart';
@@ -15,6 +19,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:uuid/uuid.dart';
 
 class AnadirCasaScreen extends StatefulWidget {
   const AnadirCasaScreen({super.key});
@@ -31,7 +36,7 @@ class _AnadirCasaScreenState extends State<AnadirCasaScreen> {
   final List<File> _selectedImages = [];
   LatLng? _selectedLocation;
   Set<int> _selectedAmenidades = {};
-  final Set<DateTime> _blockedDates = {};
+  Set<DateTime> _blockedDates = {};
 
   bool _mostrarReglas = false;
   late final TextEditingController _reglasController;
@@ -190,7 +195,32 @@ class _AnadirCasaScreenState extends State<AnadirCasaScreen> {
     });
   }
 
-  Future<List<String>> _guardarFotosCasa(List<File> fotos) async {
+  Future<List<String>> _guardarFotosCasa(
+    List<File> fotos, {
+    required String casaId,
+  }) async {
+    final casasUrl = dotenv.env['CASAS_BLOB_SAS_URL'] ?? '';
+    final imagesUrl = dotenv.env['IMAGES_CONTAINER_SAS_URL'] ?? '';
+    final usarAzure = casasUrl.isNotEmpty && imagesUrl.isNotEmpty;
+
+    if (usarAzure) {
+      final repo = CasaAzureBlobRepository(
+        casasBlobSasUrl: casasUrl,
+        imagesContainerSasUrl: imagesUrl,
+      );
+      final rutas = <String>[];
+      for (int i = 0; i < fotos.length; i++) {
+        final archivo = fotos[i];
+        final url = await repo.subirFotoCasa(
+          casaId: casaId,
+          index: i,
+          file: archivo,
+        );
+        rutas.add(url);
+      }
+      return rutas;
+    }
+
     final appDir = await getApplicationDocumentsDirectory();
     final carpetaCasas = Directory(p.join(appDir.path, 'casas'));
     if (!await carpetaCasas.exists()) {
@@ -229,8 +259,12 @@ class _AnadirCasaScreenState extends State<AnadirCasaScreen> {
 
     List<String> rutasFotos = [];
     try {
+      final casaId = const Uuid().v4();
       if (_selectedImages.isNotEmpty) {
-        rutasFotos = await _guardarFotosCasa(_selectedImages);
+        rutasFotos = await _guardarFotosCasa(
+          _selectedImages,
+          casaId: casaId,
+        );
       }
 
       final appDir = await getApplicationDocumentsDirectory();
@@ -239,6 +273,7 @@ class _AnadirCasaScreenState extends State<AnadirCasaScreen> {
       final servicio = RegistroCasaServicio(repositorio: casasRepo);
 
       final resultado = await servicio.registrarCasa(
+        id: casaId,
         nombre: nombre,
         precioPorNoche: precio,
         maxPersonas: _maxPersonas,
@@ -273,6 +308,51 @@ class _AnadirCasaScreenState extends State<AnadirCasaScreen> {
           ),
         );
         return;
+      }
+
+      if (usuario != null) {
+        final usuariosPath = p.join(appDir.path, 'usuarios_integrado.json');
+        final usuariosRepo = UsuarioRepositorioJson(rutaArchivo: usuariosPath);
+        final nuevasCasas = {
+          ...usuario.casas,
+          casaId,
+        }.toList();
+
+        final actualizado = Usuario(
+          id: usuario.id,
+          username: usuario.username,
+          nombreApellidos: usuario.nombreApellidos,
+          correo: usuario.correo,
+          telefono: usuario.telefono,
+          contrasena: usuario.contrasena,
+          nacionalidad: usuario.nacionalidad,
+          numeroIBAN: usuario.numeroIBAN,
+          fotoPerfil: usuario.fotoPerfil,
+          aceptaTerminos: usuario.aceptaTerminos,
+          cedula: usuario.cedula,
+          datosTargeta: usuario.datosTargeta,
+          huellaBiometrica: usuario.huellaBiometrica,
+          intentosFallidos: usuario.intentosFallidos,
+          intentosFallidosCodigo: usuario.intentosFallidosCodigo,
+          estaBloqueado: usuario.estaBloqueado,
+          codigoRecuperacion: usuario.codigoRecuperacion,
+          codigoExpira: usuario.codigoExpira,
+          fechaRegistro: usuario.fechaRegistro,
+          fechaNacimiento: usuario.fechaNacimiento,
+          tema: usuario.tema,
+          estilo: usuario.estilo,
+          colorPrimarioARGB: usuario.colorPrimarioARGB,
+          colorBackgroundARGB: usuario.colorBackgroundARGB,
+          casas: nuevasCasas,
+          reservas: usuario.reservas,
+        );
+
+        await usuariosRepo.actualizarUsuario(actualizado);
+        if (mounted) {
+          context
+              .read<ThemeProvider>()
+              .inicializarConUsuario(actualizado, repositorio: usuariosRepo);
+        }
       }
 
       Navigator.pop(context, '¡Casa añadida!');

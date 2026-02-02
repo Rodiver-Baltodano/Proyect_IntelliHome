@@ -10,6 +10,7 @@ class RegistroCasaServicio {
   RegistroCasaServicio({required this.repositorio});
 
   Future<ResultadoRegistroCasa> registrarCasa({
+    String? id,
     required String nombre,
     required double precioPorNoche,
     required int maxPersonas,
@@ -87,7 +88,7 @@ class RegistroCasaServicio {
 
 
     final nuevaCasa = Casa(
-      id: const Uuid().v4(),
+      id: id ?? const Uuid().v4(),
       nombre: nombre,
       precioPorNoche: precioPorNoche,
       maxPersonas: maxPersonas,

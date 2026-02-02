@@ -1,0 +1,22 @@
+[
+  {
+    "id": "casa-001",
+    "nombre": "Casa Volcán",
+    "precioPorNoche": 45000,
+    "maxPersonas": 6,
+    "habitaciones": 3,
+    "descripcion": "Casa con vista al volcán y jacuzzi.",
+    "fotos": [
+      "C:/appdata/casas/casa_001.jpg"
+    ],
+    "ubicacion": "9.934739,-84.087502",
+    "reglasUso": "No fumar.\nNo fiestas.",
+    "ownerId": "user-001",
+    "amenidades": [1, 4, 7],
+    "fechasNoDisponibles": [
+      "2026-02-10T00:00:00.000Z",
+      "2026-02-11T00:00:00.000Z"
+    ],
+    "fechaRegistro": "2026-02-01T12:00:00.000Z"
+  }
+]
