@@ -3,9 +3,11 @@ import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
 import 'dart:io';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:intellihome/config/app_colors.dart';
 import 'package:intellihome/modules/autenticacion/services/registro_service.dart';
 import 'package:intellihome/modules/autenticacion/repositories/usuario_repository.dart';
+import 'package:intellihome/modules/autenticacion/repositories/usuario_azure_blob_repository.dart';
 import 'terms_screen.dart';
 import 'package:intellihome/l10n/app_localizations.dart'; 
 
@@ -449,6 +451,34 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   Future<void> _guardarFoto(File archivoFoto) async {
     try {
+      final usersUrl = dotenv.env['USERS_BLOB_SAS_URL'] ?? '';
+      final imagesUrl = dotenv.env['IMAGES_CONTAINER_SAS_URL'] ?? '';
+      final usarAzure = usersUrl.isNotEmpty && imagesUrl.isNotEmpty;
+
+      if (usarAzure) {
+        final repo = UsuarioAzureBlobRepository(
+          usersBlobSasUrl: usersUrl,
+          imagesContainerSasUrl: imagesUrl,
+        );
+
+        final userId = _usernameController.text.trim().isNotEmpty
+            ? _usernameController.text.trim()
+            : DateTime.now().millisecondsSinceEpoch.toString();
+
+        final url = await repo.subirFotoPerfil(
+          userId: userId,
+          file: archivoFoto,
+        );
+
+        setState(() {
+          _imagenPerfil = archivoFoto;
+          _rutaFoto = url;
+        });
+
+        print('Foto subida a Azure: $url');
+        return;
+      }
+
       // Obtener directorio de la app
       final appDir = await getApplicationDocumentsDirectory();
       
