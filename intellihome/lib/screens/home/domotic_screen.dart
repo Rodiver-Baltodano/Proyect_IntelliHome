@@ -11,6 +11,7 @@ import 'package:intellihome/modules/autenticacion/repositories/casa_repositorio_
 import 'package:intellihome/session/session_manager.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
+import 'package:flutter_dotenv/flutter_dotenv.dart';  
 import 'dart:io';
 
 class DomoticScreen extends StatefulWidget {
@@ -69,7 +70,7 @@ class _DomoticScreenState extends State<DomoticScreen> {
   }
 
   /// VERSIÓN MEJORADA - Inicialización robusta del servicio de reservas
-  Future<void> _initializeServices() async {
+    Future<void> _initializeServices() async {
     try {
       debugPrint('🔄 [INIT] Iniciando servicios de notificación...');
 
@@ -88,7 +89,7 @@ class _DomoticScreenState extends State<DomoticScreen> {
       final appDir = await getApplicationDocumentsDirectory();
       debugPrint('📁 [INIT] Directorio de la app: ${appDir.path}');
 
-      // 3. CORRECCIÓN PRINCIPAL: Usar las rutas correctas confirmadas
+      // 3. Definir rutas de archivos
       final usuariosPath = p.join(appDir.path, 'usuarios_integrado.json');
       final casasPath = p.join(appDir.path, 'casas_integrado.json');
       final reservasPath = p.join(appDir.path, 'reservas_integrado.json');
@@ -98,47 +99,57 @@ class _DomoticScreenState extends State<DomoticScreen> {
       debugPrint('  - Casas: $casasPath');
       debugPrint('  - Reservas: $reservasPath');
 
-      // 4. Verificar existencia de archivos (en el orden correcto)
-      final usuariosFile = File(usuariosPath);
-      final casasFile = File(casasPath);
-      final reservasFile = File(reservasPath);
-
-      bool todosExisten = true;
-
-      if (!await usuariosFile.exists()) {
-        debugPrint('❌ [INIT] Archivo de usuarios NO ENCONTRADO: $usuariosPath');
-        todosExisten = false;
+      // 4. CAMBIO IMPORTANTE: Verificar si está usando Azure
+      final usandoAzure = dotenv.env['RESERVAS_BLOB_SAS_URL']?.isNotEmpty ?? false;
+      
+      if (usandoAzure) {
+        debugPrint('☁️ [INIT] Modo Azure Blob Storage detectado');
+        debugPrint('✅ [INIT] No se requieren archivos JSON locales');
       } else {
-        debugPrint('✅ [INIT] Archivo de usuarios encontrado');
+        debugPrint('💾 [INIT] Modo JSON local detectado');
+        
+        // Verificar existencia de archivos solo si NO está usando Azure
+        final usuariosFile = File(usuariosPath);
+        final casasFile = File(casasPath);
+        final reservasFile = File(reservasPath);
+
+        bool todosExisten = true;
+
+        if (!await usuariosFile.exists()) {
+          debugPrint('❌ [INIT] Archivo de usuarios NO ENCONTRADO: $usuariosPath');
+          todosExisten = false;
+        } else {
+          debugPrint('✅ [INIT] Archivo de usuarios encontrado');
+        }
+
+        if (!await casasFile.exists()) {
+          debugPrint('❌ [INIT] Archivo de casas NO ENCONTRADO: $casasPath');
+          todosExisten = false;
+        } else {
+          debugPrint('✅ [INIT] Archivo de casas encontrado');
+        }
+
+        if (!await reservasFile.exists()) {
+          debugPrint('❌ [INIT] Archivo de reservas NO ENCONTRADO: $reservasPath');
+          debugPrint(
+            '💡 [INIT] Verifica que el archivo exista en el directorio de documentos',
+          );
+          todosExisten = false;
+        } else {
+          debugPrint('✅ [INIT] Archivo de reservas encontrado');
+        }
+
+        if (!todosExisten) {
+          debugPrint(
+            '❌ [INIT] Faltan archivos requeridos - abortando inicialización',
+          );
+          return;
+        }
+
+        debugPrint('✅ [INIT] Todos los archivos encontrados correctamente');
       }
 
-      if (!await casasFile.exists()) {
-        debugPrint('❌ [INIT] Archivo de casas NO ENCONTRADO: $casasPath');
-        todosExisten = false;
-      } else {
-        debugPrint('✅ [INIT] Archivo de casas encontrado');
-      }
-
-      if (!await reservasFile.exists()) {
-        debugPrint('❌ [INIT] Archivo de reservas NO ENCONTRADO: $reservasPath');
-        debugPrint(
-          '💡 [INIT] Verifica que el archivo exista en el directorio de documentos',
-        );
-        todosExisten = false;
-      } else {
-        debugPrint('✅ [INIT] Archivo de reservas encontrado');
-      }
-
-      if (!todosExisten) {
-        debugPrint(
-          '❌ [INIT] Faltan archivos requeridos - abortando inicialización',
-        );
-        return;
-      }
-
-      debugPrint('✅ [INIT] Todos los archivos encontrados correctamente');
-
-      // 5. Inicializar repositorios
+      // 5. Inicializar repositorios (funcionan tanto con JSON como Azure)
       debugPrint('🔧 [INIT] Inicializando repositorios...');
       final reservaRepo = ReservaRepositorioJson(rutaArchivo: reservasPath);
       final usuarioRepo = UsuarioRepositorioJson(rutaArchivo: usuariosPath);
@@ -148,16 +159,24 @@ class _DomoticScreenState extends State<DomoticScreen> {
       debugPrint('🔧 [INIT] Creando servicio de reservas...');
       _reservaService = ReservaService(
         repositorio: reservaRepo,
-        usuarioRepositorio: usuarioRepo, // ✅ IMPORTANTE: Pasar repositorio
-        casaRepositorio: casaRepo, // ✅ IMPORTANTE: Pasar repositorio
+        usuarioRepositorio: usuarioRepo,
+        casaRepositorio: casaRepo,
       );
 
       debugPrint('✅ [INIT] Servicio de reservas inicializado correctamente');
 
       // 7. Buscar reservas del usuario
       debugPrint('🔍 [INIT] Buscando reservas del usuario $userId...');
-      final reservas = await reservaRepo.obtenerPorUsuario(userId);
-      debugPrint('📋 [INIT] Reservas encontradas: ${reservas.length}');
+      
+      List<Reserva> reservas;
+      try {
+        reservas = await reservaRepo.obtenerPorUsuario(userId);
+        debugPrint('📋 [INIT] Reservas encontradas: ${reservas.length}');
+      } catch (e) {
+        debugPrint('❌ [INIT] Error al cargar reservas: $e');
+        debugPrint('💡 [INIT] Continuando sin reservas...');
+        reservas = [];
+      }
 
       if (reservas.isEmpty) {
         debugPrint('⚠️ [INIT] El usuario no tiene reservas registradas');

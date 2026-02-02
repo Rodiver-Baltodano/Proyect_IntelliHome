@@ -164,38 +164,100 @@ class ReservaService {
   }
 
   /// Envía notificación de incendio solo si la reserva está activa
+  /// VERSIÓN MEJORADA: Maneja mejor los casos de Azure
   Future<ResultadoReserva> enviarNotificacionIncendio(String reservationId) async {
     try {
+      print('🔥 [WhatsApp Service] Iniciando envío de notificación de incendio...');
+      print('🔥 [WhatsApp Service] Reservation ID: $reservationId');
+
       final reserva = await _repositorio.buscarPorId(reservationId);
       
       if (reserva == null) {
+        print('❌ [WhatsApp Service] Reserva no encontrada');
         return ResultadoReserva.fallo(
           mensaje: 'Reserva no encontrada',
           codigoError: 'RESERVATION_NOT_FOUND',
         );
       }
 
-      // Obtener información del usuario y la casa para enviar la notificación
-      if (_usuarioRepositorio != null && _casaRepositorio != null) {
-        final usuario = await _usuarioRepositorio.buscarPorId(reserva.userId);
-        final casa = await _casaRepositorio.buscarPorId(reserva.propertyId);
-        
-        if (usuario != null && casa != null) {
-          await _whatsappService.enviarNotificacionIncendio(
-            propertyId: reserva.propertyId,
-            horadesatre: DateTime.now(),
-            nombreUsuario: usuario.username,
-            telefono: usuario.telefono,
-            nombreCasa: casa.nombre,
-          );
-        }
+      print('✅ [WhatsApp Service] Reserva encontrada');
+      print('   User ID: ${reserva.userId}');
+      print('   Property ID: ${reserva.propertyId}');
+
+      // Validar que los repositorios estén disponibles
+      if (_usuarioRepositorio == null) {
+        print('⚠️ [WhatsApp Service] Repositorio de usuarios no disponible');
+        return ResultadoReserva.fallo(
+          mensaje: 'Repositorio de usuarios no disponible',
+          codigoError: 'USER_REPO_NOT_AVAILABLE',
+        );
       }
 
-      return ResultadoReserva.exito(
-        mensaje: 'Notificación de incendio enviada exitosamente',
-        reserva: reserva,
+      if (_casaRepositorio == null) {
+        print('⚠️ [WhatsApp Service] Repositorio de casas no disponible');
+        return ResultadoReserva.fallo(
+          mensaje: 'Repositorio de casas no disponible',
+          codigoError: 'CASA_REPO_NOT_AVAILABLE',
+        );
+      }
+
+      // Obtener información del usuario
+      print('🔍 [WhatsApp Service] Buscando usuario...');
+      final usuario = await _usuarioRepositorio.buscarPorId(reserva.userId);
+      
+      if (usuario == null) {
+        print('❌ [WhatsApp Service] Usuario no encontrado');
+        return ResultadoReserva.fallo(
+          mensaje: 'Usuario no encontrado',
+          codigoError: 'USER_NOT_FOUND',
+        );
+      }
+
+      print('✅ [WhatsApp Service] Usuario encontrado: ${usuario.nombreApellidos}');
+      print('   Teléfono: ${usuario.telefono}');
+
+      // Obtener información de la casa
+      print('🔍 [WhatsApp Service] Buscando casa...');
+      final casa = await _casaRepositorio.buscarPorId(reserva.propertyId);
+      
+      if (casa == null) {
+        print('❌ [WhatsApp Service] Casa no encontrada');
+        return ResultadoReserva.fallo(
+          mensaje: 'Casa no encontrada',
+          codigoError: 'CASA_NOT_FOUND',
+        );
+      }
+
+      print('✅ [WhatsApp Service] Casa encontrada: ${casa.nombre}');
+
+      // Enviar notificación
+      print('📱 [WhatsApp Service] Enviando notificación...');
+      final resultado = await _whatsappService.enviarNotificacionIncendio(
+        propertyId: reserva.propertyId,
+        horadesatre: DateTime.now(),
+        nombreUsuario: usuario.nombreApellidos,
+        telefono: usuario.telefono,
+        nombreCasa: casa.nombre,
       );
-    } catch (e) {
+
+      if (resultado.success) {
+        print('✅ [WhatsApp Service] Notificación enviada exitosamente');
+        print('   SID: ${resultado.messageSid}');
+        return ResultadoReserva.exito(
+          mensaje: 'Notificación de incendio enviada exitosamente',
+          reserva: reserva,
+        );
+      } else {
+        print('❌ [WhatsApp Service] Error al enviar: ${resultado.message}');
+        return ResultadoReserva.fallo(
+          mensaje: 'Error al enviar WhatsApp: ${resultado.message}',
+          codigoError: 'WHATSAPP_SEND_ERROR',
+        );
+      }
+    } catch (e, stackTrace) {
+      print('❌ [WhatsApp Service] Excepción al enviar notificación de incendio');
+      print('   Error: $e');
+      print('   Stack trace: $stackTrace');
       return ResultadoReserva.fallo(
         mensaje: 'Error al enviar notificación de incendio: ${e.toString()}',
         codigoError: 'NOTIFICATION_ERROR',
@@ -204,38 +266,100 @@ class ReservaService {
   }
 
   /// Envía notificación de sismo solo si la reserva está activa
+  /// VERSIÓN MEJORADA: Maneja mejor los casos de Azure
   Future<ResultadoReserva> enviarNotificacionSismo(String reservationId) async {
     try {
+      print('🫨 [WhatsApp Service] Iniciando envío de notificación de sismo...');
+      print('🫨 [WhatsApp Service] Reservation ID: $reservationId');
+
       final reserva = await _repositorio.buscarPorId(reservationId);
       
       if (reserva == null) {
+        print('❌ [WhatsApp Service] Reserva no encontrada');
         return ResultadoReserva.fallo(
           mensaje: 'Reserva no encontrada',
           codigoError: 'RESERVATION_NOT_FOUND',
         );
       }
 
-      // Obtener información del usuario y la casa para enviar la notificación
-      if (_usuarioRepositorio != null && _casaRepositorio != null) {
-        final usuario = await _usuarioRepositorio.buscarPorId(reserva.userId);
-        final casa = await _casaRepositorio.buscarPorId(reserva.propertyId);
-        
-        if (usuario != null && casa != null) {
-          await _whatsappService.enviarNotificacionSismo(
-            propertyId: reserva.propertyId,
-            horadesatre: DateTime.now(),
-            nombreUsuario: usuario.username,
-            telefono: usuario.telefono,
-            nombreCasa: casa.nombre,
-          );
-        }
+      print('✅ [WhatsApp Service] Reserva encontrada');
+      print('   User ID: ${reserva.userId}');
+      print('   Property ID: ${reserva.propertyId}');
+
+      // Validar que los repositorios estén disponibles
+      if (_usuarioRepositorio == null) {
+        print('⚠️ [WhatsApp Service] Repositorio de usuarios no disponible');
+        return ResultadoReserva.fallo(
+          mensaje: 'Repositorio de usuarios no disponible',
+          codigoError: 'USER_REPO_NOT_AVAILABLE',
+        );
       }
 
-      return ResultadoReserva.exito(
-        mensaje: 'Notificación de sismo enviada exitosamente',
-        reserva: reserva,
+      if (_casaRepositorio == null) {
+        print('⚠️ [WhatsApp Service] Repositorio de casas no disponible');
+        return ResultadoReserva.fallo(
+          mensaje: 'Repositorio de casas no disponible',
+          codigoError: 'CASA_REPO_NOT_AVAILABLE',
+        );
+      }
+
+      // Obtener información del usuario
+      print('🔍 [WhatsApp Service] Buscando usuario...');
+      final usuario = await _usuarioRepositorio.buscarPorId(reserva.userId);
+      
+      if (usuario == null) {
+        print('❌ [WhatsApp Service] Usuario no encontrado');
+        return ResultadoReserva.fallo(
+          mensaje: 'Usuario no encontrado',
+          codigoError: 'USER_NOT_FOUND',
+        );
+      }
+
+      print('✅ [WhatsApp Service] Usuario encontrado: ${usuario.nombreApellidos}');
+      print('   Teléfono: ${usuario.telefono}');
+
+      // Obtener información de la casa
+      print('🔍 [WhatsApp Service] Buscando casa...');
+      final casa = await _casaRepositorio.buscarPorId(reserva.propertyId);
+      
+      if (casa == null) {
+        print('❌ [WhatsApp Service] Casa no encontrada');
+        return ResultadoReserva.fallo(
+          mensaje: 'Casa no encontrada',
+          codigoError: 'CASA_NOT_FOUND',
+        );
+      }
+
+      print('✅ [WhatsApp Service] Casa encontrada: ${casa.nombre}');
+
+      // Enviar notificación
+      print('📱 [WhatsApp Service] Enviando notificación...');
+      final resultado = await _whatsappService.enviarNotificacionSismo(
+        propertyId: reserva.propertyId,
+        horadesatre: DateTime.now(),
+        nombreUsuario: usuario.nombreApellidos,
+        telefono: usuario.telefono,
+        nombreCasa: casa.nombre,
       );
-    } catch (e) {
+
+      if (resultado.success) {
+        print('✅ [WhatsApp Service] Notificación enviada exitosamente');
+        print('   SID: ${resultado.messageSid}');
+        return ResultadoReserva.exito(
+          mensaje: 'Notificación de sismo enviada exitosamente',
+          reserva: reserva,
+        );
+      } else {
+        print('❌ [WhatsApp Service] Error al enviar: ${resultado.message}');
+        return ResultadoReserva.fallo(
+          mensaje: 'Error al enviar WhatsApp: ${resultado.message}',
+          codigoError: 'WHATSAPP_SEND_ERROR',
+        );
+      }
+    } catch (e, stackTrace) {
+      print('❌ [WhatsApp Service] Excepción al enviar notificación de sismo');
+      print('   Error: $e');
+      print('   Stack trace: $stackTrace');
       return ResultadoReserva.fallo(
         mensaje: 'Error al enviar notificación de sismo: ${e.toString()}',
         codigoError: 'NOTIFICATION_ERROR',
