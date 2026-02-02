@@ -653,6 +653,35 @@ Gracias por elegir Intelihome. Disfrute de su experiencia en nuestra plataforma.
   String get turnedOff => 'Apagado';
 
   // Huella
+  
+  // Domótica - Sensores
+  @override
+  String get flame => 'Fuego';
+  
+  @override
+  String get vibration => 'Vibración';
+  
+  @override
+  String get detected => 'DETECTADO';
+  
+  @override
+  String get normal => 'Normal';
+  
+  // Domótica - Estados de conexión
+  @override
+  String get connected => 'Conectado';
+  
+  @override
+  String get disconnected => 'Desconectado';
+  
+  // Domótica - Puertas
+  @override
+  String get door => 'Puerta';
+  
+  @override
+  String get garageLabel => 'Garaje';
+
+  // Huella
 
   @override
   String get enterUsername => 'Por favor ingrese su nombre de usuario';

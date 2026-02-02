@@ -645,6 +645,34 @@ Thank you for choosing Intelihome. Enjoy your experience on our platform.''';
   @override
   String get turnedOff => 'Off';
 
+  
+  // Domótica - Sensors
+  @override
+  String get flame => 'Fire';
+  
+  @override
+  String get vibration => 'Vibration';
+  
+  @override
+  String get detected => 'DETECTED';
+  
+  @override
+  String get normal => 'Normal';
+  
+  // Domótica - Connection Status
+  @override
+  String get connected => 'Connected';
+  
+  @override
+  String get disconnected => 'Disconnected';
+  
+  // Domótica - Doors
+  @override
+  String get door => 'Door';
+  
+  @override
+  String get garageLabel => 'Garage';
+
   //Huella
 
   @override
@@ -663,7 +691,7 @@ Thank you for choosing Intelihome. Enjoy your experience on our platform.''';
 
   @override
   String get userBlocked =>
-      'User is blocked. Please use password recovery.';
+      'User blocked. Use password recovery.';
 
   @override
   String get biometricAuthError =>

@@ -3,6 +3,16 @@ import 'dart:convert';
 import 'dart:async';
 
 class TcpClient {
+  // ==================== SINGLETON ====================
+  static final TcpClient _instance = TcpClient._internal();
+  
+  factory TcpClient() {
+    return _instance;
+  }
+  
+  TcpClient._internal();
+  // ===================================================
+  
   Socket? _socket;
   bool _isConnected = false;
   StreamSubscription? _subscription;
@@ -24,10 +34,18 @@ class TcpClient {
   /// [timeout] - Tiempo de espera para la conexión (por defecto 5 segundos)
   Future<bool> connect(String host, int port, {Duration timeout = const Duration(seconds: 5)}) async {
     try {
+      // Si ya está conectado al mismo host:port, no reconectar
+      if (_isConnected && _socket != null) {
+        print('✅ Ya conectado a ${_socket!.remoteAddress.address}:${_socket!.remotePort}');
+        return true;
+      }
+
       // Cerrar conexión existente si la hay
-      if (_isConnected) {
+      if (_socket != null) {
         await disconnect();
       }
+
+      print('🔄 Conectando a $host:$port...');
 
       // Intentar conectar con timeout
       _socket = await Socket.connect(
@@ -55,8 +73,10 @@ class TcpClient {
         cancelOnError: true,
       );
 
+      print('✅ Conectado exitosamente a $host:$port');
       return true;
     } catch (e) {
+      print('❌ Error al conectar: $e');
       _isConnected = false;
       _handleError(e);
       return false;
@@ -74,8 +94,10 @@ class TcpClient {
     try {
       _socket!.write(message);
       await _socket!.flush();
+      print('📤 Mensaje enviado: ${message.trim()}');
       return true;
     } catch (e) {
+      print('❌ Error al enviar mensaje: $e');
       _handleError('Error al enviar mensaje: $e');
       return false;
     }
@@ -92,8 +114,10 @@ class TcpClient {
     try {
       _socket!.add(data);
       await _socket!.flush();
+      print('📤 Datos binarios enviados (${data.length} bytes)');
       return true;
     } catch (e) {
+      print('❌ Error al enviar datos: $e');
       _handleError('Error al enviar datos: $e');
       return false;
     }
@@ -102,20 +126,26 @@ class TcpClient {
   /// Desconecta del servidor
   Future<void> disconnect() async {
     try {
-      await _subscription?.cancel();
-      _subscription = null;
-      
-      await _socket?.close();
-      _socket = null;
-      
-      _isConnected = false;
+      if (_socket != null) {
+        print('🔌 Desconectando...');
+        await _subscription?.cancel();
+        _subscription = null;
+        
+        await _socket?.close();
+        _socket = null;
+        
+        _isConnected = false;
+        print('✅ Desconectado');
+      }
     } catch (e) {
+      print('❌ Error al desconectar: $e');
       _handleError('Error al desconectar: $e');
     }
   }
 
   /// Maneja errores
   void _handleError(dynamic error) {
+    print('⚠️ Error: $error');
     if (onError != null) {
       onError!(error);
     }
@@ -123,6 +153,7 @@ class TcpClient {
 
   /// Maneja la desconexión
   void _handleDisconnection() {
+    print('🔌 Conexión cerrada');
     _isConnected = false;
     _socket = null;
     _subscription = null;
@@ -153,7 +184,16 @@ class TcpClient {
     return 'Conectado a ${_socket!.remoteAddress.address}:${_socket!.remotePort}';
   }
 
+  /// Limpia los callbacks (útil al cambiar de pantalla)
+  void clearCallbacks() {
+    onMessageReceived = null;
+    onError = null;
+    onDisconnected = null;
+    print('🧹 Callbacks limpiados');
+  }
+
   /// Destructor - Limpia recursos
+  /// ⚠️ NOTA: En un Singleton, esto solo debe llamarse al cerrar la app
   void dispose() {
     disconnect();
   }

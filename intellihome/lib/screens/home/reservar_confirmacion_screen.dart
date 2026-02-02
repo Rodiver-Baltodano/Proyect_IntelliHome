@@ -156,6 +156,7 @@ class _ReservarConfirmacionScreenState
     final resultado = await service.createReservation(
       userId: usuario.id,
       propertyId: widget.casa.id,
+      nombreCasa: widget.casa.nombre,
       startDate: widget.rango.start,
       endDate: widget.rango.end,
     );

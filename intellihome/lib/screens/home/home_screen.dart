@@ -701,7 +701,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                           fit: StackFit.expand,
                                           children: [
                                             ...previousChildren,
-                                            if (currentChild != null) currentChild,
+                                            ?currentChild,
                                           ],
                                         );
                                       },

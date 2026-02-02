@@ -31,7 +31,7 @@ class _AnadirCasaScreenState extends State<AnadirCasaScreen> {
   final List<File> _selectedImages = [];
   LatLng? _selectedLocation;
   Set<int> _selectedAmenidades = {};
-  Set<DateTime> _blockedDates = {};
+  final Set<DateTime> _blockedDates = {};
 
   bool _mostrarReglas = false;
   late final TextEditingController _reglasController;
