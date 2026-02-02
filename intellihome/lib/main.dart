@@ -20,7 +20,7 @@ import 'dart:io';
 // ============================================
 // CONFIGURACIÓN DE MODO DE PRUEBA
 // ============================================
-const bool MODO_PRUEBA_LIMPIAR_DATOS = false;
+const bool MODO_PRUEBA_LIMPIAR_DATOS = true;
 // ============================================
 
 void main() async {
