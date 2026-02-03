@@ -9,6 +9,7 @@ import 'package:intellihome/modules/filters/services/filtro_casas_service.dart';
 import 'package:intellihome/modules/reservas/services/reserva_sync_service.dart';
 import 'package:intellihome/modules/ubicacion/services/ubicacion_service.dart';
 import 'package:intellihome/providers/theme_provider.dart';
+import 'package:intellihome/screens/admin/finanzas_screen.dart';
 import 'package:intellihome/screens/home/domotic_screen.dart';
 import 'package:intellihome/screens/home/historial_reservas_screen.dart';
 import 'package:intellihome/screens/home/mis_casas_screen.dart';
@@ -244,6 +245,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final fotoPerfil = usuario?.fotoPerfil;
     final estilo = usuario?.estilo ?? themeProvider.currentStyle.name;
     final estiloDisplay = _estiloConEmoji(estilo, context);
+    final esAdmin = usuario?.correo == 'intellihomeNovaTec@gmail.com';
 
     return Scaffold(
       appBar: AppBar(
@@ -358,6 +360,20 @@ class _HomeScreenState extends State<HomeScreen> {
                 );
               },
             ),
+            if (esAdmin)
+              ListTile(
+                leading: const Icon(Icons.bar_chart),
+                title: const Text('Finanzas'),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const FinanzasScreen(),
+                    ),
+                  );
+                },
+              ),
             ListTile(
               leading: const Icon(Icons.add_home_outlined),
               title: const Text('Añadir casa'),

@@ -6,6 +6,9 @@ import 'package:intellihome/modules/autenticacion/models/casa.dart';
 import 'package:intellihome/modules/autenticacion/models/usuario.dart';
 import 'package:intellihome/modules/autenticacion/repositories/casa_repositorio_json.dart';
 import 'package:intellihome/modules/autenticacion/repositories/usuario_repository.dart';
+import 'package:intellihome/modules/finanzas/services/algoritmo_banquero.dart';
+import 'package:intellihome/modules/finanzas/models/pago.dart';
+import 'package:intellihome/modules/finanzas/repositories/pago_repository.dart';
 import 'package:intellihome/modules/reservas/repositories/reserva_repository.dart';
 import 'package:intellihome/modules/reservas/services/reserva_service.dart';
 import 'package:intellihome/providers/theme_provider.dart';
@@ -34,6 +37,7 @@ class _ReservarConfirmacionScreenState
   final _numeroController = TextEditingController();
   final _expiracionController = TextEditingController();
   final _cvvController = TextEditingController();
+  bool _procesandoPago = false;
 
   @override
   void dispose() {
@@ -42,14 +46,27 @@ class _ReservarConfirmacionScreenState
     _cvvController.dispose();
     super.dispose();
   }
-
+/*
   int _calcularNoches(DateTime inicio, DateTime fin) {
     final noches = fin.difference(inicio).inDays;
     return noches <= 0 ? 1 : noches;
+  }*/
+
+  int _calcularDias(DateTime inicio, DateTime fin) {
+    final start = DateTime(inicio.year, inicio.month, inicio.day);
+    final end = DateTime(fin.year, fin.month, fin.day);
+    final diff = end.difference(start).inDays;
+    if (diff < 0) return 0;
+    return diff + 1;
   }
 
   String _formatPrecio(double precio) {
     final formatter = NumberFormat('#,##0', 'en_US');
+    return formatter.format(precio);
+  }
+
+  String _formatPrecioConDecimales(double precio) {
+    final formatter = NumberFormat('#,##0.00', 'en_US');
     return formatter.format(precio);
   }
 
@@ -67,6 +84,30 @@ class _ReservarConfirmacionScreenState
       return FileImage(file);
     }
     return null;
+  }
+
+  Widget _buildDetalleFila(
+    String label,
+    String value, {
+    bool bold = false,
+  }) {
+    final style = TextStyle(
+      fontSize: 13,
+      fontWeight: bold ? FontWeight.w700 : FontWeight.w500,
+    );
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: Text(label, style: style),
+          ),
+          const SizedBox(width: 12),
+          Text(value, style: style),
+        ],
+      ),
+    );
   }
 
   String _formatearDatosTarjeta(String numeroTarjeta, String fechaExpiracion) {
@@ -130,6 +171,8 @@ class _ReservarConfirmacionScreenState
       return;
     }
 
+    if (_procesandoPago) return;
+
     final tieneTarjeta = usuario.datosTargeta != null && usuario.datosTargeta!.isNotEmpty;
 
     if (!tieneTarjeta) {
@@ -150,84 +193,161 @@ class _ReservarConfirmacionScreenState
       final datosTargeta = _formatearDatosTarjeta(numero, exp);
       await _guardarTarjeta(usuario, datosTargeta);
     }
+    setState(() {
+      _procesandoPago = true;
+    });
 
-    final appDir = await getApplicationDocumentsDirectory();
-    final reservasPath = p.join(appDir.path, 'reservas_integrado.json');
-    final usuariosPath = p.join(appDir.path, 'usuarios_integrado.json');
-    final casasPath = p.join(appDir.path, 'casas_integrado.json');
-
-    final reservasRepo = ReservaRepositorioJson(rutaArchivo: reservasPath);
-    final usuariosRepo = UsuarioRepositorioJson(rutaArchivo: usuariosPath);
-    final casasRepo = CasaRepositorioJson(rutaArchivo: casasPath);
-    final service = ReservaService(
-      repositorio: reservasRepo,
-      usuarioRepositorio: usuariosRepo,
-      casaRepositorio: casasRepo,
-    );
-
-    final resultado = await service.createReservation(
-      userId: usuario.id,
-      propertyId: widget.casa.id,
-      nombreCasa: widget.casa.nombre,
-      startDate: widget.rango.start,
-      endDate: widget.rango.end,
-    );
-
-    if (!mounted) return;
-
-    if (resultado.exitoso) {
-      final fechasActualizadas = _buildFechasNoDisponibles(
-        widget.casa.fechasNoDisponibles,
-        widget.rango.start,
-        widget.rango.end,
-      );
-
-      await casasRepo.actualizarCasa(
-        Casa(
-          id: widget.casa.id,
-          nombre: widget.casa.nombre,
-          precioPorNoche: widget.casa.precioPorNoche,
-          maxPersonas: widget.casa.maxPersonas,
-          habitaciones: widget.casa.habitaciones,
-          descripcion: widget.casa.descripcion,
-          fotos: widget.casa.fotos,
-          ubicacion: widget.casa.ubicacion,
-          reglasUso: widget.casa.reglasUso,
-          ownerId: widget.casa.ownerId,
-          fechaRegistro: widget.casa.fechaRegistro,
-          amenidades: widget.casa.amenidades,
-          fechasNoDisponibles: fechasActualizadas,
+    bool dialogAbierto = true;
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const AlertDialog(
+        content: Row(
+          children: [
+            CircularProgressIndicator(),
+            SizedBox(width: 12),
+            Expanded(child: Text('Procesando pago...')),
+          ],
         ),
+      ),
+    );
+
+    try {
+      final appDir = await getApplicationDocumentsDirectory();
+      final reservasPath = p.join(appDir.path, 'reservas_integrado.json');
+      final usuariosPath = p.join(appDir.path, 'usuarios_integrado.json');
+      final casasPath = p.join(appDir.path, 'casas_integrado.json');
+
+      final reservasRepo = ReservaRepositorioJson(rutaArchivo: reservasPath);
+      final usuariosRepo = UsuarioRepositorioJson(rutaArchivo: usuariosPath);
+      final casasRepo = CasaRepositorioJson(rutaArchivo: casasPath);
+      final service = ReservaService(
+        repositorio: reservasRepo,
+        usuarioRepositorio: usuariosRepo,
+        casaRepositorio: casasRepo,
       );
 
-      final usuarioActualizado = await usuariosRepo.buscarPorId(usuario.id);
-      if (usuarioActualizado != null && mounted) {
-        context.read<ThemeProvider>().inicializarConUsuario(
-              usuarioActualizado,
-              repositorio: usuariosRepo,
-            );
+      final resultado = await service.createReservation(
+        userId: usuario.id,
+        propertyId: widget.casa.id,
+        nombreCasa: widget.casa.nombre,
+        startDate: widget.rango.start,
+        endDate: widget.rango.end,
+      );
+
+      if (!mounted) return;
+
+      if (resultado.exitoso) {
+        final dias = _calcularDias(widget.rango.start, widget.rango.end);
+        final montoArrendamiento = widget.casa.precioPorNoche * dias;
+        final comision = montoArrendamiento * 0.05;
+        final iva = comision * 0.13;
+        final ahora = DateTime.now();
+        final porcentajeAjuste = AlgoritmoBanquero.calcularAjusteFinanciero(
+          dia: ahora.day,
+          mes: ahora.month,
+          montoTotal: montoArrendamiento,
+        );
+        final subtotalConCargos = montoArrendamiento + comision + iva;
+        final ajuste = subtotalConCargos * porcentajeAjuste;
+        final total = subtotalConCargos + ajuste;
+
+        final fechasActualizadas = _buildFechasNoDisponibles(
+          widget.casa.fechasNoDisponibles,
+          widget.rango.start,
+          widget.rango.end,
+        );
+
+        await casasRepo.actualizarCasa(
+          Casa(
+            id: widget.casa.id,
+            nombre: widget.casa.nombre,
+            precioPorNoche: widget.casa.precioPorNoche,
+            maxPersonas: widget.casa.maxPersonas,
+            habitaciones: widget.casa.habitaciones,
+            descripcion: widget.casa.descripcion,
+            fotos: widget.casa.fotos,
+            ubicacion: widget.casa.ubicacion,
+            reglasUso: widget.casa.reglasUso,
+            ownerId: widget.casa.ownerId,
+            fechaRegistro: widget.casa.fechaRegistro,
+            amenidades: widget.casa.amenidades,
+            fechasNoDisponibles: fechasActualizadas,
+          ),
+        );
+
+        final pagosPath = p.join(appDir.path, 'pagos_integrado.json');
+        final pagosRepo = PagoRepositorioJson(rutaArchivo: pagosPath);
+        final reservaId = resultado.reserva?.reservationId ?? '';
+        if (reservaId.isNotEmpty) {
+          final pago = Pago(
+            pagoId: reservaId,
+            reservationId: reservaId,
+            userId: usuario.id,
+            propertyId: widget.casa.id,
+            nombreCasa: widget.casa.nombre,
+            montoArrendamiento: montoArrendamiento,
+            comision: comision,
+            iva: iva,
+            ajuste: ajuste,
+            total: total,
+            fecha: DateTime.now(),
+          );
+          await pagosRepo.agregarPago(pago);
+        }
+
+        final usuarioActualizado = await usuariosRepo.buscarPorId(usuario.id);
+        if (usuarioActualizado != null && mounted) {
+          context.read<ThemeProvider>().inicializarConUsuario(
+                usuarioActualizado,
+                repositorio: usuariosRepo,
+              );
+        }
+
+        if (dialogAbierto && mounted) {
+          if (Navigator.of(context, rootNavigator: true).canPop()) {
+            Navigator.of(context, rootNavigator: true).pop();
+          }
+          dialogAbierto = false;
+        }
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              resultado.mensaje,
+              style: const TextStyle(color: Colors.white),
+            ),
+            backgroundColor: AppColors.successColor,
+          ),
+        );
+        Navigator.of(context).popUntil((route) => route.isFirst);
+      } else {
+        if (dialogAbierto && mounted) {
+          if (Navigator.of(context, rootNavigator: true).canPop()) {
+            Navigator.of(context, rootNavigator: true).pop();
+          }
+          dialogAbierto = false;
+        }
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              resultado.mensaje,
+              style: const TextStyle(color: Colors.white),
+            ),
+            backgroundColor: AppColors.errorColor,
+          ),
+        );
       }
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            resultado.mensaje,
-            style: const TextStyle(color: Colors.white),
-          ),
-          backgroundColor: AppColors.successColor,
-        ),
-      );
-      Navigator.of(context).popUntil((route) => route.isFirst);
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            resultado.mensaje,
-            style: const TextStyle(color: Colors.white),
-          ),
-          backgroundColor: AppColors.errorColor,
-        ),
-      );
+    } finally {
+      if (mounted) {
+        if (dialogAbierto && Navigator.of(context, rootNavigator: true).canPop()) {
+          Navigator.of(context, rootNavigator: true).pop();
+          dialogAbierto = false;
+        }
+        setState(() {
+          _procesandoPago = false;
+        });
+      }
     }
   }
 
@@ -262,8 +382,19 @@ class _ReservarConfirmacionScreenState
       _numeroController.text = usuario.datosTargeta!;
     }
 
-    final noches = _calcularNoches(widget.rango.start, widget.rango.end);
-    final subtotal = widget.casa.precioPorNoche * noches;
+    final dias = _calcularDias(widget.rango.start, widget.rango.end);
+    final montoArrendamiento = widget.casa.precioPorNoche * dias;
+    final comision = montoArrendamiento * 0.05;
+    final iva = comision * 0.13;
+    final ahora = DateTime.now();
+    final porcentajeAjuste = AlgoritmoBanquero.calcularAjusteFinanciero(
+      dia: ahora.day,
+      mes: ahora.month,
+      montoTotal: montoArrendamiento,
+    );
+    final subtotalConCargos = montoArrendamiento + comision + iva;
+    final ajuste = subtotalConCargos * porcentajeAjuste;
+    final total = subtotalConCargos + ajuste;
 
     return Scaffold(
       appBar: AppBar(
@@ -304,7 +435,7 @@ class _ReservarConfirmacionScreenState
               ),
             if (widget.casa.fotos.isNotEmpty) const SizedBox(height: 16),
             Container(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(12),
@@ -320,22 +451,52 @@ class _ReservarConfirmacionScreenState
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
-                    'Desglose de la reserva',
+                    'Desglose académico del costo',
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 8),
-                  Text('Fechas: ${_formatFecha(widget.rango.start)} - ${_formatFecha(widget.rango.end)}'),
-                  const SizedBox(height: 6),
-                  Text('Noches: $noches'),
-                  const SizedBox(height: 6),
-                  Text('Precio por noche: ₡${_formatPrecio(widget.casa.precioPorNoche)}'),
-                  const Divider(height: 20),
                   Text(
-                    'Total: ₡${_formatPrecio(subtotal)}',
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    'Fechas: ${_formatFecha(widget.rango.start)} - ${_formatFecha(widget.rango.end)}',
+                  ),
+                  const SizedBox(height: 6),
+                  _buildDetalleFila('Cantidad de días reservados', '$dias'),
+                  _buildDetalleFila(
+                    'Precio por noche',
+                    '₡${_formatPrecio(widget.casa.precioPorNoche)}',
+                  ),
+                  const Divider(height: 20),
+                  _buildDetalleFila(
+                    'Monto del arrendamiento',
+                    '₡${_formatPrecio(montoArrendamiento)}',
+                  ),
+                  Text(
+                    'Resultado de $dias día(s) × ₡${_formatPrecio(widget.casa.precioPorNoche)}',
+                    style: const TextStyle(fontSize: 12, color: Colors.black54),
+                  ),
+                  const SizedBox(height: 10),
+                  _buildDetalleFila(
+                    'Comisión de servicio (5%)',
+                    '₡${_formatPrecio(comision)}',
+                  ),
+                  _buildDetalleFila(
+                    'IVA sobre la comisión (13%)',
+                    '₡${_formatPrecio(iva)}',
+                  ),
+                  const SizedBox(height: 6),
+                  _buildDetalleFila(
+                    'Ajuste financiero dinámico',
+                    '₡${_formatPrecioConDecimales(ajuste)}',
+                  ),
+                  const SizedBox(height: 4),
+                  const Text(
+                    'Modelo académico de ajuste dinámico basado en el algoritmo del banquero.',
+                    style: TextStyle(fontSize: 12, color: Colors.black54),
+                  ),
+                  const Divider(height: 24),
+                  _buildDetalleFila(
+                    'Total a pagar',
+                    '₡${_formatPrecio(total)}',
+                    bold: true,
                   ),
                 ],
               ),
@@ -400,13 +561,22 @@ class _ReservarConfirmacionScreenState
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: _confirmarReserva,
+                onPressed: _procesandoPago ? null : _confirmarReserva,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primaryColor,
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 14),
                 ),
-                child: const Text('Confirmar Reserva'),
+                child: _procesandoPago
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                        ),
+                      )
+                    : const Text('Confirmar Reserva'),
               ),
             ),
           ],
