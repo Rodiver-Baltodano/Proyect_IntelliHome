@@ -6,6 +6,7 @@ import 'package:intellihome/modules/autenticacion/repositories/usuario_repositor
 import 'package:intellihome/modules/autenticacion/repositories/casa_repositorio_json.dart';
 import 'package:intellihome/modules/reservas/services/whatsapp_service.dart';
 import 'package:uuid/uuid.dart';
+import 'package:flutter/material.dart';
 
 /// Servicio para gestionar las operaciones de reservas
 class ReservaService {
@@ -32,6 +33,7 @@ class ReservaService {
     required String nombreCasa,
     required DateTime startDate,
     required DateTime endDate,
+    Locale locale = const Locale('es'), // 👈 CAMBIO: Locale en lugar de BuildContext
   }) async {
     try {
       // Validar que el usuario tenga método de pago
@@ -149,6 +151,7 @@ class ReservaService {
         nombreCasa: nombreCasa,
         startDate: startDate,
         endDate: endDate,
+        locale: locale, // 👈 CAMBIO: Pasar locale
       );
 
       return ResultadoReserva.exito(
@@ -165,10 +168,14 @@ class ReservaService {
 
   /// Envía notificación de incendio solo si la reserva está activa
   /// VERSIÓN MEJORADA: Maneja mejor los casos de Azure
-  Future<ResultadoReserva> enviarNotificacionIncendio(String reservationId) async {
+  Future<ResultadoReserva> enviarNotificacionIncendio(
+    String reservationId, {
+    Locale locale = const Locale('es'), // 👈 CAMBIO: Locale en lugar de BuildContext
+  }) async {
     try {
       print('🔥 [WhatsApp Service] Iniciando envío de notificación de incendio...');
       print('🔥 [WhatsApp Service] Reservation ID: $reservationId');
+      print('🔥 [WhatsApp Service] Idioma: ${locale.languageCode}');
 
       final reserva = await _repositorio.buscarPorId(reservationId);
       
@@ -238,6 +245,7 @@ class ReservaService {
         nombreUsuario: usuario.nombreApellidos,
         telefono: usuario.telefono,
         nombreCasa: casa.nombre,
+        locale: locale, // 👈 CAMBIO: Pasar locale
       );
 
       if (resultado.success) {
@@ -267,10 +275,14 @@ class ReservaService {
 
   /// Envía notificación de sismo solo si la reserva está activa
   /// VERSIÓN MEJORADA: Maneja mejor los casos de Azure
-  Future<ResultadoReserva> enviarNotificacionSismo(String reservationId) async {
+  Future<ResultadoReserva> enviarNotificacionSismo(
+    String reservationId, {
+    Locale locale = const Locale('es'), // 👈 CAMBIO: Locale en lugar de BuildContext
+  }) async {
     try {
       print('🫨 [WhatsApp Service] Iniciando envío de notificación de sismo...');
       print('🫨 [WhatsApp Service] Reservation ID: $reservationId');
+      print('🫨 [WhatsApp Service] Idioma: ${locale.languageCode}');
 
       final reserva = await _repositorio.buscarPorId(reservationId);
       
@@ -340,6 +352,7 @@ class ReservaService {
         nombreUsuario: usuario.nombreApellidos,
         telefono: usuario.telefono,
         nombreCasa: casa.nombre,
+        locale: locale, // 👈 CAMBIO: Pasar locale
       );
 
       if (resultado.success) {
@@ -504,6 +517,7 @@ class ReservaService {
     required String nombreCasa,
     required DateTime startDate,
     required DateTime endDate,
+    Locale locale = const Locale('es'), // 👈 CAMBIO: Locale en lugar de BuildContext
   }) async {
     try {
       if (_usuarioRepositorio != null) {
@@ -514,6 +528,7 @@ class ReservaService {
           final nombre = usuario.nombreApellidos;
           
           print('[WhatsApp] Enviando confirmación a +$telefono');
+          print('[WhatsApp] Idioma: ${locale.languageCode}');
           
           // Enviar mensaje usando Twilio API
           final casaNombre = await _casaRepositorio?.buscarPorId(propertyId);
@@ -527,6 +542,7 @@ class ReservaService {
             envio: DateTime.now(),
             startDate: startDate,
             endDate: endDate,
+            locale: locale, // 👈 CAMBIO: Pasar locale
           );
 
           if (resultado.success) {
