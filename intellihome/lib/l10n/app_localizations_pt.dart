@@ -113,7 +113,7 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get recoveryCodeDescription =>
-      'Por favor, digite o código que enviamos para seu email';
+      'Por favor, digiteo código que enviamos para seu email';
 
   @override
   String get usernameOrEmail => 'Usuário ou Email';
@@ -140,7 +140,7 @@ class AppLocalizationsPt extends AppLocalizations {
   String get codeSent => 'Código enviado para seu email!';
 
   @override
-  String get codeVerified => 'Código verificado! Agora digite sua nova senha.';
+  String get codeVerified => 'Código verificado! Agora  digiteo sua nova senha.';
 
   @override
   String get passwordUpdated => 'Senha atualizada! Volte ao login.';
@@ -606,76 +606,141 @@ Obrigado por escolher o Intelihome. Aproveite sua experiência em nossa platafor
   @override
   String get processing => 'Processando...';
 
-// Domótica
+  // ============================================
+  // DOMÓTICA - Control
+  // ============================================
 
   @override
   String get domoticControl => 'Controle Domótico';
-  
+
   @override
   String get connectedToRaspberry => 'Conectado ao Raspberry Pi Pico W';
-  
+
   @override
   String get reconnect => 'Reconectar';
-  
+
+  // Domótica - Habitações
   @override
   String get garage => 'Garagem';
-  
+
   @override
   String get livingRoom => 'Sala';
-  
+
   @override
   String get kitchen => 'Cozinha';
-  
+
   @override
   String get bathroom1 => 'Banheiro 1';
-  
+
   @override
   String get bathroom2 => 'Banheiro 2';
-  
+
   @override
   String get bedroom1 => 'Quarto 1';
-  
+
   @override
   String get bedroom2 => 'Quarto 2';
-  
+
   @override
   String get bedroom3 => 'Quarto 3';
-  
+
+  // Domótica - Estados de luz
   @override
   String get turnedOn => 'Ligado';
-  
+
   @override
   String get turnedOff => 'Desligado';
 
-  
   // Domótica - Sensores
   @override
   String get flame => 'Fogo';
-  
+
   @override
-  String get vibration => 'Vibração';
-  
+  String get seismic => 'Sísmico';
+
   @override
   String get detected => 'DETECTADO';
-  
+
   @override
   String get normal => 'Normal';
-  
+
   // Domótica - Estado de Conexão
   @override
   String get connected => 'Conectado';
-  
+
   @override
   String get disconnected => 'Desconectado';
-  
+
   // Domótica - Portas
   @override
   String get door => 'Porta';
-  
+
   @override
   String get garageLabel => 'Garagem';
 
-  //Huella
+  // Domótica - Alertas de sensores (SnackBar)
+  @override
+  String get flameDetectedAlert => '🔥 CHAMA DETECTADA!';
+
+  @override
+  String get seismicDetectedAlert => '📳 EVENTO SÍSMICO DETECTADO!';
+
+  // Domótica - Alertas tela completa
+  @override
+  String get fireDetectedTitle => 'INCÊNDIO DETECTADO!';
+
+  @override
+  String get seismicDetectedTitle => 'EVENTO SÍSMICO DETECTADO!';
+
+  // Domótica - Sem conexão
+  @override
+  String get noConnection => 'Sem conexão com o dispositivo';
+
+  // Domótica - Porta (servo)
+  @override
+  String get doorOpen => '🚪 Porta Aberta';
+
+  @override
+  String get doorClosed => '🚪 Porta Fechada';
+
+  @override
+  String get errorControlDoor => 'Erro ao controlar a porta';
+
+  // Domótica - Garagem (servo)
+  @override
+  String get garageOpen => '🚗 Garagem Aberta';
+
+  @override
+  String get garageClosed => '🚗 Garagem Fechada';
+
+  @override
+  String get errorControlGarage => 'Erro ao controlar a garagem';
+
+  // Domótica - Notificações WhatsApp enviadas
+  @override
+  String get fireAlertSentWhatsApp => '📱 Alerta de incêndio enviado via WhatsApp';
+
+  @override
+  String get seismicAlertSentWhatsApp => '📱 Alerta sísmico enviado via WhatsApp';
+
+  // ============================================
+  // TROCA DE IDIOMA
+  // ============================================
+  @override
+  String get changeLanguage => 'Trocar idioma';
+
+  @override
+  String get spanish => 'Español';
+
+  @override
+  String get english => 'English';
+
+  @override
+  String get portuguese => 'Português';
+
+  // ============================================
+  // BIOMÉTRICO
+  // ============================================
 
   @override
   String get enterUsername => 'Por favor, insira seu nome de usuário';
@@ -699,4 +764,73 @@ Obrigado por escolher o Intelihome. Aproveite sua experiência em nossa platafor
   String get biometricAuthError =>
       'Erro na autenticação biométrica';
 
+  // ============================================
+  // MENSAGENS DO WHATSAPP
+  // ============================================
+
+  @override
+  String get whatsappReservationTitle => 'IntelliHome - Confirmação de Reserva';
+
+  @override
+  String get whatsappReservationGreeting => 'Olá';
+
+  @override
+  String get whatsappReservationConfirmed => 'Sua reserva foi confirmada com sucesso.';
+
+  @override
+  String get whatsappReservationDetails => 'Detalhes:';
+
+  @override
+  String get whatsappReservationNumber => 'Número da Reserva:';
+
+  @override
+  String get whatsappReservationProperty => 'Propriedade:';
+
+  @override
+  String get whatsappReservationCheckIn => 'Check-in:';
+
+  @override
+  String get whatsappReservationCheckOut => 'Check-out:';
+
+  @override
+  String get whatsappReservationEnjoy => 'Esperamos que você aproveite sua estadia!';
+
+  @override
+  String get whatsappTeamSignature => 'Equipe IntelliHome';
+
+  @override
+  String get whatsappFireAlertTitle => 'IntelliHome - Alerta de Incêndio';
+
+  @override
+  String get whatsappFireAlertGreeting => 'Olá';
+
+  @override
+  String get whatsappFireAlertDetected => 'Foi detectado um alerta de incêndio em';
+
+  @override
+  String get whatsappFireAlertInstructions => 'Por favor, tome as precauções necessárias e siga as instruções de segurança. Mantenha-se afastado da área afetada e procure uma rota de saída segura. Não hesite em chamar os serviços de emergência se necessário.';
+
+  @override
+  String get whatsappFireAlertStayAway => 'Mantenha-se afastado da área afetada e procure uma rota de saída segura.';
+
+  @override
+  String get whatsappFireAlertCallEmergency => 'Não hesite em chamar os serviços de emergência se necessário.';
+
+  @override
+  String get whatsappEarthquakeAlertTitle => 'IntelliHome - Alerta de Terremoto';
+
+  @override
+  String get whatsappEarthquakeAlertGreeting => 'Olá';
+
+  @override
+  String get whatsappEarthquakeAlertDetected => 'Detectamos um terremoto em';
+
+  @override
+  String get whatsappEarthquakeAlertStayCalm => 'Por favor, mantenha a calma e siga as instruções de segurança.';
+
+  @override
+  String get whatsappEarthquakeAlertSafePlace => 'Certifique-se de estar em um lugar seguro e longe de objetos que possam cair ou causar danos.';
+
+  @override
+  String get whatsappEarthquakeAlertEvacuate => 'Se necessário, evacue a área seguindo a rota de emergência estabelecida na propriedade.';
 }

@@ -611,77 +611,141 @@ Gracias por elegir Intelihome. Disfrute de su experiencia en nuestra plataforma.
   @override
   String get processing => 'Procesando...';
 
-  //  Domótica
+  // ============================================
+  // DOMÓTICA - Control
+  // ============================================
 
   @override
   String get domoticControl => 'Control Domótico';
-  
+
   @override
   String get connectedToRaspberry => 'Conectado a Raspberry Pi Pico W';
-  
+
   @override
   String get reconnect => 'Reconectar';
-  
+
+  // Domótica - Habitaciones
   @override
   String get garage => 'Garaje';
-  
+
   @override
   String get livingRoom => 'Sala';
-  
+
   @override
   String get kitchen => 'Cocina';
-  
+
   @override
   String get bathroom1 => 'Baño 1';
-  
+
   @override
   String get bathroom2 => 'Baño 2';
-  
+
   @override
   String get bedroom1 => 'Cuarto 1';
-  
+
   @override
   String get bedroom2 => 'Cuarto 2';
-  
+
   @override
   String get bedroom3 => 'Cuarto 3';
-  
+
+  // Domótica - Estados de luz
   @override
   String get turnedOn => 'Encendido';
-  
+
   @override
   String get turnedOff => 'Apagado';
 
-  // Huella
-  
   // Domótica - Sensores
   @override
   String get flame => 'Fuego';
-  
+
   @override
-  String get vibration => 'Vibración';
-  
+  String get seismic => 'Sismo';
+
   @override
   String get detected => 'DETECTADO';
-  
+
   @override
   String get normal => 'Normal';
-  
+
   // Domótica - Estados de conexión
   @override
   String get connected => 'Conectado';
-  
+
   @override
   String get disconnected => 'Desconectado';
-  
+
   // Domótica - Puertas
   @override
   String get door => 'Puerta';
-  
+
   @override
   String get garageLabel => 'Garaje';
 
-  // Huella
+  // Domótica - Alertas de sensores (SnackBar)
+  @override
+  String get flameDetectedAlert => '🔥 ¡LLAMA DETECTADA!';
+
+  @override
+  String get seismicDetectedAlert => '📳 ¡SISMO DETECTADO!';
+
+  // Domótica - Pantalla completa de alerta
+  @override
+  String get fireDetectedTitle => '¡FUEGO DETECTADO!';
+
+  @override
+  String get seismicDetectedTitle => '¡SISMO DETECTADO!';
+
+  // Domótica - Sin conexión
+  @override
+  String get noConnection => 'No hay conexión con el dispositivo';
+
+  // Domótica - Puerta (servo)
+  @override
+  String get doorOpen => '🚪 Puerta Abierta';
+
+  @override
+  String get doorClosed => '🚪 Puerta Cerrada';
+
+  @override
+  String get errorControlDoor => 'Error al controlar la puerta';
+
+  // Domótica - Garaje (servo)
+  @override
+  String get garageOpen => '🚗 Garaje Abierto';
+
+  @override
+  String get garageClosed => '🚗 Garaje Cerrado';
+
+  @override
+  String get errorControlGarage => 'Error al controlar el garaje';
+
+  // Domótica - Notificaciones WhatsApp enviadas
+  @override
+  String get fireAlertSentWhatsApp => '📱 Alerta de incendio enviada por WhatsApp';
+
+  @override
+  String get seismicAlertSentWhatsApp => '📱 Alerta de sismo enviada por WhatsApp';
+
+  // ============================================
+  // CAMBIO DE IDIOMA
+  // ============================================
+  @override
+  String get changeLanguage => 'Cambiar idioma';
+
+  @override
+  String get spanish => 'Español';
+
+  @override
+  String get english => 'Inglés';
+
+  @override
+  String get portuguese => 'Português';
+
+  // ============================================
+  // HUELLA (Biométrico)
+  // ============================================
 
   @override
   String get enterUsername => 'Por favor ingrese su nombre de usuario';
@@ -705,4 +769,73 @@ Gracias por elegir Intelihome. Disfrute de su experiencia en nuestra plataforma.
   String get biometricAuthError =>
       'Error en la autenticación biométrica';
 
+  // ============================================
+  // MENSAJES DE WHATSAPP
+  // ============================================
+
+  @override
+  String get whatsappReservationTitle => 'IntelliHome - Confirmación de Reserva';
+
+  @override
+  String get whatsappReservationGreeting => 'Hola';
+
+  @override
+  String get whatsappReservationConfirmed => 'Tu reserva ha sido confirmada exitosamente.';
+
+  @override
+  String get whatsappReservationDetails => 'Detalles:';
+
+  @override
+  String get whatsappReservationNumber => 'Número de Reserva:';
+
+  @override
+  String get whatsappReservationProperty => 'Propiedad:';
+
+  @override
+  String get whatsappReservationCheckIn => 'Check-in:';
+
+  @override
+  String get whatsappReservationCheckOut => 'Check-out:';
+
+  @override
+  String get whatsappReservationEnjoy => '¡Esperamos que disfrutes tu estadía!';
+
+  @override
+  String get whatsappTeamSignature => 'IntelliHome Team';
+
+  @override
+  String get whatsappFireAlertTitle => 'IntelliHome - Alerta de Incendio';
+
+  @override
+  String get whatsappFireAlertGreeting => 'Hola';
+
+  @override
+  String get whatsappFireAlertDetected => 'Se ha detectado una alerta de incendio en';
+
+  @override
+  String get whatsappFireAlertInstructions => 'Por favor, toma las precauciones necesarias y sigue las instrucciones de seguridad. Mantenerse alejado del área afectada y buscar una ruta de salida segura. No dudes en llamar a los servicios de emergencia si es necesario.';
+
+  @override
+  String get whatsappFireAlertStayAway => 'Mantenerse alejado del área afectada y buscar una ruta de salida segura.';
+
+  @override
+  String get whatsappFireAlertCallEmergency => 'No dudes en llamar a los servicios de emergencia si es necesario.';
+
+  @override
+  String get whatsappEarthquakeAlertTitle => 'IntelliHome - Alerta de Sismo';
+
+  @override
+  String get whatsappEarthquakeAlertGreeting => 'Hola';
+
+  @override
+  String get whatsappEarthquakeAlertDetected => 'Hemos detectado un sismo en';
+
+  @override
+  String get whatsappEarthquakeAlertStayCalm => 'Por favor, mantén la calma y sigue las instrucciones de seguridad.';
+
+  @override
+  String get whatsappEarthquakeAlertSafePlace => 'Asegúrate de estar en un lugar seguro y alejado de objetos que puedan caer o causar daño.';
+
+  @override
+  String get whatsappEarthquakeAlertEvacuate => 'Si es necesario, evacua el área siguiendo la ruta de emergencia establecidas en la propiedad.';
 }

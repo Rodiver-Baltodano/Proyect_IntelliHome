@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter/material.dart';
+import 'package:intellihome/l10n/app_localizations.dart';
 
 /// Servicio para enviar mensajes de WhatsApp usando Twilio API
 class WhatsAppService {
@@ -70,10 +72,10 @@ class WhatsAppService {
       // Procesar respuesta
       if (response.statusCode == 200 || response.statusCode == 201) {
         final data = jsonDecode(response.body);
-        print(' [WhatsApp] Mensaje enviado exitosamente');
-        print(' [WhatsApp] SID: ${data['sid']}');
-        print(' [WhatsApp] Estado: ${data['status']}');
-        print(' [WhatsApp] Precio: ${data['price'] ?? 'N/A'} ${data['price_unit'] ?? ''}');
+        print('✅ [WhatsApp] Mensaje enviado exitosamente');
+        print('   [WhatsApp] SID: ${data['sid']}');
+        print('   [WhatsApp] Estado: ${data['status']}');
+        print('   [WhatsApp] Precio: ${data['price'] ?? 'N/A'} ${data['price_unit'] ?? ''}');
         
         return WhatsAppResult.success(
           'Mensaje enviado exitosamente',
@@ -90,7 +92,7 @@ class WhatsAppService {
           errorCode = errorData['code']?.toString();
           
           // Logs detallados del error
-          print(' [WhatsApp] Error ${response.statusCode}');
+          print('❌ [WhatsApp] Error ${response.statusCode}');
           print('   Código: ${errorCode ?? 'N/A'}');
           print('   Mensaje: $errorMessage');
           
@@ -98,7 +100,7 @@ class WhatsAppService {
             print('   Más info: ${errorData['more_info']}');
           }
         } catch (e) {
-          print(' [WhatsApp] Error ${response.statusCode}: No se pudo parsear respuesta');
+          print('❌ [WhatsApp] Error ${response.statusCode}: No se pudo parsear respuesta');
           print('   Respuesta raw: ${response.body}');
         }
         
@@ -110,10 +112,10 @@ class WhatsAppService {
         );
       }
     } on Exception catch (e) {
-      print(' [WhatsApp] Excepción: $e');
+      print('❌ [WhatsApp] Excepción: $e');
       return WhatsAppResult.error('Error de conexión: ${e.toString()}');
     } catch (e) {
-      print(' [WhatsApp] Error inesperado: $e');
+      print('❌ [WhatsApp] Error inesperado: $e');
       return WhatsAppResult.error('Error inesperado: ${e.toString()}');
     }
   }
@@ -138,6 +140,8 @@ class WhatsAppService {
   }
 
   /// Envía mensaje de confirmación de reserva
+  /// 
+  /// [locale] es el idioma del usuario (ej: Locale('es'), Locale('en'), Locale('pt'))
   Future<WhatsAppResult> enviarConfirmacionReserva({
     required String telefono,
     required String nombreUsuario,
@@ -146,25 +150,29 @@ class WhatsAppService {
     required DateTime envio,
     required DateTime startDate,
     required DateTime endDate,
+    required Locale locale, // 👈 CAMBIO: Ahora requiere Locale en lugar de BuildContext
   }) async {
     final inicio = '${startDate.day}/${startDate.month}/${startDate.year}';
     final fin = '${endDate.day}/${endDate.month}/${endDate.year}';
     
-    final mensaje = '''🏠 *IntelliHome - Confirmación de Reserva*
+    // 👇 CAMBIO: Usar fromLocale() en lugar de BuildContext
+    final l10n = AppLocalizations.fromLocale(locale);
+    
+    final mensaje = '''🏠 *${l10n.whatsappReservationTitle}*
 
-Hola $nombreUsuario, $envio
+${l10n.whatsappReservationGreeting} $nombreUsuario, $envio
 
-✅ Tu reserva ha sido confirmada exitosamente.
+✅ ${l10n.whatsappReservationConfirmed}
 
-📋 *Detalles:*
-• Número de Reserva: $reservationId
-• Propiedad: $propertyName
-• Check-in: $inicio a las 3:00 PM
-• Check-out: $fin a las 11:00 AM
+📋 *${l10n.whatsappReservationDetails}*
+• ${l10n.whatsappReservationNumber} $reservationId
+• ${l10n.whatsappReservationProperty} $propertyName
+• ${l10n.whatsappReservationCheckIn} $inicio a las 3:00 PM
+• ${l10n.whatsappReservationCheckOut} $fin a las 11:00 AM
 
-¡Esperamos que disfrutes tu estadía!
+${l10n.whatsappReservationEnjoy}
 
-_IntelliHome Team_''';
+_${l10n.whatsappTeamSignature}_''';
 
     return await enviarMensaje(
       telefono: telefono,
@@ -173,24 +181,30 @@ _IntelliHome Team_''';
   }
 
   /// Envía mensaje de alerta de incendio al numero del usuario
+  /// 
+  /// [locale] es el idioma del usuario (ej: Locale('es'), Locale('en'), Locale('pt'))
   Future<WhatsAppResult> enviarNotificacionIncendio({
     required String telefono,
     required String nombreUsuario,
     required DateTime horadesatre,
     required String nombreCasa,
     required String propertyId,
+    required Locale locale, // 👈 CAMBIO: Ahora requiere Locale en lugar de BuildContext
   }) async {
-    final mensaje = '''🔥*IntelliHome - Alerta de Incendio*
+    final fechaHora = '${horadesatre.day.toString().padLeft(2, '0')}/${horadesatre.month.toString().padLeft(2, '0')}/${horadesatre.year.toString().padLeft(4, '0')} ${horadesatre.hour.toString().padLeft(2, '0')}:${horadesatre.minute.toString().padLeft(2, '0')}';
+    
+    // 👇 CAMBIO: Usar fromLocale() en lugar de BuildContext
+    final l10n = AppLocalizations.fromLocale(locale);
+    
+    final mensaje = '''🔥*${l10n.whatsappFireAlertTitle}*
 
-Hola $nombreUsuario,${horadesatre.day.toString().padLeft(2, '0')}/${horadesatre.month.toString().padLeft(2, '0')}/${horadesatre.year.toString().padLeft(4, '0')}/${horadesatre.hour.toString().padLeft(2, '0')}:${horadesatre.minute.toString().padLeft(2, '0')},
+${l10n.whatsappFireAlertGreeting} $nombreUsuario, $fechaHora
 
- Se ha detectado una alerta de incendio en $propertyId,$nombreCasa.
+⚠️ ${l10n.whatsappFireAlertDetected} $propertyId, $nombreCasa.
 
- Por favor, toma las precauciones necesarias y sigue las instrucciones de seguridad.
- Mantenerse alejado del área afectada y buscar una ruta de salida segura. No dudes en
- llamar a los servicios de emergencia si es necesario.
+${l10n.whatsappFireAlertInstructions}
 
-_IntelliHome Team_''';
+_${l10n.whatsappTeamSignature}_''';
 
     return await enviarMensaje(
       telefono: telefono,
@@ -199,24 +213,32 @@ _IntelliHome Team_''';
   }
 
   /// Envíar alerta de sismo al numero del usuario
+  /// 
+  /// [locale] es el idioma del usuario (ej: Locale('es'), Locale('en'), Locale('pt'))
   Future<WhatsAppResult> enviarNotificacionSismo({
     required String telefono,
     required String nombreUsuario,
     required DateTime horadesatre,
     required String nombreCasa,
     required String propertyId,
+    required Locale locale, // 👈 CAMBIO: Ahora requiere Locale en lugar de BuildContext
   }) async {
-    final mensaje = '''🫨*IntelliHome - Alerta de Sismo*
+    final fechaHora = '${horadesatre.day.toString().padLeft(2, '0')}/${horadesatre.month.toString().padLeft(2, '0')}/${horadesatre.year.toString().padLeft(4, '0')} ${horadesatre.hour.toString().padLeft(2, '0')}:${horadesatre.minute.toString().padLeft(2, '0')}';
+    
+    // 👇 CAMBIO: Usar fromLocale() en lugar de BuildContext
+    final l10n = AppLocalizations.fromLocale(locale);
+    
+    final mensaje = '''🫨*${l10n.whatsappEarthquakeAlertTitle}*
 
-Hola $nombreUsuario,${horadesatre.day.toString().padLeft(2, '0')}/${horadesatre.month.toString().padLeft(2, '0')}/${horadesatre.year.toString().padLeft(4, '0')}/${horadesatre.hour.toString().padLeft(2, '0')}:${horadesatre.minute.toString().padLeft(2, '0')},
+${l10n.whatsappEarthquakeAlertGreeting} $nombreUsuario, $fechaHora
 
-  Hemos detectado un sismo en $propertyId,$nombreCasa.
-  Por favor, mantén la calma y sigue las instrucciones de seguridad.
-  Asegúrate de estar en un lugar seguro y alejado de objetos que puedan caer
-  o causar daño. Si es necesario, evacua el área siguiendo la ruta de emergencia
-  establecidas en la propiedad.
+⚠️ ${l10n.whatsappEarthquakeAlertDetected} $propertyId, $nombreCasa.
 
-_IntelliHome Team_''';
+${l10n.whatsappEarthquakeAlertStayCalm}
+${l10n.whatsappEarthquakeAlertSafePlace}
+${l10n.whatsappEarthquakeAlertEvacuate}
+
+_${l10n.whatsappTeamSignature}_''';
 
     return await enviarMensaje(
       telefono: telefono,

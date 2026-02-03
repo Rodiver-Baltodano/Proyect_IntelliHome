@@ -604,76 +604,141 @@ Thank you for choosing Intelihome. Enjoy your experience on our platform.''';
   @override
   String get processing => 'Processing...';
 
-  // Domótica
+  // ============================================
+  // DOMÓTICA - Control
+  // ============================================
 
   @override
   String get domoticControl => 'Domotics Control';
-  
+
   @override
   String get connectedToRaspberry => 'Connected to Raspberry Pi Pico W';
-  
+
   @override
   String get reconnect => 'Reconnect';
-  
+
+  // Domótica - Rooms
   @override
   String get garage => 'Garage';
-  
+
   @override
   String get livingRoom => 'Living Room';
-  
+
   @override
   String get kitchen => 'Kitchen';
-  
+
   @override
   String get bathroom1 => 'Bathroom 1';
-  
+
   @override
   String get bathroom2 => 'Bathroom 2';
-  
+
   @override
   String get bedroom1 => 'Bedroom 1';
-  
+
   @override
   String get bedroom2 => 'Bedroom 2';
-  
+
   @override
   String get bedroom3 => 'Bedroom 3';
-  
+
+  // Domótica - Light states
   @override
   String get turnedOn => 'On';
-  
+
   @override
   String get turnedOff => 'Off';
 
-  
   // Domótica - Sensors
   @override
   String get flame => 'Fire';
-  
+
   @override
-  String get vibration => 'Vibration';
-  
+  String get seismic => 'Seismic';
+
   @override
   String get detected => 'DETECTED';
-  
+
   @override
   String get normal => 'Normal';
-  
+
   // Domótica - Connection Status
   @override
   String get connected => 'Connected';
-  
+
   @override
   String get disconnected => 'Disconnected';
-  
+
   // Domótica - Doors
   @override
   String get door => 'Door';
-  
+
   @override
   String get garageLabel => 'Garage';
 
-  //Huella
+  // Domótica - Sensor alerts (SnackBar)
+  @override
+  String get flameDetectedAlert => '🔥 FLAME DETECTED!';
+
+  @override
+  String get seismicDetectedAlert => '📳 SEISMIC EVENT DETECTED!';
+
+  // Domótica - Full-screen alerts
+  @override
+  String get fireDetectedTitle => 'FIRE DETECTED!';
+
+  @override
+  String get seismicDetectedTitle => 'SEISMIC EVENT DETECTED!';
+
+  // Domótica - No connection
+  @override
+  String get noConnection => 'No connection to the device';
+
+  // Domótica - Door (servo)
+  @override
+  String get doorOpen => '🚪 Door Open';
+
+  @override
+  String get doorClosed => '🚪 Door Closed';
+
+  @override
+  String get errorControlDoor => 'Error controlling the door';
+
+  // Domótica - Garage (servo)
+  @override
+  String get garageOpen => '🚗 Garage Open';
+
+  @override
+  String get garageClosed => '🚗 Garage Closed';
+
+  @override
+  String get errorControlGarage => 'Error controlling the garage';
+
+  // Domótica - WhatsApp notification sent
+  @override
+  String get fireAlertSentWhatsApp => '📱 Fire alert sent via WhatsApp';
+
+  @override
+  String get seismicAlertSentWhatsApp => '📱 Seismic alert sent via WhatsApp';
+
+  // ============================================
+  // LANGUAGE SWITCHER
+  // ============================================
+  @override
+  String get changeLanguage => 'Change language';
+
+  @override
+  String get spanish => 'Español';
+
+  @override
+  String get english => 'English';
+
+  @override
+  String get portuguese => 'Português';
+
+  // ============================================
+  // BIOMETRIC
+  // ============================================
 
   @override
   String get enterUsername => 'Please enter your username';
@@ -697,4 +762,73 @@ Thank you for choosing Intelihome. Enjoy your experience on our platform.''';
   String get biometricAuthError =>
       'Biometric authentication error';
 
+  // ============================================
+  // WHATSAPP MESSAGES
+  // ============================================
+
+  @override
+  String get whatsappReservationTitle => 'IntelliHome - Reservation Confirmation';
+
+  @override
+  String get whatsappReservationGreeting => 'Hello';
+
+  @override
+  String get whatsappReservationConfirmed => 'Your reservation has been successfully confirmed.';
+
+  @override
+  String get whatsappReservationDetails => 'Details:';
+
+  @override
+  String get whatsappReservationNumber => 'Reservation Number:';
+
+  @override
+  String get whatsappReservationProperty => 'Property:';
+
+  @override
+  String get whatsappReservationCheckIn => 'Check-in:';
+
+  @override
+  String get whatsappReservationCheckOut => 'Check-out:';
+
+  @override
+  String get whatsappReservationEnjoy => 'We hope you enjoy your stay!';
+
+  @override
+  String get whatsappTeamSignature => 'IntelliHome Team';
+
+  @override
+  String get whatsappFireAlertTitle => 'IntelliHome - Fire Alert';
+
+  @override
+  String get whatsappFireAlertGreeting => 'Hello';
+
+  @override
+  String get whatsappFireAlertDetected => 'A fire alert has been detected in';
+
+  @override
+  String get whatsappFireAlertInstructions => 'Please take necessary precautions and follow safety instructions. Stay away from the affected area and find a safe exit route. Do not hesitate to call emergency services if necessary.';
+
+  @override
+  String get whatsappFireAlertStayAway => 'Stay away from the affected area and find a safe exit route.';
+
+  @override
+  String get whatsappFireAlertCallEmergency => 'Do not hesitate to call emergency services if necessary.';
+
+  @override
+  String get whatsappEarthquakeAlertTitle => 'IntelliHome - Earthquake Alert';
+
+  @override
+  String get whatsappEarthquakeAlertGreeting => 'Hello';
+
+  @override
+  String get whatsappEarthquakeAlertDetected => 'We have detected an earthquake in';
+
+  @override
+  String get whatsappEarthquakeAlertStayCalm => 'Please stay calm and follow safety instructions.';
+
+  @override
+  String get whatsappEarthquakeAlertSafePlace => 'Make sure you are in a safe place away from objects that could fall or cause damage.';
+
+  @override
+  String get whatsappEarthquakeAlertEvacuate => 'If necessary, evacuate the area following the emergency route established at the property.';
 }

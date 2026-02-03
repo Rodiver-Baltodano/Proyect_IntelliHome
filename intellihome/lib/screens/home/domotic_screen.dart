@@ -11,8 +11,9 @@ import 'package:intellihome/modules/autenticacion/repositories/casa_repositorio_
 import 'package:intellihome/session/session_manager.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
-import 'package:flutter_dotenv/flutter_dotenv.dart';  
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'dart:io';
+import 'dart:async';
 
 class DomoticScreen extends StatefulWidget {
   const DomoticScreen({super.key});
@@ -36,6 +37,13 @@ class _DomoticScreenState extends State<DomoticScreen> {
   // Control de notificaciones enviadas
   bool _notificacionIncendioEnviada = false;
   bool _notificacionSismoEnviada = false;
+
+  // ─── Timers para vibración (3 s) y auto-dismiss de alertas pantalla completa ───
+  Timer? _vibrationTimer;
+  Timer? _alertDismissTimer;
+
+  // ─── Locale actual para el switcher ───
+  Locale _currentLocale = const Locale('es');
 
   // Mapeo de habitaciones a pines GPIO
   final Map<String, int> _roomToPinMap = {
@@ -67,10 +75,18 @@ class _DomoticScreenState extends State<DomoticScreen> {
     _initializeServices();
     _setupTcpCallbacks();
     _connectToRaspberryPi();
+    // Capturar locale actual desde el contexto después del primer frame
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        setState(() {
+          _currentLocale = Localizations.localeOf(context);
+        });
+      }
+    });
   }
 
   /// VERSIÓN MEJORADA - Inicialización robusta del servicio de reservas
-    Future<void> _initializeServices() async {
+  Future<void> _initializeServices() async {
     try {
       debugPrint('🔄 [INIT] Iniciando servicios de notificación...');
 
@@ -101,13 +117,13 @@ class _DomoticScreenState extends State<DomoticScreen> {
 
       // 4. CAMBIO IMPORTANTE: Verificar si está usando Azure
       final usandoAzure = dotenv.env['RESERVAS_BLOB_SAS_URL']?.isNotEmpty ?? false;
-      
+
       if (usandoAzure) {
         debugPrint('☁️ [INIT] Modo Azure Blob Storage detectado');
         debugPrint('✅ [INIT] No se requieren archivos JSON locales');
       } else {
         debugPrint('💾 [INIT] Modo JSON local detectado');
-        
+
         // Verificar existencia de archivos solo si NO está usando Azure
         final usuariosFile = File(usuariosPath);
         final casasFile = File(casasPath);
@@ -167,7 +183,7 @@ class _DomoticScreenState extends State<DomoticScreen> {
 
       // 7. Buscar reservas del usuario
       debugPrint('🔍 [INIT] Buscando reservas del usuario $userId...');
-      
+
       List<Reserva> reservas;
       try {
         reservas = await reservaRepo.obtenerPorUsuario(userId);
@@ -292,6 +308,37 @@ class _DomoticScreenState extends State<DomoticScreen> {
     };
   }
 
+  // ─── Vibración continua durante 3 segundos ────────────────────────────────
+  void _startVibration() {
+    _vibrationTimer?.cancel();
+    HapticFeedback.vibrate(); // primer impulso inmediato
+    _vibrationTimer = Timer.periodic(const Duration(milliseconds: 500), (timer) {
+      if (!mounted) {
+        timer.cancel();
+        return;
+      }
+      HapticFeedback.vibrate();
+    });
+    // Detener automáticamente después de 3 segundos
+    Future.delayed(const Duration(seconds: 3), () {
+      _vibrationTimer?.cancel();
+      _vibrationTimer = null;
+    });
+  }
+
+  // ─── Auto-dismiss de alerta pantalla completa después de 3 segundos ────────
+  void _startAlertDismissTimer() {
+    _alertDismissTimer?.cancel();
+    _alertDismissTimer = Timer(const Duration(seconds: 3), () {
+      if (mounted) {
+        setState(() {
+          _flameDetected = false;
+          _shockDetected = false;
+        });
+      }
+    });
+  }
+
   void _processSensorData(String message) {
     // Formato esperado: "SENSOR:flame:true,shock:false"
     if (message.startsWith('SENSOR:')) {
@@ -320,15 +367,23 @@ class _DomoticScreenState extends State<DomoticScreen> {
           }
         }
 
-        // Vibrar, mostrar alerta y enviar notificación si hay detección nueva
+        // Vibrar 3 s, mostrar alerta localizada y enviar notificación si hay detección nueva
         if (!previousFlame && _flameDetected) {
-          HapticFeedback.vibrate();
-          _showMessage('🔥 ¡LLAMA DETECTADA!');
+          _startVibration();
+          _startAlertDismissTimer();
+          if (mounted) {
+            final l10n = AppLocalizations.of(context);
+            _showMessage(l10n.flameDetectedAlert);
+          }
           _enviarNotificacionIncendio();
         }
         if (!previousShock && _shockDetected) {
-          HapticFeedback.vibrate();
-          _showMessage('📳 ¡VIBRACIÓN DETECTADA!');
+          _startVibration();
+          _startAlertDismissTimer();
+          if (mounted) {
+            final l10n = AppLocalizations.of(context);
+            _showMessage(l10n.seismicDetectedAlert);
+          }
           _enviarNotificacionSismo();
         }
 
@@ -414,7 +469,10 @@ class _DomoticScreenState extends State<DomoticScreen> {
 
   Future<void> _togglePuerta() async {
     if (!_isConnected) {
-      _showMessage('No hay conexión con el dispositivo');
+      if (mounted) {
+        final l10n = AppLocalizations.of(context);
+        _showMessage(l10n.noConnection);
+      }
       return;
     }
 
@@ -430,16 +488,23 @@ class _DomoticScreenState extends State<DomoticScreen> {
         setState(() {
           _puertaAbierta = newState;
         });
-        _showMessage(newState ? '🚪 Puerta Abierta' : '🚪 Puerta Cerrada');
+        final l10n = AppLocalizations.of(context);
+        _showMessage(newState ? l10n.doorOpen : l10n.doorClosed);
       }
     } catch (e) {
-      _showMessage('Error al controlar la puerta');
+      if (mounted) {
+        final l10n = AppLocalizations.of(context);
+        _showMessage(l10n.errorControlDoor);
+      }
     }
   }
 
   Future<void> _toggleGaraje() async {
     if (!_isConnected) {
-      _showMessage('No hay conexión con el dispositivo');
+      if (mounted) {
+        final l10n = AppLocalizations.of(context);
+        _showMessage(l10n.noConnection);
+      }
       return;
     }
 
@@ -455,10 +520,14 @@ class _DomoticScreenState extends State<DomoticScreen> {
         setState(() {
           _garajeAbierto = newState;
         });
-        _showMessage(newState ? '🚗 Garaje Abierto' : '🚗 Garaje Cerrado');
+        final l10n = AppLocalizations.of(context);
+        _showMessage(newState ? l10n.garageOpen : l10n.garageClosed);
       }
     } catch (e) {
-      _showMessage('Error al controlar el garaje');
+      if (mounted) {
+        final l10n = AppLocalizations.of(context);
+        _showMessage(l10n.errorControlGarage);
+      }
     }
   }
 
@@ -535,6 +604,7 @@ class _DomoticScreenState extends State<DomoticScreen> {
       // 5. Intentar enviar notificación
       final resultado = await _reservaService!.enviarNotificacionIncendio(
         _reservaActiva!,
+        locale: _currentLocale,
       );
 
       if (resultado.exitoso) {
@@ -544,7 +614,8 @@ class _DomoticScreenState extends State<DomoticScreen> {
         debugPrint('✅ [NOTIF] ══════════════════════════════════════════');
 
         if (mounted) {
-          _showMessage('📱 Alerta de incendio enviada por WhatsApp');
+          final l10n = AppLocalizations.of(context);
+          _showMessage(l10n.fireAlertSentWhatsApp);
         }
       } else {
         debugPrint('❌ [NOTIF] ══════════════════════════════════════════');
@@ -617,6 +688,7 @@ class _DomoticScreenState extends State<DomoticScreen> {
       // 5. Intentar enviar notificación
       final resultado = await _reservaService!.enviarNotificacionSismo(
         _reservaActiva!,
+        locale: _currentLocale
       );
 
       if (resultado.exitoso) {
@@ -626,7 +698,8 @@ class _DomoticScreenState extends State<DomoticScreen> {
         debugPrint('✅ [NOTIF] ══════════════════════════════════════════');
 
         if (mounted) {
-          _showMessage('📱 Alerta de sismo enviada por WhatsApp');
+          final l10n = AppLocalizations.of(context);
+          _showMessage(l10n.seismicAlertSentWhatsApp);
         }
       } else {
         debugPrint('❌ [NOTIF] ══════════════════════════════════════════');
@@ -656,10 +729,100 @@ class _DomoticScreenState extends State<DomoticScreen> {
     }
   }
 
+  // ─── Language switcher ─────────────────────────────────────────────────────
+  void _showLanguageSwitcher() {
+    if (!mounted) return;
+    final l10n = AppLocalizations.of(context);
+
+    showModalBottomSheet<void>(
+      context: context,
+      builder: (BuildContext ctx) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              // Título
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 12.0),
+                child: Text(
+                  l10n.changeLanguage,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              const Divider(height: 1),
+              // Español
+              ListTile(
+                leading: const Text('🇨🇷', style: TextStyle(fontSize: 20)),
+                title: Text(l10n.spanish),
+                trailing: _currentLocale.languageCode == 'es'
+                    ? const Icon(Icons.check, color: Colors.green)
+                    : null,
+                onTap: () {
+                  Navigator.of(ctx).pop();
+                  _changeLocale(const Locale('es'));
+                },
+              ),
+              // Inglés
+              ListTile(
+                leading: const Text('🇺🇸', style: TextStyle(fontSize: 20)),
+                title: Text(l10n.english),
+                trailing: _currentLocale.languageCode == 'en'
+                    ? const Icon(Icons.check, color: Colors.green)
+                    : null,
+                onTap: () {
+                  Navigator.of(ctx).pop();
+                  _changeLocale(const Locale('en'));
+                },
+              ),
+              // Português
+              ListTile(
+                leading: const Text('🇧🇷', style: TextStyle(fontSize: 20)),
+                title: Text(l10n.portuguese),
+                trailing: _currentLocale.languageCode == 'pt'
+                    ? const Icon(Icons.check, color: Colors.green)
+                    : null,
+                onTap: () {
+                  Navigator.of(ctx).pop();
+                  _changeLocale(const Locale('pt'));
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  /// Cambia el locale de la app.
+  /// Asume que tu MaterialApp tiene un [ValueNotifier<Locale>] o similar.
+  /// Si usas un paquete como get_it o un provider, adapta este método.
+  /// Como ejemplo genérico usamos Localizations.textDirection → no cambia nada.
+  /// ──────────────────────────────────────────────────────────────────────────
+  /// ADAPTACIÓN NECESARIA: reemplaza el cuerpo por la lógica que tu app usa
+  /// para cambiar de locale globalmente (ej: setState en un ancestro,
+  /// notifyListeners, bloc, etc.).
+  /// ──────────────────────────────────────────────────────────────────────────
+  void _changeLocale(Locale newLocale) {
+    if (mounted) {
+      setState(() {
+        _currentLocale = newLocale;
+      });
+      // TODO: Propaga el cambio de locale al widget raíz de tu app.
+      // Ejemplo con un ValueNotifier en main.dart:
+      //   localeNotifier.value = newLocale;
+      debugPrint('🌐 [LOCALE] Cambiado a: ${newLocale.languageCode}');
+    }
+  }
+
   @override
   void dispose() {
     // ✅ SOLO limpia callbacks - NO desconectes (es un Singleton)
     _tcpClient.clearCallbacks();
+    _vibrationTimer?.cancel();
+    _alertDismissTimer?.cancel();
     super.dispose();
   }
 
@@ -689,6 +852,12 @@ class _DomoticScreenState extends State<DomoticScreen> {
             },
           ),
           actions: [
+            // Botón de cambio de idioma
+            IconButton(
+              icon: const Icon(Icons.language),
+              onPressed: _showLanguageSwitcher,
+              tooltip: l10n.changeLanguage,
+            ),
             // Indicador de conexión
             Padding(
               padding: const EdgeInsets.all(8.0),
@@ -846,21 +1015,21 @@ class _DomoticScreenState extends State<DomoticScreen> {
               ),
             ),
 
-            // Alerta de fuego (pantalla completa)
+            // Alerta de fuego (pantalla completa) – se oculta sola tras 3 s
             if (_flameDetected)
               _buildFullScreenAlert(
                 color: Colors.red.withOpacity(0.85),
                 icon: Icons.local_fire_department,
-                title: '¡FUEGO DETECTADO!',
+                title: l10n.fireDetectedTitle,
                 iconColor: Colors.red.shade900,
               ),
 
-            // Alerta de sismo (pantalla completa)
+            // Alerta de sismo (pantalla completa) – se oculta sola tras 3 s
             if (_shockDetected)
               _buildFullScreenAlert(
                 color: Colors.brown.withOpacity(0.85),
                 icon: Icons.warning_amber_rounded,
-                title: '¡SISMO DETECTADO!',
+                title: l10n.seismicDetectedTitle,
                 iconColor: Colors.brown.shade900,
               ),
           ],
@@ -944,11 +1113,11 @@ class _DomoticScreenState extends State<DomoticScreen> {
               // Separador
               Container(width: 1, height: 40, color: Colors.grey.shade300),
 
-              // Sensor de vibración
+              // Sensor de sismo (antes: vibración)
               _buildSensorIndicator(
                 l10n: l10n,
                 icon: Icons.vibration,
-                label: l10n.vibration,
+                label: l10n.seismic,
                 isActive: _shockDetected,
                 activeColor: Colors.orange,
               ),
@@ -1103,7 +1272,7 @@ class _DomoticScreenState extends State<DomoticScreen> {
               Text(
                 roomName,
                 style: TextStyle(
-                  fontSize: 11.25, // Aumentado de 9 a 11.25 (25% más grande)
+                  fontSize: 11.25,
                   fontWeight: FontWeight.bold,
                   color: isOn
                       ? Colors.amber.shade900

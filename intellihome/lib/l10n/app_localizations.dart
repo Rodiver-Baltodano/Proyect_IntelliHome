@@ -8,6 +8,21 @@ abstract class AppLocalizations {
     return Localizations.of<AppLocalizations>(context, AppLocalizations)!;
   }
 
+  /// Resuelve la instancia correcta de AppLocalizations sin necesidad de
+  /// BuildContext.  Útil en servicios, repositories y callbacks donde el
+  /// contexto no está disponible.
+  static AppLocalizations fromLocale(Locale locale) {
+    switch (locale.languageCode) {
+      case 'en':
+        return AppLocalizationsEn();
+      case 'pt':
+        return AppLocalizationsPt();
+      case 'es':
+      default:
+        return AppLocalizationsEs();
+    }
+  }
+
   // Método para obtener el delegado
   static const LocalizationsDelegate<AppLocalizations> delegate = _AppLocalizationsDelegate();
 
@@ -15,7 +30,7 @@ abstract class AppLocalizations {
   static const List<Locale> supportedLocales = [
     Locale('es', ''), // Español
     Locale('en', ''), // Inglés
-    Locale('pt', ''), // Portugués
+    Locale('pt', ''), // Português
   ];
 
   // Textos generales
@@ -245,7 +260,9 @@ abstract class AppLocalizations {
   String get pleaseWait;
   String get processing;
 
-  // Domótica - Control
+  // ============================================
+  // DOMÓTICA - Control
+  // ============================================
   String get domoticControl;
   String get connectedToRaspberry;
   String get reconnect;
@@ -260,13 +277,13 @@ abstract class AppLocalizations {
   String get bedroom2;
   String get bedroom3;
   
-  // Domótica - Estados
+  // Domótica - Estados de luz
   String get turnedOn;
   String get turnedOff;
   
   // Domótica - Sensores
   String get flame;
-  String get vibration;
+  String get seismic;           // ← renombrado de 'vibration'
   String get detected;
   String get normal;
   
@@ -278,7 +295,42 @@ abstract class AppLocalizations {
   String get door;
   String get garageLabel;
 
-  // Huella avisos
+  // Domótica - Alertas de sensores (SnackBar)
+  String get flameDetectedAlert;          // 🔥 ¡LLAMA DETECTADA!
+  String get seismicDetectedAlert;        // 📳 ¡SISMO DETECTADO!
+
+  // Domótica - Pantalla completa de alerta
+  String get fireDetectedTitle;           // ¡FUEGO DETECTADO!
+  String get seismicDetectedTitle;        // ¡SISMO DETECTADO!
+
+  // Domótica - Sin conexión
+  String get noConnection;                // No hay conexión con el dispositivo
+
+  // Domótica - Puerta
+  String get doorOpen;                    // 🚪 Puerta Abierta
+  String get doorClosed;                  // 🚪 Puerta Cerrada
+  String get errorControlDoor;            // Error al controlar la puerta
+
+  // Domótica - Garaje (servo)
+  String get garageOpen;                  // 🚗 Garaje Abierto
+  String get garageClosed;                // 🚗 Garaje Cerrado
+  String get errorControlGarage;          // Error al controlar el garaje
+
+  // Domótica - Notificaciones WhatsApp enviadas
+  String get fireAlertSentWhatsApp;       // 📱 Alerta de incendio enviada por WhatsApp
+  String get seismicAlertSentWhatsApp;    // 📱 Alerta de sismo enviada por WhatsApp
+
+  // ============================================
+  // CAMBIO DE IDIOMA
+  // ============================================
+  String get changeLanguage;              // Cambiar idioma
+  String get spanish;                     // Español
+  String get english;                     // Inglés
+  String get portuguese;                  // Português
+
+  // ============================================
+  // HUELLA (Biométrico)
+  // ============================================
   String get enterUsername;
   String get biometricNotSupported;
   String get biometricReason;
@@ -286,6 +338,33 @@ abstract class AppLocalizations {
   String get userBlocked;
   String get biometricAuthError;
 
+  // ============================================
+  // MENSAJES DE WHATSAPP
+  // ============================================
+  String get whatsappReservationTitle;
+  String get whatsappReservationGreeting;
+  String get whatsappReservationConfirmed;
+  String get whatsappReservationDetails;
+  String get whatsappReservationNumber;
+  String get whatsappReservationProperty;
+  String get whatsappReservationCheckIn;
+  String get whatsappReservationCheckOut;
+  String get whatsappReservationEnjoy;
+  String get whatsappTeamSignature;
+  
+  String get whatsappFireAlertTitle;
+  String get whatsappFireAlertGreeting;
+  String get whatsappFireAlertDetected;
+  String get whatsappFireAlertInstructions;
+  String get whatsappFireAlertStayAway;
+  String get whatsappFireAlertCallEmergency;
+  
+  String get whatsappEarthquakeAlertTitle;
+  String get whatsappEarthquakeAlertGreeting;
+  String get whatsappEarthquakeAlertDetected;
+  String get whatsappEarthquakeAlertStayCalm;
+  String get whatsappEarthquakeAlertSafePlace;
+  String get whatsappEarthquakeAlertEvacuate;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
