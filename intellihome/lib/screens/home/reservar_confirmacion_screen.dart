@@ -6,6 +6,7 @@ import 'package:intellihome/modules/autenticacion/models/casa.dart';
 import 'package:intellihome/modules/autenticacion/models/usuario.dart';
 import 'package:intellihome/modules/autenticacion/repositories/casa_repositorio_json.dart';
 import 'package:intellihome/modules/autenticacion/repositories/usuario_repository.dart';
+import 'package:intellihome/modules/finanzas/services/algoritmo_banquero.dart';
 import 'package:intellihome/modules/reservas/repositories/reserva_repository.dart';
 import 'package:intellihome/modules/reservas/services/reserva_service.dart';
 import 'package:intellihome/providers/theme_provider.dart';
@@ -42,14 +43,27 @@ class _ReservarConfirmacionScreenState
     _cvvController.dispose();
     super.dispose();
   }
-
+/*
   int _calcularNoches(DateTime inicio, DateTime fin) {
     final noches = fin.difference(inicio).inDays;
     return noches <= 0 ? 1 : noches;
+  }*/
+
+  int _calcularDias(DateTime inicio, DateTime fin) {
+    final start = DateTime(inicio.year, inicio.month, inicio.day);
+    final end = DateTime(fin.year, fin.month, fin.day);
+    final diff = end.difference(start).inDays;
+    if (diff < 0) return 0;
+    return diff + 1;
   }
 
   String _formatPrecio(double precio) {
     final formatter = NumberFormat('#,##0', 'en_US');
+    return formatter.format(precio);
+  }
+
+  String _formatPrecioConDecimales(double precio) {
+    final formatter = NumberFormat('#,##0.00', 'en_US');
     return formatter.format(precio);
   }
 
@@ -67,6 +81,30 @@ class _ReservarConfirmacionScreenState
       return FileImage(file);
     }
     return null;
+  }
+
+  Widget _buildDetalleFila(
+    String label,
+    String value, {
+    bool bold = false,
+  }) {
+    final style = TextStyle(
+      fontSize: 13,
+      fontWeight: bold ? FontWeight.w700 : FontWeight.w500,
+    );
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: Text(label, style: style),
+          ),
+          const SizedBox(width: 12),
+          Text(value, style: style),
+        ],
+      ),
+    );
   }
 
   String _formatearDatosTarjeta(String numeroTarjeta, String fechaExpiracion) {
@@ -262,8 +300,19 @@ class _ReservarConfirmacionScreenState
       _numeroController.text = usuario.datosTargeta!;
     }
 
-    final noches = _calcularNoches(widget.rango.start, widget.rango.end);
-    final subtotal = widget.casa.precioPorNoche * noches;
+    final dias = _calcularDias(widget.rango.start, widget.rango.end);
+    final montoArrendamiento = widget.casa.precioPorNoche * dias;
+    final comision = montoArrendamiento * 0.05;
+    final iva = comision * 0.13;
+    final ahora = DateTime.now();
+    final porcentajeAjuste = AlgoritmoBanquero.calcularAjusteFinanciero(
+      dia: ahora.day,
+      mes: ahora.month,
+      montoTotal: montoArrendamiento,
+    );
+    final subtotalConCargos = montoArrendamiento + comision + iva;
+    final ajuste = subtotalConCargos * porcentajeAjuste;
+    final total = subtotalConCargos + ajuste;
 
     return Scaffold(
       appBar: AppBar(
@@ -304,7 +353,7 @@ class _ReservarConfirmacionScreenState
               ),
             if (widget.casa.fotos.isNotEmpty) const SizedBox(height: 16),
             Container(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(12),
@@ -320,22 +369,52 @@ class _ReservarConfirmacionScreenState
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
-                    'Desglose de la reserva',
+                    'Desglose académico del costo',
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 8),
-                  Text('Fechas: ${_formatFecha(widget.rango.start)} - ${_formatFecha(widget.rango.end)}'),
-                  const SizedBox(height: 6),
-                  Text('Noches: $noches'),
-                  const SizedBox(height: 6),
-                  Text('Precio por noche: ₡${_formatPrecio(widget.casa.precioPorNoche)}'),
-                  const Divider(height: 20),
                   Text(
-                    'Total: ₡${_formatPrecio(subtotal)}',
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    'Fechas: ${_formatFecha(widget.rango.start)} - ${_formatFecha(widget.rango.end)}',
+                  ),
+                  const SizedBox(height: 6),
+                  _buildDetalleFila('Cantidad de días reservados', '$dias'),
+                  _buildDetalleFila(
+                    'Precio por noche',
+                    '₡${_formatPrecio(widget.casa.precioPorNoche)}',
+                  ),
+                  const Divider(height: 20),
+                  _buildDetalleFila(
+                    'Monto del arrendamiento',
+                    '₡${_formatPrecio(montoArrendamiento)}',
+                  ),
+                  Text(
+                    'Resultado de $dias día(s) × ₡${_formatPrecio(widget.casa.precioPorNoche)}',
+                    style: const TextStyle(fontSize: 12, color: Colors.black54),
+                  ),
+                  const SizedBox(height: 10),
+                  _buildDetalleFila(
+                    'Comisión de servicio (5%)',
+                    '₡${_formatPrecio(comision)}',
+                  ),
+                  _buildDetalleFila(
+                    'IVA sobre la comisión (13%)',
+                    '₡${_formatPrecio(iva)}',
+                  ),
+                  const SizedBox(height: 6),
+                  _buildDetalleFila(
+                    'Ajuste financiero dinámico',
+                    '₡${_formatPrecioConDecimales(ajuste)}',
+                  ),
+                  const SizedBox(height: 4),
+                  const Text(
+                    'Modelo académico de ajuste dinámico basado en el algoritmo del banquero.',
+                    style: TextStyle(fontSize: 12, color: Colors.black54),
+                  ),
+                  const Divider(height: 24),
+                  _buildDetalleFila(
+                    'Total a pagar',
+                    '₡${_formatPrecio(total)}',
+                    bold: true,
                   ),
                 ],
               ),
