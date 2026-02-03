@@ -7,6 +7,8 @@ import 'package:intellihome/modules/autenticacion/models/usuario.dart';
 import 'package:intellihome/modules/autenticacion/repositories/casa_repositorio_json.dart';
 import 'package:intellihome/modules/autenticacion/repositories/usuario_repository.dart';
 import 'package:intellihome/modules/finanzas/services/algoritmo_banquero.dart';
+import 'package:intellihome/modules/finanzas/models/pago.dart';
+import 'package:intellihome/modules/finanzas/repositories/pago_repository.dart';
 import 'package:intellihome/modules/reservas/repositories/reserva_repository.dart';
 import 'package:intellihome/modules/reservas/services/reserva_service.dart';
 import 'package:intellihome/providers/theme_provider.dart';
@@ -35,6 +37,7 @@ class _ReservarConfirmacionScreenState
   final _numeroController = TextEditingController();
   final _expiracionController = TextEditingController();
   final _cvvController = TextEditingController();
+  bool _procesandoPago = false;
 
   @override
   void dispose() {
@@ -168,6 +171,8 @@ class _ReservarConfirmacionScreenState
       return;
     }
 
+    if (_procesandoPago) return;
+
     final tieneTarjeta = usuario.datosTargeta != null && usuario.datosTargeta!.isNotEmpty;
 
     if (!tieneTarjeta) {
@@ -188,84 +193,161 @@ class _ReservarConfirmacionScreenState
       final datosTargeta = _formatearDatosTarjeta(numero, exp);
       await _guardarTarjeta(usuario, datosTargeta);
     }
+    setState(() {
+      _procesandoPago = true;
+    });
 
-    final appDir = await getApplicationDocumentsDirectory();
-    final reservasPath = p.join(appDir.path, 'reservas_integrado.json');
-    final usuariosPath = p.join(appDir.path, 'usuarios_integrado.json');
-    final casasPath = p.join(appDir.path, 'casas_integrado.json');
-
-    final reservasRepo = ReservaRepositorioJson(rutaArchivo: reservasPath);
-    final usuariosRepo = UsuarioRepositorioJson(rutaArchivo: usuariosPath);
-    final casasRepo = CasaRepositorioJson(rutaArchivo: casasPath);
-    final service = ReservaService(
-      repositorio: reservasRepo,
-      usuarioRepositorio: usuariosRepo,
-      casaRepositorio: casasRepo,
-    );
-
-    final resultado = await service.createReservation(
-      userId: usuario.id,
-      propertyId: widget.casa.id,
-      nombreCasa: widget.casa.nombre,
-      startDate: widget.rango.start,
-      endDate: widget.rango.end,
-    );
-
-    if (!mounted) return;
-
-    if (resultado.exitoso) {
-      final fechasActualizadas = _buildFechasNoDisponibles(
-        widget.casa.fechasNoDisponibles,
-        widget.rango.start,
-        widget.rango.end,
-      );
-
-      await casasRepo.actualizarCasa(
-        Casa(
-          id: widget.casa.id,
-          nombre: widget.casa.nombre,
-          precioPorNoche: widget.casa.precioPorNoche,
-          maxPersonas: widget.casa.maxPersonas,
-          habitaciones: widget.casa.habitaciones,
-          descripcion: widget.casa.descripcion,
-          fotos: widget.casa.fotos,
-          ubicacion: widget.casa.ubicacion,
-          reglasUso: widget.casa.reglasUso,
-          ownerId: widget.casa.ownerId,
-          fechaRegistro: widget.casa.fechaRegistro,
-          amenidades: widget.casa.amenidades,
-          fechasNoDisponibles: fechasActualizadas,
+    bool dialogAbierto = true;
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const AlertDialog(
+        content: Row(
+          children: [
+            CircularProgressIndicator(),
+            SizedBox(width: 12),
+            Expanded(child: Text('Procesando pago...')),
+          ],
         ),
+      ),
+    );
+
+    try {
+      final appDir = await getApplicationDocumentsDirectory();
+      final reservasPath = p.join(appDir.path, 'reservas_integrado.json');
+      final usuariosPath = p.join(appDir.path, 'usuarios_integrado.json');
+      final casasPath = p.join(appDir.path, 'casas_integrado.json');
+
+      final reservasRepo = ReservaRepositorioJson(rutaArchivo: reservasPath);
+      final usuariosRepo = UsuarioRepositorioJson(rutaArchivo: usuariosPath);
+      final casasRepo = CasaRepositorioJson(rutaArchivo: casasPath);
+      final service = ReservaService(
+        repositorio: reservasRepo,
+        usuarioRepositorio: usuariosRepo,
+        casaRepositorio: casasRepo,
       );
 
-      final usuarioActualizado = await usuariosRepo.buscarPorId(usuario.id);
-      if (usuarioActualizado != null && mounted) {
-        context.read<ThemeProvider>().inicializarConUsuario(
-              usuarioActualizado,
-              repositorio: usuariosRepo,
-            );
+      final resultado = await service.createReservation(
+        userId: usuario.id,
+        propertyId: widget.casa.id,
+        nombreCasa: widget.casa.nombre,
+        startDate: widget.rango.start,
+        endDate: widget.rango.end,
+      );
+
+      if (!mounted) return;
+
+      if (resultado.exitoso) {
+        final dias = _calcularDias(widget.rango.start, widget.rango.end);
+        final montoArrendamiento = widget.casa.precioPorNoche * dias;
+        final comision = montoArrendamiento * 0.05;
+        final iva = comision * 0.13;
+        final ahora = DateTime.now();
+        final porcentajeAjuste = AlgoritmoBanquero.calcularAjusteFinanciero(
+          dia: ahora.day,
+          mes: ahora.month,
+          montoTotal: montoArrendamiento,
+        );
+        final subtotalConCargos = montoArrendamiento + comision + iva;
+        final ajuste = subtotalConCargos * porcentajeAjuste;
+        final total = subtotalConCargos + ajuste;
+
+        final fechasActualizadas = _buildFechasNoDisponibles(
+          widget.casa.fechasNoDisponibles,
+          widget.rango.start,
+          widget.rango.end,
+        );
+
+        await casasRepo.actualizarCasa(
+          Casa(
+            id: widget.casa.id,
+            nombre: widget.casa.nombre,
+            precioPorNoche: widget.casa.precioPorNoche,
+            maxPersonas: widget.casa.maxPersonas,
+            habitaciones: widget.casa.habitaciones,
+            descripcion: widget.casa.descripcion,
+            fotos: widget.casa.fotos,
+            ubicacion: widget.casa.ubicacion,
+            reglasUso: widget.casa.reglasUso,
+            ownerId: widget.casa.ownerId,
+            fechaRegistro: widget.casa.fechaRegistro,
+            amenidades: widget.casa.amenidades,
+            fechasNoDisponibles: fechasActualizadas,
+          ),
+        );
+
+        final pagosPath = p.join(appDir.path, 'pagos_integrado.json');
+        final pagosRepo = PagoRepositorioJson(rutaArchivo: pagosPath);
+        final reservaId = resultado.reserva?.reservationId ?? '';
+        if (reservaId.isNotEmpty) {
+          final pago = Pago(
+            pagoId: reservaId,
+            reservationId: reservaId,
+            userId: usuario.id,
+            propertyId: widget.casa.id,
+            nombreCasa: widget.casa.nombre,
+            montoArrendamiento: montoArrendamiento,
+            comision: comision,
+            iva: iva,
+            ajuste: ajuste,
+            total: total,
+            fecha: DateTime.now(),
+          );
+          await pagosRepo.agregarPago(pago);
+        }
+
+        final usuarioActualizado = await usuariosRepo.buscarPorId(usuario.id);
+        if (usuarioActualizado != null && mounted) {
+          context.read<ThemeProvider>().inicializarConUsuario(
+                usuarioActualizado,
+                repositorio: usuariosRepo,
+              );
+        }
+
+        if (dialogAbierto && mounted) {
+          if (Navigator.of(context, rootNavigator: true).canPop()) {
+            Navigator.of(context, rootNavigator: true).pop();
+          }
+          dialogAbierto = false;
+        }
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              resultado.mensaje,
+              style: const TextStyle(color: Colors.white),
+            ),
+            backgroundColor: AppColors.successColor,
+          ),
+        );
+        Navigator.of(context).popUntil((route) => route.isFirst);
+      } else {
+        if (dialogAbierto && mounted) {
+          if (Navigator.of(context, rootNavigator: true).canPop()) {
+            Navigator.of(context, rootNavigator: true).pop();
+          }
+          dialogAbierto = false;
+        }
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              resultado.mensaje,
+              style: const TextStyle(color: Colors.white),
+            ),
+            backgroundColor: AppColors.errorColor,
+          ),
+        );
       }
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            resultado.mensaje,
-            style: const TextStyle(color: Colors.white),
-          ),
-          backgroundColor: AppColors.successColor,
-        ),
-      );
-      Navigator.of(context).popUntil((route) => route.isFirst);
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            resultado.mensaje,
-            style: const TextStyle(color: Colors.white),
-          ),
-          backgroundColor: AppColors.errorColor,
-        ),
-      );
+    } finally {
+      if (mounted) {
+        if (dialogAbierto && Navigator.of(context, rootNavigator: true).canPop()) {
+          Navigator.of(context, rootNavigator: true).pop();
+          dialogAbierto = false;
+        }
+        setState(() {
+          _procesandoPago = false;
+        });
+      }
     }
   }
 
@@ -479,13 +561,22 @@ class _ReservarConfirmacionScreenState
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: _confirmarReserva,
+                onPressed: _procesandoPago ? null : _confirmarReserva,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primaryColor,
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 14),
                 ),
-                child: const Text('Confirmar Reserva'),
+                child: _procesandoPago
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                        ),
+                      )
+                    : const Text('Confirmar Reserva'),
               ),
             ),
           ],
