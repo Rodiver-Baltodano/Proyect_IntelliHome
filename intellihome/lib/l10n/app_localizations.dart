@@ -365,6 +365,133 @@ abstract class AppLocalizations {
   String get whatsappEarthquakeAlertStayCalm;
   String get whatsappEarthquakeAlertSafePlace;
   String get whatsappEarthquakeAlertEvacuate;
+
+    // ============================================
+  // MAP_PICKER_SCREEN
+  // ============================================
+  String get selectLocation;
+  String get enableGpsMessage;
+  String get locationPermissionDenied;
+  String get couldNotGetLocation;
+  String get accept;
+
+  // ============================================
+  // MIS_CASAS_SCREEN
+  // ============================================
+  String get myHomes;
+  String get errorLoadingHomes;
+  String get noHomesYet;
+  String get viewDetails;
+
+  // ============================================
+  // AMENIDADES
+  // ============================================
+  String get amenities;
+  
+  // Amenidades y descripciones
+  String get amenityEquippedKitchen;
+  String get amenityEquippedKitchenDesc;
+  String get amenityAirConditioning;
+  String get amenityAirConditioningDesc;
+  String get amenityHeating;
+  String get amenityHeatingDesc;
+  String get amenityFreeWifi;
+  String get amenityFreeWifiDesc;
+  String get amenityCableSatellite;
+  String get amenityCableSatelliteDesc;
+  String get amenityWasherDryer;
+  String get amenityWasherDryerDesc;
+  String get amenityPool;
+  String get amenityPoolDesc;
+  String get amenityGardenPatio;
+  String get amenityGardenPatioDesc;
+  String get amenityBbqGrill;
+  String get amenityBbqGrillDesc;
+  String get amenityTerrace;
+  String get amenityTerraceDesc;
+  String get amenityHomeGym;
+  String get amenityHomeGymDesc;
+  String get amenityGarageParking;
+  String get amenityGarageParkingDesc;
+  String get amenitySecuritySystem;
+  String get amenitySecuritySystemDesc;
+  String get amenityEnsuiteBathroom;
+  String get amenityEnsuiteBathroomDesc;
+  String get amenityOutdoorFurniture;
+  String get amenityOutdoorFurnitureDesc;
+  String get amenityMicrowave;
+  String get amenityMicrowaveDesc;
+  String get amenityDishwasher;
+  String get amenityDishwasherDesc;
+  String get amenityCoffeeMaker;
+  String get amenityCoffeeMakerDesc;
+  String get amenityLinenTowels;
+  String get amenityLinenTowelsDesc;
+  String get amenityCommonAreas;
+  String get amenityCommonAreasDesc;
+  String get amenitySofaBed;
+  String get amenitySofaBedDesc;
+  String get amenityCleaningService;
+  String get amenityCleaningServiceDesc;
+  String get amenityPublicTransport;
+  String get amenityPublicTransportDesc;
+  String get amenityPetsAllowed;
+  String get amenityPetsAllowedDesc;
+  String get amenityShopsRestaurants;
+  String get amenityShopsRestaurantsDesc;
+  String get amenityRadiantFloor;
+  String get amenityRadiantFloorDesc;
+  String get amenityDeskWorkArea;
+  String get amenityDeskWorkAreaDesc;
+  String get amenityEntertainment;
+  String get amenityEntertainmentDesc;
+  String get amenityFireplace;
+  String get amenityFireplaceDesc;
+  String get amenityHighSpeedInternet;
+  String get amenityHighSpeedInternetDesc;
+
+  // ============================================
+  // FECHAS_NO_DISPONIBLES_SCREEN
+  // ============================================
+  String get availability;
+  String get selectUnavailableDates;
+  
+  // Días de la semana (abreviados)
+  String get sundayShort;
+  String get mondayShort;
+  String get tuesdayShort;
+  String get wednesdayShort;
+  String get thursdayShort;
+  String get fridayShort;
+  String get saturdayShort;
+  
+  // Meses del año
+  String get january;
+  String get february;
+  String get march;
+  String get april;
+  String get may;
+  String get june;
+  String get july;
+  String get august;
+  String get september;
+  String get october;
+  String get november;
+  String get december;
+
+  // ============================================
+  // HISTORIAL_RESERVAS_SCREEN
+  // ============================================
+  String get reservationHistory;
+  String get errorLoadingReservations;
+  String get noReservationsYet;
+  String get unknownHouse;
+  String get pending;
+  String get active;
+  String get finished;
+  String get noLocation;
+  String get domotics;
+
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

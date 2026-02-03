@@ -833,4 +833,324 @@ Obrigado por escolher o Intelihome. Aproveite sua experiência em nossa platafor
 
   @override
   String get whatsappEarthquakeAlertEvacuate => 'Se necessário, evacue a área seguindo a rota de emergência estabelecida na propriedade.';
+
+  // ============================================
+// AGREGAR AL FINAL DE app_localizations_pt.dart
+// (Antes del cierre de la clase "}")
+// ============================================
+
+  // ============================================
+  // MAP_PICKER_SCREEN
+  // ============================================
+  @override
+  String get selectLocation => 'Selecionar localização';
+
+  @override
+  String get enableGpsMessage => 'Ative o GPS para continuar.';
+
+  @override
+  String get locationPermissionDenied => 'Permissão de localização negada.';
+
+  @override
+  String get couldNotGetLocation => 'Não foi possível obter a localização atual.';
+
+  @override
+  String get accept => 'Aceitar';
+
+  // ============================================
+  // MIS_CASAS_SCREEN
+  // ============================================
+  @override
+  String get myHomes => 'Minhas casas';
+
+  @override
+  String get errorLoadingHomes => 'Erro ao carregar casas';
+
+  @override
+  String get noHomesYet => 'Você ainda não publicou casas.';
+
+  @override
+  String get viewDetails => 'Ver detalhes';
+
+  // ============================================
+  // AMENIDADES
+  // ============================================
+  @override
+  String get amenities => 'Comodidades';
+
+  @override
+  String get amenityEquippedKitchen => 'Cozinha equipada';
+
+  @override
+  String get amenityEquippedKitchenDesc => 'Inclui utensílios básicos e eletrodomésticos essenciais.';
+
+  @override
+  String get amenityAirConditioning => 'Ar condicionado';
+
+  @override
+  String get amenityAirConditioningDesc => 'Sistema de climatização para manter a casa fresca.';
+
+  @override
+  String get amenityHeating => 'Aquecimento';
+
+  @override
+  String get amenityHeatingDesc => 'Ambiente quente para dias frios.';
+
+  @override
+  String get amenityFreeWifi => 'Wi-Fi gratuito';
+
+  @override
+  String get amenityFreeWifiDesc => 'Conexão à internet incluída durante a estadia.';
+
+  @override
+  String get amenityCableSatellite => 'TV a cabo ou satélite';
+
+  @override
+  String get amenityCableSatelliteDesc => 'Acesso a canais nacionais e internacionais.';
+
+  @override
+  String get amenityWasherDryer => 'Lavadora e secadora';
+
+  @override
+  String get amenityWasherDryerDesc => 'Facilidades para lavar e secar roupas.';
+
+  @override
+  String get amenityPool => 'Piscina';
+
+  @override
+  String get amenityPoolDesc => 'Área de piscina disponível para hóspedes.';
+
+  @override
+  String get amenityGardenPatio => 'Jardim ou pátio';
+
+  @override
+  String get amenityGardenPatioDesc => 'Espaço exterior para descanso ou atividades.';
+
+  @override
+  String get amenityBbqGrill => 'Churrasqueira ou grelha';
+
+  @override
+  String get amenityBbqGrillDesc => 'Área equipada para churrascos.';
+
+  @override
+  String get amenityTerrace => 'Terraço ou varanda';
+
+  @override
+  String get amenityTerraceDesc => 'Área aberta com vista ou ventilação.';
+
+  @override
+  String get amenityHomeGym => 'Ginásio em casa';
+
+  @override
+  String get amenityHomeGymDesc => 'Equipamento básico para exercício.';
+
+  @override
+  String get amenityGarageParking => 'Garagem ou estacionamento';
+
+  @override
+  String get amenityGarageParkingDesc => 'Espaço seguro para estacionar veículos.';
+
+  @override
+  String get amenitySecuritySystem => 'Sistema de segurança';
+
+  @override
+  String get amenitySecuritySystemDesc => 'Medidas de proteção e acesso controlado.';
+
+  @override
+  String get amenityEnsuiteBathroom => 'Casa de banho privativa';
+
+  @override
+  String get amenityEnsuiteBathroomDesc => 'Casa de banho privada conectada ao quarto principal.';
+
+  @override
+  String get amenityOutdoorFurniture => 'Móveis de exterior';
+
+  @override
+  String get amenityOutdoorFurnitureDesc => 'Mobiliário para desfrutar de espaços ao ar livre.';
+
+  @override
+  String get amenityMicrowave => 'Micro-ondas';
+
+  @override
+  String get amenityMicrowaveDesc => 'Para aquecer e preparar alimentos rapidamente.';
+
+  @override
+  String get amenityDishwasher => 'Máquina de lavar louça';
+
+  @override
+  String get amenityDishwasherDesc => 'Lavagem automática de louça.';
+
+  @override
+  String get amenityCoffeeMaker => 'Cafeteira';
+
+  @override
+  String get amenityCoffeeMakerDesc => 'Preparação rápida de café.';
+
+  @override
+  String get amenityLinenTowels => 'Roupa de cama e toalhas';
+
+  @override
+  String get amenityLinenTowelsDesc => 'Inclui lençóis e toalhas limpas.';
+
+  @override
+  String get amenityCommonAreas => 'Áreas comuns';
+
+  @override
+  String get amenityCommonAreasDesc => 'Espaços compartilhados disponíveis para hóspedes.';
+
+  @override
+  String get amenitySofaBed => 'Sofá-cama';
+
+  @override
+  String get amenitySofaBedDesc => 'Cama adicional integrada no sofá.';
+
+  @override
+  String get amenityCleaningService => 'Serviços de limpeza';
+
+  @override
+  String get amenityCleaningServiceDesc => 'Limpeza programada ou sob pedido.';
+
+  @override
+  String get amenityPublicTransport => 'Transporte público próximo';
+
+  @override
+  String get amenityPublicTransportDesc => 'Acesso rápido a autocarros ou estações próximas.';
+
+  @override
+  String get amenityPetsAllowed => 'Animais de estimação permitidos';
+
+  @override
+  String get amenityPetsAllowedDesc => 'Alojamento adequado para animais de estimação.';
+
+  @override
+  String get amenityShopsRestaurants => 'Lojas e restaurantes';
+
+  @override
+  String get amenityShopsRestaurantsDesc => 'Comércio próximo para compras e comida.';
+
+  @override
+  String get amenityRadiantFloor => 'Piso radiante';
+
+  @override
+  String get amenityRadiantFloorDesc => 'Aquecimento uniforme ao nível do piso.';
+
+  @override
+  String get amenityDeskWorkArea => 'Secretária ou área de trabalho';
+
+  @override
+  String get amenityDeskWorkAreaDesc => 'Espaço confortável para trabalhar ou estudar.';
+
+  @override
+  String get amenityEntertainment => 'Entretenimento';
+
+  @override
+  String get amenityEntertainmentDesc => 'Jogos ou equipamentos de lazer disponíveis.';
+
+  @override
+  String get amenityFireplace => 'Lareira';
+
+  @override
+  String get amenityFireplaceDesc => 'Calor adicional e ambiente acolhedor.';
+
+  @override
+  String get amenityHighSpeedInternet => 'Internet de alta velocidade';
+
+  @override
+  String get amenityHighSpeedInternetDesc => 'Conexão rápida para streaming e trabalho.';
+
+  // ============================================
+  // FECHAS_NO_DISPONIBLES_SCREEN
+  // ============================================
+  @override
+  String get availability => 'Disponibilidade';
+
+  @override
+  String get selectUnavailableDates => 'Selecione as datas indisponíveis do seu alojamento';
+
+  @override
+  String get sundayShort => 'D';
+
+  @override
+  String get mondayShort => 'S';
+
+  @override
+  String get tuesdayShort => 'T';
+
+  @override
+  String get wednesdayShort => 'Q';
+
+  @override
+  String get thursdayShort => 'Q';
+
+  @override
+  String get fridayShort => 'S';
+
+  @override
+  String get saturdayShort => 'S';
+
+  @override
+  String get january => 'Janeiro';
+
+  @override
+  String get february => 'Fevereiro';
+
+  @override
+  String get march => 'Março';
+
+  @override
+  String get april => 'Abril';
+
+  @override
+  String get may => 'Maio';
+
+  @override
+  String get june => 'Junho';
+
+  @override
+  String get july => 'Julho';
+
+  @override
+  String get august => 'Agosto';
+
+  @override
+  String get september => 'Setembro';
+
+  @override
+  String get october => 'Outubro';
+
+  @override
+  String get november => 'Novembro';
+
+  @override
+  String get december => 'Dezembro';
+
+  // ============================================
+  // HISTORIAL_RESERVAS_SCREEN
+  // ============================================
+  @override
+  String get reservationHistory => 'Histórico de reservas';
+
+  @override
+  String get errorLoadingReservations => 'Erro ao carregar reservas';
+
+  @override
+  String get noReservationsYet => 'Nenhuma reserva registrada.';
+
+  @override
+  String get unknownHouse => 'Casa desconhecida';
+
+  @override
+  String get pending => 'Pendente';
+
+  @override
+  String get active => 'Ativo';
+
+  @override
+  String get finished => 'Finalizado';
+
+  @override
+  String get noLocation => 'Sem localização';
+
+  @override
+  String get domotics => 'Domótica';
 }
